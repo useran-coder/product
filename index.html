@@ -14270,5 +14270,289 @@ header .tabs #tab-drawowner{order:130}
 })();
 </script>
 
+
+<!-- ===== V76: 팝업 즉시 표시 · BOM/도면 필터 경량화 · 전체 반응속도 개선 ===== -->
+<style id="v76-performance-style">
+/* 제품 원가 팝업은 외곽창을 먼저 표시하고 본문을 다음 프레임에 채운다. */
+#overlay .mbody{position:relative}
+#overlay.v76-modal-loading .mbody{min-height:220px}
+#overlay.v76-modal-loading .mbody>*{visibility:hidden!important}
+#overlay.v76-modal-loading .mbody::after{
+  content:'제품 정보를 불러오는 중…';
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  visibility:visible!important;color:var(--navy);font-size:14px;font-weight:900;
+  background:#fff;
+}
+#overlay.v76-modal-loading .mfoot{opacity:.45;pointer-events:none}
+
+/* BOM/도면 필터: 운영체제 기본 select 대신 즉시 열리는 가벼운 선택창 */
+#view-cost .filters select.v76-source-select,
+#view-cost .filters>#f-bom.v76-source-select,
+#view-cost .filters>#f-draw.v76-source-select{display:none!important}
+#view-cost .filters .v76-fast-select{position:relative;min-width:132px;width:auto;height:36px;z-index:7100;order:1!important;flex:0 1 148px!important;max-width:180px}
+#view-cost .filters .v76-fast-select[data-source="f-draw"]{min-width:170px;width:170px;flex-basis:170px!important}
+.v76-fast-select-btn{
+  width:100%;height:36px;padding:0 30px 0 11px;border:1px solid var(--line);border-radius:8px;
+  background:#fff;color:var(--txt);font-family:inherit;font-size:12.5px;font-weight:700;
+  text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;cursor:pointer;
+}
+.v76-fast-select-btn::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#73839b;font-size:11px}
+.v76-fast-select.open .v76-fast-select-btn{border-color:#8fb6e8;box-shadow:0 0 0 2px rgba(47,111,176,.10)}
+.v76-fast-select.active .v76-fast-select-btn{background:#eaf4ff;border-color:#9ec5fe;color:#1b4d80}
+.v76-fast-select-panel{
+  display:none;position:absolute;left:0;top:calc(100% + 5px);min-width:100%;width:max-content;max-width:320px;
+  padding:5px;background:#fff;border:1px solid #cfd9e7;border-radius:9px;box-shadow:0 10px 28px rgba(20,40,74,.20);
+  z-index:12000;
+}
+.v76-fast-select.open .v76-fast-select-panel{display:block}
+.v76-fast-select-option{
+  display:block;width:100%;min-width:190px;border:0;background:#fff;border-radius:6px;padding:8px 10px;
+  text-align:left;font-family:inherit;font-size:12.5px;color:var(--txt);font-weight:700;white-space:nowrap;cursor:pointer;
+}
+.v76-fast-select-option:hover,.v76-fast-select-option.on{background:#eaf4ff;color:#1b4d80}
+.v76-fast-select-option.on::before{content:'✓';display:inline-block;width:17px;color:var(--blue);font-weight:900}
+.v76-fast-select-option:not(.on)::before{content:'';display:inline-block;width:17px}
+
+/* 화면 밖의 큰 분석 영역은 실제로 보일 때만 레이아웃 계산 */
+.wrap>.card,.wrap>[id^="view-"]>.card{content-visibility:auto;contain-intrinsic-size:600px}
+#view-cost,#overlay{content-visibility:visible}
+@media(max-width:980px){
+  #view-cost .filters .v76-fast-select,#view-cost .filters .v76-fast-select[data-source="f-draw"]{min-width:0;width:100%}
+  .v76-fast-select-panel{max-width:min(320px,calc(100vw - 28px))}
+}
+</style>
+<script id="v76-performance-script">
+(function(){
+  'use strict';
+  var VER='v76', revision=0, lastRenderKey='', rendering=false, modalToken=0, renderTimer=0;
+  function id(x){return document.getElementById(x)}
+  function clean(v){return String(v==null?'':v).trim()}
+  function setVersion(){
+    var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
+    if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,VER);
+  }
+  function bump(){revision++;lastRenderKey=''}
+
+  /* 데이터 저장 시 화면 캐시만 정확히 무효화 */
+  function installStorageRevision(){
+    try{
+      var proto=window.Storage&&Storage.prototype;if(!proto||proto.__v76Revision)return;
+      ['setItem','removeItem','clear'].forEach(function(name){
+        var old=proto[name];if(typeof old!=='function')return;
+        proto[name]=function(){var r=old.apply(this,arguments);bump();return r};
+      });
+      proto.__v76Revision=true;
+    }catch(e){}
+  }
+
+  function multiValue(fid){
+    try{
+      if(typeof window.isMultiFilterAll==='function'&&window.isMultiFilterAll(fid))return '*';
+      if(typeof window.getMultiFilterValues==='function'){
+        var a=window.getMultiFilterValues(fid);if(Array.isArray(a))return a.slice().sort().join('|');
+      }
+    }catch(e){}
+    var e=id(fid);return e?String(e.value||''):'';
+  }
+  function usageValue(){
+    try{if(typeof window.getUsageMultiValues==='function'){var a=window.getUsageMultiValues();if(Array.isArray(a))return a.slice().sort().join('|')}}catch(e){}
+    var e=id('f-usage');return e?String(e.value||''):'';
+  }
+  function keyForRender(resetLimit){
+    var q=id('q'),draw=id('f-draw'),bom=id('f-bom');
+    var sort='',limit='',group='',plen='';
+    try{sort=String(SORT.key)+'/'+String(SORT.dir)}catch(e){}
+    try{limit=String(VIEW_LIMIT)}catch(e){}
+    try{group=String(CURRENT_GROUP||'')}catch(e){}
+    try{plen=String(PRODUCTS.length)}catch(e){}
+    return [revision,plen,resetLimit===false?'0':'1',sort,limit,group,clean(q&&q.value),
+      multiValue('f-item'),multiValue('f-gubun'),multiValue('f-part'),multiValue('f-equip'),multiValue('f-proc'),
+      clean(bom&&bom.value),clean(draw&&draw.value),usageValue()].join('¦');
+  }
+
+  /* 과거 tbody 감시자는 기존 노드에 붙어 있으므로 노드를 한 번 교체해 불필요한 중복 감시를 제거 */
+  function detachLegacyBodyObservers(){
+    var body=id('tbody');if(!body||body.__v76CleanBody)return body;
+    var clone=body.cloneNode(true);clone.__v76CleanBody=true;body.parentNode.replaceChild(clone,body);return clone;
+  }
+
+  function installFinalRenderCache(){
+    var current=window.renderCost;if(typeof current!=='function'||current.__v76FinalCache)return;
+    var base=current;
+    var fast=function(resetLimit){
+      var body=id('tbody'),key=keyForRender(resetLimit);
+      if(!rendering&&lastRenderKey===key&&body&&body.children.length)return body.children.length;
+      if(rendering)return;
+      rendering=true;
+      try{
+        var r=base.apply(this,arguments);
+        lastRenderKey=keyForRender(false);
+        return r;
+      }finally{rendering=false}
+    };
+    fast.__v76FinalCache=true;fast.__v76Raw=base;window.renderCost=fast;
+  }
+
+  function scheduleRender(){
+    clearTimeout(renderTimer);
+    renderTimer=setTimeout(function(){
+      window.requestAnimationFrame(function(){
+        try{if(typeof window.resetViewLimit==='function')window.resetViewLimit()}catch(e){}
+        try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){console.error(e)}
+      });
+    },0);
+  }
+
+  function closeFastFilters(except){
+    document.querySelectorAll('.v76-fast-select.open').forEach(function(w){if(w!==except)w.classList.remove('open')});
+  }
+  function optionText(sel){var o=sel&&sel.options&&sel.selectedIndex>=0?sel.options[sel.selectedIndex]:null;return o?o.textContent:''}
+  function syncFastFilter(fid){
+    var sel=id(fid),wrap=id('v76-'+fid),btn=wrap&&wrap.querySelector('.v76-fast-select-btn');if(!sel||!wrap||!btn)return;
+    btn.textContent=optionText(sel);wrap.classList.toggle('active',!!sel.value);btn.setAttribute('aria-expanded',wrap.classList.contains('open')?'true':'false');
+  }
+  function fillFastPanel(fid){
+    var sel=id(fid),wrap=id('v76-'+fid),panel=wrap&&wrap.querySelector('.v76-fast-select-panel');if(!sel||!panel)return;
+    var frag=Array.prototype.map.call(sel.options,function(o){
+      var b=document.createElement('button');b.type='button';b.className='v76-fast-select-option'+(String(o.value)===String(sel.value)?' on':'');b.dataset.value=o.value;b.textContent=o.textContent;
+      b.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();sel.value=this.dataset.value;wrap.classList.remove('open');syncFastFilter(fid);scheduleRender()});
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation()});
+      return b;
+    }).reduce(function(f,b){f.appendChild(b);return f},document.createDocumentFragment());
+    panel.replaceChildren(frag);
+  }
+  function installFastFilter(fid){
+    var old=id(fid);if(!old)return;
+    if(!old.classList.contains('v76-source-select')){
+      var sel=old.cloneNode(true);sel.removeAttribute('onchange');sel.classList.add('v76-source-select');old.parentNode.replaceChild(sel,old);old=sel;
+    }
+    var wrap=id('v76-'+fid);
+    if(!wrap){
+      wrap=document.createElement('div');wrap.id='v76-'+fid;wrap.className='v76-fast-select';wrap.dataset.source=fid;
+      wrap.innerHTML='<button type="button" class="v76-fast-select-btn" aria-haspopup="listbox" aria-expanded="false"></button><div class="v76-fast-select-panel" role="listbox"></div>';
+      old.insertAdjacentElement('afterend',wrap);
+      var btn=wrap.querySelector('.v76-fast-select-btn');
+      btn.addEventListener('pointerdown',function(e){
+        e.preventDefault();e.stopPropagation();var opening=!wrap.classList.contains('open');closeFastFilters(wrap);wrap.classList.toggle('open',opening);if(opening)fillFastPanel(fid);syncFastFilter(fid);
+      });
+      btn.addEventListener('click',function(e){
+        e.preventDefault();e.stopPropagation();
+        if(e.detail===0){var opening=!wrap.classList.contains('open');closeFastFilters(wrap);wrap.classList.toggle('open',opening);if(opening)fillFastPanel(fid);syncFastFilter(fid)}
+      });
+      btn.addEventListener('keydown',function(e){if(e.key==='Escape'){wrap.classList.remove('open');syncFastFilter(fid)}});
+    }
+    syncFastFilter(fid);
+  }
+  function installFilterHooks(){
+    installFastFilter('f-bom');installFastFilter('f-draw');
+    if(!document.__v76FilterClose){
+      document.__v76FilterClose=true;
+      document.addEventListener('pointerdown',function(e){if(!e.target.closest||!e.target.closest('.v76-fast-select'))closeFastFilters()},false);
+      document.addEventListener('keydown',function(e){if(e.key==='Escape')closeFastFilters()},false);
+    }
+    var build=window.buildFilters;if(typeof build==='function'&&!build.__v76FastFilter){
+      var b=function(){var r=build.apply(this,arguments);installFastFilter('f-bom');installFastFilter('f-draw');syncFastFilter('f-bom');syncFastFilter('f-draw');return r};
+      b.__v76FastFilter=true;b.__v76Raw=build;window.buildFilters=b;
+    }
+    var clear=window.clearF;if(typeof clear==='function'&&!clear.__v76FastFilter){
+      var c=function(){closeFastFilters();var r=clear.apply(this,arguments);setTimeout(function(){syncFastFilter('f-bom');syncFastFilter('f-draw')},0);return r};
+      c.__v76FastFilter=true;c.__v76Raw=clear;window.clearF=c;
+    }
+  }
+
+  function prepareModalShell(idx){
+    var overlay=id('overlay'),p=null;try{p=PRODUCTS[Number(idx)]}catch(e){}
+    if(!overlay||!p)return false;
+    try{curIdx=Number(idx)}catch(e){}
+    var title=id('m-title'),sub=id('m-sub'),step=id('stepbody');
+    if(title)title.textContent=(p.item||'')+'  ·  '+(p.pn||'');
+    if(sub)sub.textContent=p.spec||'';
+    if(step)step.innerHTML='<tr data-v76-loading="1"><td colspan="11" style="height:120px"></td></tr>';
+    overlay.classList.add('v76-modal-loading');overlay.classList.remove('hidden');return true;
+  }
+  function installImmediateModal(){
+    var current=window.openDetail;if(typeof current!=='function'||current.__v76ImmediateModal)return;
+    var fullOpen=current;
+    var fast=function(idx){
+      idx=Number(idx);var token=++modalToken;
+      if(!prepareModalShell(idx))return fullOpen.apply(this,arguments);
+      /* 한 번 실제 화면을 그린 뒤 무거운 상세 계산을 수행 */
+      window.requestAnimationFrame(function(){
+        setTimeout(function(){
+          if(token!==modalToken)return;
+          var overlay=id('overlay');if(!overlay||overlay.classList.contains('hidden'))return;
+          try{fullOpen(idx)}catch(e){console.error(e)}
+          if(!id('stepbody')||!id('stepbody').querySelector('[data-v76-loading]'))overlay.classList.remove('v76-modal-loading');
+        },0);
+      });
+    };
+    fast.__v76ImmediateModal=true;fast.__v76Raw=fullOpen;window.openDetail=fast;
+  }
+
+  /* 제품행은 마우스를 누르는 순간 팝업 외곽을 먼저 띄워 클릭 체감 지연을 제거 */
+  function installProductPointerOpen(){
+    var body=id('tbody');if(!body||body.__v76PointerOpen)return;body.__v76PointerOpen=true;
+    var suppressPn='',suppressUntil=0;
+    body.addEventListener('pointerdown',function(e){
+      if(e.pointerType&&e.pointerType!=='mouse'&&e.pointerType!=='pen')return;
+      if(e.button!==0||e.target.closest('button,input,select,a,.bomcol,.actioncell'))return;
+      var tr=e.target.closest('tr.prod-row');if(!tr||!body.contains(tr))return;
+      var pn=tr.getAttribute('data-pn')||'',idx=-1;
+      try{idx=PRODUCTS.findIndex(function(p){return String(p.pn||'')===pn})}catch(x){}
+      if(idx<0)return;
+      suppressPn=pn;suppressUntil=Date.now()+800;e.preventDefault();e.stopPropagation();window.openDetail(idx);
+    },true);
+    body.addEventListener('click',function(e){
+      var tr=e.target.closest&&e.target.closest('tr.prod-row');if(tr&&Date.now()<suppressUntil&&(tr.getAttribute('data-pn')||'')===suppressPn){e.preventDefault();e.stopImmediatePropagation();suppressPn=''}
+    },true);
+  }
+
+  function installAll(){
+    setVersion();installStorageRevision();detachLegacyBodyObservers();installFinalRenderCache();installFilterHooks();installImmediateModal();installProductPointerOpen();
+  }
+  function finalInstall(){
+    /* 앞선 버전의 20~80ms 지연 초기화가 모두 끝난 후 최종 래퍼를 가장 바깥에 설치 */
+    setTimeout(installAll,180);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',finalInstall);else finalInstall();
+  /* 일부 이전 버전이 지연 실행으로 함수를 다시 감싸는 경우 최종 성능 래퍼를 다시 가장 바깥에 배치 */
+  setTimeout(function(){installFinalRenderCache();installImmediateModal();installProductPointerOpen();setVersion()},1200);
+  setTimeout(function(){installFinalRenderCache();installImmediateModal();setVersion();syncFastFilter('f-bom');syncFastFilter('f-draw')},6500);
+  window.addEventListener('load',function(){setTimeout(function(){setVersion();syncFastFilter('f-bom');syncFastFilter('f-draw')},420)});
+  window.invalidatePerformanceCacheV76=bump;
+})();
+</script>
+
+
+
+<!-- ===== V77: 필터박스 글꼴 일반체 ===== -->
+<style id="v77-filter-font-normal">
+/* 제품별 원가의 모든 필터박스 및 펼침 목록 글자를 일반체로 표시 */
+#view-cost .filters select,
+#view-cost .filters input,
+#view-cost .filters button,
+#view-cost .filters .v76-fast-select-btn,
+#view-cost .filters .v76-fast-select-option{
+  font-weight:400!important;
+}
+/* 선택 표시 체크 아이콘은 식별성을 위해 기존 굵기 유지 */
+#view-cost .filters .v76-fast-select-option.on::before{
+  font-weight:900!important;
+}
+</style>
+<script id="v77-version-script">
+(function(){
+  function setV77(){
+    var v=document.getElementById('bomAppVer');
+    if(v)v.textContent=(v.textContent||'버전 v77').replace(/v\d+/,'v77');
+    if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,'v77');
+  }
+  setV77();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setV77);
+  window.addEventListener('load',function(){setTimeout(setV77,700)});
+  setTimeout(setV77,7000);
+})();
+</script>
+
 </body>
 </html>
