@@ -15260,5 +15260,168 @@ window.updateCostProcessRowV87=updateCostRow;
 })();
 </script>
 
+
+
+<!-- ===== V88: Drive 삭제 완전정리 · 품목군 집계/막대 즉시연동 ===== -->
+<style id="v88-drawing-delete-group-style">
+#drawGroupBody .draw-mini-fill,#drawOverallBars .draw-barfill{transition:width .12s ease-out!important}
+.draw-drive-actions button[data-v88-busy="1"]{opacity:.58;pointer-events:none}
+</style>
+<script id="v88-drawing-delete-group-script">
+(function(){
+'use strict';
+var VER='v88',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1';
+var deleting=Object.create(null),syncTimer=0,installTimer=0;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function products(){try{return (typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:(Array.isArray(window.PRODUCTS)?window.PRODUCTS:[])}catch(e){return []}}
+function productByPn(pn){pn=String(pn||'');var ps=products();for(var i=0;i<ps.length;i++)if(String(ps[i].pn||'')===pn)return ps[i];return null}
+function syncState(){return read(SYNC_KEY,{url:'',key:'',user:''})}
+function requireConfig(){var s=syncState();if(!s.url||!s.key)throw new Error('데이터 관리에서 구글시트 동기화 URL과 비밀키를 먼저 입력하세요.');return s}
+async function apiPost(action,data){var s=requireConfig(),r=await fetch(String(s.url).trim(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:action,key:s.key},data||{}))}),tx=await r.text(),d;try{d=JSON.parse(tx)}catch(e){throw new Error('Apps Script 응답이 JSON 형식이 아닙니다. Apps Script v10을 새 버전으로 배포했는지 확인하세요.')}if(!d.ok)throw new Error(d.error||'서버 처리 오류');return d}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}},350)}
+function clearLocalFile(pn){var map=read(DRAW_KEY,{}),r=Object.assign({},map[pn]||{});['fileId','fileName','fileMime','fileSize','fileUrl','downloadUrl','fileUploadedAt','fileUploadedBy','fileFolderId','fileFolderName','groupName'].forEach(function(k){delete r[k]});r.has=false;r.status='미등록';map[pn]=r;write(DRAW_KEY,map);return map}
+function updateDriveCell(pn,map){var r=(map||read(DRAW_KEY,{}))[pn]||{};document.querySelectorAll('.draw-drive-actions[data-pn]').forEach(function(box){if(clean(box.getAttribute('data-pn'))!==pn)return;var td=box.closest('td');if(!td)return;td.innerHTML='<div class="draw-drive-actions" data-pn="'+esc(pn)+'"><button type="button" class="primary" data-drive-upload="'+esc(pn)+'">도면 업로드</button></div>'})}
+function drawingStats(){var map=read(DRAW_KEY,{}),ps=products(),has=0;ps.forEach(function(p){var r=map[String(p.pn||'')];if(r&&r.has)has++});var total=ps.length,none=Math.max(0,total-has),rate=total?has/total*100:0;return {map:map,ps:ps,total:total,has:has,none:none,rate:rate}}
+function setKpi(label,value,unit){document.querySelectorAll('#drawKpis .kpi').forEach(function(k){var l=k.querySelector('.k'),v=k.querySelector('.v');if(l&&v&&clean(l.textContent)===label)v.innerHTML=value+' <small>'+unit+'</small>'})}
+function refreshOverall(){var s=drawingStats();setKpi('검색 제품',s.total.toLocaleString(),'개');setKpi('도면 보유율',s.rate.toFixed(1),'%');setKpi('도면 있음',s.has.toLocaleString(),'개');setKpi('도면 없음',s.none.toLocaleString(),'개');var bars=id('drawOverallBars');if(bars)bars.innerHTML='<div class="draw-barrow"><div>도면 있음</div><div class="draw-bartrack"><div class="draw-barfill" style="width:'+Math.max(s.rate,1)+'%"></div></div><div class="num">'+s.has.toLocaleString()+'개 / '+s.rate.toFixed(1)+'%</div></div><div class="draw-barrow"><div>도면 없음</div><div class="draw-bartrack"><div class="draw-barfill none" style="width:'+Math.max(100-s.rate,1)+'%"></div></div><div class="num">'+s.none.toLocaleString()+'개 / '+(100-s.rate).toFixed(1)+'%</div></div>';var fd=id('f-draw');if(fd&&fd.options.length>=3){var cur=fd.value;fd.options[0].textContent='도면 구분 (전체 '+s.total.toLocaleString()+')';fd.options[1].textContent='도면 있음 ('+s.has.toLocaleString()+')';fd.options[2].textContent='도면 없음 ('+s.none.toLocaleString()+')';fd.value=cur}var fw=id('v76-f-draw');if(fw&&fd){var b=fw.querySelector('.v76-fast-select-btn'),op=fd.options[fd.selectedIndex];if(b&&op)b.textContent=op.textContent}}
+function groupStats(item){var s=drawingStats(),total=0,has=0;item=item||'(품목 미지정)';s.ps.forEach(function(p){var g=p.item||'(품목 미지정)';if(g!==item)return;total++;var r=s.map[String(p.pn||'')];if(r&&r.has)has++});return {total:total,has:has,none:Math.max(0,total-has),rate:total?has/total*100:0}}
+function refreshGroupRow(pn){var p=productByPn(pn);if(!p)return;var group=p.item||'(품목 미지정)',head=clean(id('drawGroupFirstTh')&&id('drawGroupFirstTh').textContent);if(head&&head!=='품목군'){try{if(typeof window.renderDrawingAnalysis==='function')window.renderDrawingAnalysis()}catch(e){}return}var st=groupStats(group);document.querySelectorAll('#drawGroupBody tr.draw-group-row').forEach(function(tr){var b=tr.querySelector('td:first-child b');if(!b||clean(b.textContent)!==group)return;var td=tr.children;if(td[1])td[1].textContent=st.total.toLocaleString();if(td[2])td[2].textContent=st.has.toLocaleString();if(td[3])td[3].textContent=st.none.toLocaleString();if(td[4])td[4].textContent=st.rate.toFixed(1)+'%';var fill=tr.querySelector('.draw-mini-fill');if(fill)fill.style.width=Math.max(st.rate,1)+'%'})}
+function refreshAggregates(pn){refreshOverall();refreshGroupRow(pn);var sf=id('drawStatusFilter');if(sf&&clean(sf.value)){requestAnimationFrame(function(){try{if(typeof window.renderDrawingAnalysis==='function')window.renderDrawingAnalysis()}catch(e){}})}}
+function wrapStatus(){var cur=window.applyDrawingStatusInPlaceV82;if(typeof cur!=='function'||cur.__v88Aggregate)return;var fn=function(pn,has){var r=cur.apply(this,arguments);try{refreshAggregates(String(pn||''))}catch(e){}return r};fn.__v88Aggregate=true;fn.__v88Raw=cur;window.applyDrawingStatusInPlaceV82=fn}
+async function deleteDrawing(pn,button){pn=clean(pn);if(!pn||deleting[pn])return;var map=read(DRAW_KEY,{}),r=map[pn]||{},fileId=clean(r.fileId);if(!fileId){clearLocalFile(pn);updateDriveCell(pn);if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(pn,false);refreshAggregates(pn);scheduleSync();return}if(!confirm('현재 품번의 구글드라이브 도면을 모두 휴지통으로 이동하고 도면 없음으로 변경할까요?'))return;deleting[pn]=true;var oldText=button?button.textContent:'';if(button){button.dataset.v88Busy='1';button.textContent='삭제 중'}try{var s=syncState(),d=await apiPost('drawing_delete',{pn:pn,fileId:fileId,deletedBy:s.user||''});var m=clearLocalFile(pn);updateDriveCell(pn,m);if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(pn,false);refreshAggregates(pn);scheduleSync();if(typeof window.toast==='function')window.toast('도면 파일 삭제 완료'+(d.warnings&&d.warnings.length?' · 일부 파일 확인 필요':''));setTimeout(function(){try{if(typeof window.refreshDrawingFilesV85==='function')window.refreshDrawingFilesV85(false);else if(typeof window.refreshDrawingFilesV79==='function')window.refreshDrawingFilesV79(false)}catch(e){}},250)}catch(e){if(button){button.dataset.v88Busy='';button.textContent=oldText||'삭제'}alert('도면 삭제 실패\n\n'+e.message)}finally{delete deleting[pn]}}
+function captureDelete(e){var b=e.target&&e.target.closest?e.target.closest('[data-drive-delete]'):null;if(!b)return;e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();deleteDrawing(b.getAttribute('data-drive-delete'),b)}
+function install(){setVersion();wrapStatus();clearTimeout(installTimer);installTimer=setTimeout(function(){wrapStatus();setVersion()},80)}
+window.addEventListener('click',captureDelete,true);
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,120)});[700,2600,8500,15500,18000].forEach(function(ms){setTimeout(install,ms)});setTimeout(setVersion,19000);
+window.refreshDrawingAggregatesV88=refreshAggregates;
+})();
+</script>
+
+
+
+<!-- ===== V89: 간편산정 공정표 통일 · 레이저 결과식 · 설비 필드 그룹색상 ===== -->
+<style id="v89-quick-process-equipment-colors-style">
+/* 원가 간편산정 공정표를 제품별 원가 팝업 공정표와 동일 구조로 표시 */
+#view-quick .quick-step-wrap{overflow:auto!important;border:1px solid var(--line)!important;border-radius:9px!important;background:#fff!important}
+#view-quick .quick-step-table{min-width:1320px!important;width:100%!important;table-layout:auto!important}
+#view-quick .quick-step-table th{white-space:nowrap!important;font-size:11.5px!important}
+#view-quick .quick-step-table td{vertical-align:middle!important}
+#view-quick .quick-step-table input,
+#view-quick .quick-step-table select{height:32px!important;border:1px solid var(--line)!important;border-radius:7px!important;background:#fff!important;color:var(--txt)!important;font-family:inherit!important;font-size:11.5px!important;padding:5px 7px!important;min-width:0!important}
+#view-quick .quick-step-table input:focus,
+#view-quick .quick-step-table select:focus{outline:none!important;border-color:var(--blue)!important;box-shadow:0 0 0 2px rgba(47,111,176,.08)!important}
+#view-quick .quick-step-table .q89-proc{min-width:145px!important}
+#view-quick .quick-step-table .q89-gubun{min-width:105px!important}
+#view-quick .quick-step-table .q89-part{min-width:115px!important}
+#view-quick .quick-step-table .q89-equip{min-width:115px!important}
+#view-quick .quick-step-table .q89-st{width:70px!important;text-align:right!important}
+#view-quick .quick-step-table .q89-qty{width:72px!important;text-align:right!important;font-weight:800!important;background:#f5f9ff!important}
+#view-quick .quick-step-table .q89-qty:disabled{background:#f2f3f5!important;color:#9aa4b2!important}
+#view-quick .quick-step-table .q89-mode{width:106px!important;font-weight:800!important}
+#view-quick .quick-step-table .q89-override{width:108px!important;text-align:right!important}
+#view-quick .quick-step-table tr.q89-laser-row>td{background:#fcfbff!important}
+#view-quick .quick-step-table tr.q89-laser-row .q89-base{background:#f6f1ff!important;color:#5b35a4!important;font-weight:900!important}
+#view-quick .quick-step-table tr.q89-laser-row .q89-mode{background:#f3efff!important;color:#5b35a4!important;border-color:#bba7e8!important}
+#view-quick .q89-order-box{display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+#view-quick .q89-drag{cursor:grab;color:#58708e;font-size:17px;line-height:1}
+#view-quick .q89-step-no{min-width:20px;text-align:center;font-weight:900;color:var(--navy)}
+#view-quick .q89-actions{display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+#view-quick .q89-actions button{width:27px;height:27px;padding:0!important;border:0!important;border-radius:6px!important;font-size:10px!important;font-weight:900!important}
+#view-quick .q89-actions .move{background:#edf3fa!important;color:#315d8c!important}
+#view-quick .q89-actions .delete{background:#fbeaea!important;color:#b32424!important}
+#view-quick .q89-actions button:disabled{opacity:.35!important;cursor:not-allowed!important}
+#view-quick .q89-laser-formula{display:none;margin-top:12px;border:1px solid #cfdced;border-left:4px solid #7c4dff;border-radius:9px;background:#fbfaff;padding:11px 13px}
+#view-quick .q89-laser-formula.show{display:block}
+#view-quick .q89-laser-formula .lf-title{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12.5px;font-weight:900;color:#4f2d91;margin-bottom:7px}
+#view-quick .q89-laser-formula .lf-formula{font-size:12px;line-height:1.65;color:#37465a}
+#view-quick .q89-laser-formula .lf-result{margin-top:7px;padding-top:7px;border-top:1px dashed #d7cdef;font-size:13px;font-weight:900;color:#5b35a4}
+#view-quick .q89-laser-mult{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#4f2d91}
+#view-quick .q89-laser-mult input{width:64px;height:29px;border:1px solid #a994dd;border-radius:6px;padding:4px 7px;text-align:right;font-family:inherit;font-weight:900;color:#4f2d91;background:#fff}
+/* 설비위치·설비구분은 값별로 같은 연한 색상 유지 */
+#view-equipanalysis .equip-master-input[data-v89-tone]{transition:background-color .12s ease,border-color .12s ease;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+#view-equipanalysis #equipLocationFilter[data-v89-tone],
+#view-equipanalysis #equipTypeFilter[data-v89-tone]{font-weight:700}
+</style>
+<script id="v89-quick-process-equipment-colors-script">
+(function(){
+  'use strict';
+  var VER='v89', Q=[], multiplier=1, dragIndex=null, syncTimer=0;
+  function id(x){return document.getElementById(x)}
+  function n(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
+  function clean(v){return String(v==null?'':v).trim()}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function money(v){return Math.round(n(v)).toLocaleString('ko-KR')}
+  function fmt(v,d){return n(v).toLocaleString('ko-KR',{minimumFractionDigits:0,maximumFractionDigits:d==null?2:d})}
+  function setVal(x,v){var e=id(x);if(e)e.value=v==null?'':v}
+  function val(x){var e=id(x);return e?e.value:''}
+  function products(){try{return Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
+  function price(proc){try{return typeof priceOf==='function'?priceOf(proc):((typeof PRICES!=='undefined'&&PRICES[proc])||{})}catch(e){return {}}}
+  function isLaser(v){return /레이저|laser/i.test(String(v||''))}
+  function modeOf(s){if(isLaser(s&&s.proc))return'flat';var m=String(s&&s.calcMode||'');if(m==='time'||m==='flat')return m;return price(s&&s.proc).mode==='flat'?'flat':'time'}
+  function defaultQty(s){var p=price(s&&s.proc),q=n(s&&s.qty);if(q>0)return q;if(modeOf(s)==='flat'&&p.factor!=null&&p.factor!=='')return n(p.factor)||1;return 1}
+  function rates(){var a=(typeof BASE!=='undefined'&&Array.isArray(BASE.laserRates)&&BASE.laserRates.length)?BASE.laserRates:[{t:5,p:.45},{t:3.2,p:.35},{t:3,p:.35},{t:2.3,p:.32},{t:1.6,p:.30},{t:1.2,p:.28},{t:.8,p:.25}];return a.map(function(x){return{t:n(x.t),p:n(x.p)}}).filter(function(x){return x.t>0&&x.p>=0})}
+  function nearestRate(t){var a=rates();if(!a.length)return{t:0,p:0};var b=a[0],d=Math.abs(b.t-t);a.forEach(function(r){var z=Math.abs(r.t-t);if(z<d){b=r;d=z}});return b}
+  function materialObject(){return{mode:val('qk-matmode')||'dimension',grade:val('qk-grade')||'EGI',density:val('qk-density'),unitPrice:val('qk-matkg'),thickness:val('qk-t'),width:val('qk-w'),length:val('qk-l'),qty:val('qk-useqty')||1,allow:val('qk-allow')||'auto',scrapW:val('qk-sw'),scrapL:val('qk-sl'),recoverWeight:val('qk-recoverw'),laserMultiplier:multiplier};}
+  function laserDetail(){var md=materialObject(),t=n(md.thickness),w=n(md.width),l=n(md.length),use=n(md.qty)||1,r=nearestRate(t),per=Math.max(0,(w+l)*2),raw=r.p*per*use,m=multiplier>0?multiplier:1;return{t:t,w:w,l:l,useQty:use,rateT:r.t,rate:r.p,perimeter:per,raw:raw,mult:m,base:raw*m,ready:t>0&&w>0&&l>0&&r.p>0}}
+  function unitBase(s){var mode=modeOf(s);if(isLaser(s.proc)&&mode==='flat'){var ld=laserDetail();return ld.ready?ld.base:0}var p=price(s.proc);return mode==='flat'?n(p.flat):n(s.st)*n(p.rate)}
+  function applied(s){if(s.override!==''&&s.override!=null)return n(s.override);var b=unitBase(s);return modeOf(s)==='flat'?b*defaultQty(s):b}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+  function rewriteHeader(){var t=document.querySelector('#view-quick .quick-step-table');if(!t)return;var h=t.querySelector('thead tr');if(h)h.innerHTML='<th style="width:52px">순서</th><th>공정명</th><th>구분</th><th>파트</th><th>설비</th><th class="num">S/T(초)</th><th class="num">수량</th><th>구분방식</th><th class="num">기본단가</th><th class="num">적용단가(개당)</th><th style="width:94px">이동·삭제</th>';var f=t.querySelector('tfoot tr');if(f)f.innerHTML='<td colspan="9" class="num strong">공정비 합계</td><td class="num cost" id="qk-procsum">0</td><td></td>';}
+  function row(s,i){var mode=modeOf(s),qty=defaultQty(s),base=unitBase(s),laser=isLaser(s.proc),ov=s.override!==''&&s.override!=null;return '<tr data-i="'+i+'" class="'+(laser?'q89-laser-row':'')+'" ondragover="quickDragOver(event,'+i+')" ondragleave="quickDragLeave(event)" ondrop="quickDropStep(event,'+i+')">'+
+    '<td><div class="q89-order-box"><span class="q89-drag" draggable="true" title="드래그하여 순서 변경" ondragstart="quickDragStart(event,'+i+')" ondragend="quickDragEnd(event)">☷</span><span class="q89-step-no">'+(i+1)+'</span></div></td>'+
+    '<td><input class="q89-proc" list="dl-proc" value="'+esc(s.proc||'')+'" placeholder="공정명" oninput="quickStepChange('+i+',\'proc\',this.value)"></td>'+
+    '<td><input class="q89-gubun" list="dl-gubun" value="'+esc(s.gubun||'')+'" placeholder="구분" oninput="quickStepChange('+i+',\'gubun\',this.value)"></td>'+
+    '<td><input class="q89-part" list="dl-part" value="'+esc(s.part||'')+'" placeholder="파트" oninput="quickStepChange('+i+',\'part\',this.value)"></td>'+
+    '<td><input class="q89-equip" list="dl-equip" value="'+esc(s.equip||'')+'" placeholder="설비 번호·약칭" oninput="quickStepChange('+i+',\'equip\',this.value)"></td>'+
+    '<td><input class="q89-st" value="'+esc(s.st!==''&&s.st!=null?s.st:'')+'" inputmode="decimal" placeholder="0" oninput="quickStepChange('+i+',\'st\',this.value)"></td>'+
+    '<td><input class="q89-qty" value="'+esc(qty)+'" inputmode="decimal" '+(mode==='time'?'disabled':'')+' oninput="quickStepChange('+i+',\'qty\',this.value)"></td>'+
+    '<td><select class="q89-mode" '+(laser?'disabled title="레이저는 제품 치수 자동산출 방식으로 고정됩니다."':'')+' onchange="quickStepChange('+i+',\'calcMode\',this.value)"><option value="time"'+(mode==='time'?' selected':'')+'>시간기준</option><option value="flat"'+(mode==='flat'?' selected':'')+'>수량단가</option></select></td>'+
+    '<td class="num q89-base">'+money(base)+'</td>'+
+    '<td><input class="q89-override '+(ov?'ov':'')+'" value="'+(ov?esc(s.override):'')+'" placeholder="'+money(applied(s))+'" inputmode="decimal" oninput="this.classList.toggle(\'ov\',this.value!==\'\');quickStepChange('+i+',\'override\',this.value)"></td>'+
+    '<td><div class="q89-actions"><button type="button" class="move" '+(i===0?'disabled':'')+' onclick="quickMoveStep('+i+',-1)">▲</button><button type="button" class="move" '+(i===Q.length-1?'disabled':'')+' onclick="quickMoveStep('+i+',1)">▼</button><button type="button" class="delete" onclick="quickDeleteStep('+i+')">✕</button></div></td></tr>'}
+  function renderSteps(){rewriteHeader();var b=id('qk-stepbody');if(b)b.innerHTML=Q.map(row).join('')}
+  function updateRow(i){var s=Q[i],tr=document.querySelector('#qk-stepbody tr[data-i="'+i+'"]');if(!s||!tr)return;var laser=isLaser(s.proc),mode=modeOf(s),sel=tr.querySelector('.q89-mode'),qty=tr.querySelector('.q89-qty');tr.classList.toggle('q89-laser-row',laser);if(sel){sel.disabled=laser;sel.value=mode;if(laser)sel.title='레이저는 제품 치수 자동산출 방식으로 고정됩니다.';else sel.removeAttribute('title')}if(qty){if(mode==='flat'&&!n(qty.value)){s.qty=defaultQty(s);qty.value=s.qty}qty.disabled=mode==='time'}var bc=tr.querySelector('.q89-base'),ov=tr.querySelector('.q89-override');if(bc)bc.textContent=money(unitBase(s));if(ov)ov.placeholder=money(applied(s))}
+  function fillProducts(){var e=id('qk-product');if(!e)return;var cur=e.value,ps=products();e.innerHTML='<option value="">직접 산정(제품 미선택)</option>'+ps.map(function(p,i){return'<option value="'+i+'">'+esc(p.pn)+' | '+esc(p.item)+' | '+esc(p.spec||'')+'</option>'}).join('');if(cur!==''&&ps[+cur])e.value=cur;var c=id('qk-product-count');if(c)c.textContent='전체 '+ps.length.toLocaleString()+'개'}
+  window.quickMaterialMode=function(){var direct=val('qk-matmode')==='direct';document.querySelectorAll('.qk-dim').forEach(function(e){e.classList.toggle('hidden',direct)});document.querySelectorAll('.qk-direct').forEach(function(e){e.classList.toggle('hidden',!direct)})};
+  window.quickGradeChange=function(){var g=val('qk-grade');try{setVal('qk-density',gradeDensity(g));var m=id('qk-matkg');if(m)m.placeholder=gradePrice(g)}catch(e){}};
+  window.quickAllowanceChange=function(){try{var a=val('qk-allow'),res=a==='auto'?inferAllowance(Q):a,av=allowanceValues(res,val('qk-sw'),val('qk-sl')),custom=a==='custom';if(!custom){setVal('qk-sw',av.sw);setVal('qk-sl',av.sl)}if(id('qk-sw'))id('qk-sw').readOnly=!custom;if(id('qk-sl'))id('qk-sl').readOnly=!custom}catch(e){}};
+  function ensureLaserBox(){var b=id('q89-laser-formula');if(!b){b=document.createElement('div');b.id='q89-laser-formula';b.className='q89-laser-formula';var total=id('qk-total');if(total)total.insertAdjacentElement('afterend',b)}return b}
+  function renderLaserFormula(){var box=ensureLaserBox(),has=Q.some(function(s){return isLaser(s.proc)});if(!box)return;if(!has){box.classList.remove('show');box.innerHTML='';return}var d=laserDetail(),near=Math.abs(d.t-d.rateT)>.0001?' · 최근접 기준 '+fmt(d.rateT,2)+'T':'';box.classList.add('show');var title='<div class="lf-title"><span>✨ 레이저 가공비 산출식</span><label class="q89-laser-mult">기본단가 배수 <input id="qk-laser-multiplier" value="'+esc(Math.round(d.mult*1000)/1000)+'" inputmode="decimal" oninput="quickLaserMultiplierV89(this.value)"> 배</label></div>';if(!d.ready){box.innerHTML=title+'<div class="lf-formula">재료비 자동산정의 <b>두께·재료폭·길이</b>를 입력하면 레이저 기준단가가 계산됩니다.<br>계산식: 두께별 mm당 단가 × [(재료폭 + 길이) × 2] × 소재수량 × 기본단가 배수</div>';return}box.innerHTML=title+'<div class="lf-formula">두께 <b>'+fmt(d.t,2)+'T</b>'+near+' → <b>'+fmt(d.rate,3)+'원/mm</b><br>둘레 = ('+fmt(d.w,1)+' + '+fmt(d.l,1)+') × 2 = <b>'+fmt(d.perimeter,1)+'mm</b><br>산출 기본단가 = '+fmt(d.rate,3)+' × '+fmt(d.perimeter,1)+' × '+fmt(d.useQty,2)+' = <b>'+money(d.raw)+'원</b><br>레이저 공정 기본단가(1단위) = '+money(d.raw)+' × '+fmt(d.mult,3)+'</div><div class="lf-result">레이저 기본단가 '+money(d.base)+'원/개</div>'}
+  window.quickLaserMultiplierV89=function(v){multiplier=n(v)>0?n(v):1;Q.forEach(function(s,i){if(isLaser(s.proc))updateRow(i)});window.quickCalc()};
+  window.quickCalc=function(){if(!id('qk-summary'))return;var md=materialObject(),ov={material:md,matw:val('qk-matmode')==='direct'?val('qk-matw'):'',matkg:val('qk-matkg')},m;try{m=calculateMaterial(Q,ov)}catch(e){m={mode:md.mode,calcW:n(md.width),calcL:n(md.length),weight:n(val('qk-matw')),unit:n(md.unitPrice),scrapCredit:0,net:n(val('qk-matw'))*n(md.unitPrice)}}var proc=Q.reduce(function(a,s){return a+applied(s)},0),ovhR=n(val('qk-ovh')),def=n(val('qk-defect')),prof=n(val('qk-profit')),ovh=(n(m.net)+proc)*ovhR/100,sub=n(m.net)+proc+ovh,cost=def>0?sub/(1-def/100):sub,sale=cost*(1+prof/100),order=n(val('qk-orderqty'))||1;if(id('qk-procsum'))id('qk-procsum').textContent=money(proc);if(id('qk-material-result'))id('qk-material-result').innerHTML='<div class="mr"><span class="k">적용 치수</span><span class="v">'+(m.mode==='direct'?'직접 중량':fmt(m.calcW,1)+' × '+fmt(m.calcL,1)+' mm')+'</span></div><div class="mr"><span class="k">총중량</span><span class="v">'+n(m.weight).toLocaleString('ko-KR',{maximumFractionDigits:4})+' kg</span></div><div class="mr"><span class="k">kg 단가</span><span class="v">'+money(m.unit)+' 원</span></div><div class="mr"><span class="k">회수 차감</span><span class="v">− '+money(m.scrapCredit)+' 원</span></div><div class="mr total"><span class="k">순 재료비</span><span class="v">'+money(m.net)+' 원</span></div>';id('qk-summary').innerHTML='<div class="srow"><span class="lab">재료비</span><span class="val">'+money(m.net)+' 원</span></div><div class="srow"><span class="lab">가공비</span><span class="val">'+money(proc)+' 원</span></div><div class="srow"><span class="lab">제조경비 ('+fmt(ovhR,1)+'%)</span><span class="val">'+money(ovh)+' 원</span></div><div class="srow"><span class="lab">불량반영 ('+fmt(def,1)+'%)</span><span class="val">'+money(cost)+' 원</span></div><div class="srow total"><span class="lab">개당 제조원가</span><span class="val">'+money(cost)+' 원</span></div><div class="srow saleline"><span class="lab">개당 판매가 참고</span><span class="val">'+money(sale)+' 원</span></div>';if(id('qk-total'))id('qk-total').innerHTML='<div class="big">'+money(sale)+' 원 / 개</div><div class="sub">수량 '+money(order)+'개 · 판매가 참고 총액 '+money(sale*order)+'원 · 제조원가 총액 '+money(cost*order)+'원</div>';renderLaserFormula();window.QUICK_LAST={material:m,proc:proc,ovh:ovh,cost:cost,sale:sale}}
+  window.quickStepChange=function(i,f,v){var s=Q[i];if(!s)return;s[f]=v;if(f==='proc'&&isLaser(v)){s.calcMode='flat';if(!n(s.qty))s.qty=1}else if(f==='calcMode'){s.calcMode=v;if(v==='flat'&&!n(s.qty))s.qty=defaultQty(s)}updateRow(i);window.quickAllowanceChange();window.quickCalc()};
+  window.quickAddStep=function(){Q.push({proc:'',gubun:'',part:'',equip:'',st:'',qty:1,calcMode:'time',override:''});renderSteps();window.quickCalc();var rows=document.querySelectorAll('#qk-stepbody tr'),tr=rows[rows.length-1];if(tr){var p=tr.querySelector('.q89-proc');if(p)p.focus()}};
+  window.quickDeleteStep=function(i){Q.splice(i,1);renderSteps();window.quickAllowanceChange();window.quickCalc()};
+  window.quickMoveStep=function(i,d){var j=i+d;if(i<0||j<0||i>=Q.length||j>=Q.length)return;var x=Q.splice(i,1)[0];Q.splice(j,0,x);renderSteps();window.quickCalc()};
+  function clearDrag(){document.querySelectorAll('#qk-stepbody tr').forEach(function(tr){tr.classList.remove('qk-drop-before','qk-drop-after','qk-dragging')})}
+  window.quickDragStart=function(ev,i){dragIndex=i;if(ev.dataTransfer){ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain',String(i))}var tr=ev.currentTarget&&ev.currentTarget.closest('tr');if(tr)tr.classList.add('qk-dragging')};
+  window.quickDragOver=function(ev,i){ev.preventDefault();if(dragIndex==null||dragIndex===i)return;clearDrag();var tr=ev.currentTarget,r=tr.getBoundingClientRect();tr.classList.add(ev.clientY>r.top+r.height/2?'qk-drop-after':'qk-drop-before')};
+  window.quickDragLeave=function(ev){var tr=ev.currentTarget;if(tr&&!tr.contains(ev.relatedTarget))tr.classList.remove('qk-drop-before','qk-drop-after')};
+  window.quickDropStep=function(ev,target){ev.preventDefault();var from=dragIndex;if(from==null&&ev.dataTransfer)from=parseInt(ev.dataTransfer.getData('text/plain'),10);if(!Number.isInteger(from)||from<0||from>=Q.length){window.quickDragEnd();return}var tr=ev.currentTarget,r=tr.getBoundingClientRect(),insert=target+(ev.clientY>r.top+r.height/2?1:0),x=Q.splice(from,1)[0];if(from<insert)insert--;insert=Math.max(0,Math.min(insert,Q.length));Q.splice(insert,0,x);dragIndex=null;clearDrag();renderSteps();window.quickCalc()};
+  window.quickDragEnd=function(){dragIndex=null;clearDrag()};
+  window.quickLoadProduct=function(){var idx=val('qk-product'),p=idx===''?null:products()[+idx],old=p&&typeof OV!=='undefined'?(OV[p.pn]||{}):{},md=old.material||{};setVal('qk-name',p?(p.item+' · '+p.pn):'');Q=p?(p.steps||[]).map(function(s,i){return{proc:s.proc||'',gubun:s.gubun||'',part:s.part||'',equip:s.equip||'',st:s.st==null?'':s.st,qty:s.qty==null||s.qty===''?defaultQty(s):s.qty,calcMode:modeOf(s),override:old.steps&&old.steps[i]!=null?old.steps[i]:''}}):[{proc:'',gubun:'',part:'',equip:'',st:'',qty:1,calcMode:'time',override:''}];multiplier=n(md.laserMultiplier)>0?n(md.laserMultiplier):1;try{if(typeof fillGradeSelect==='function')fillGradeSelect('qk-grade',md.grade||'EGI')}catch(e){}setVal('qk-matmode',md.mode||((old.matw!=null&&old.matw!=='')?'direct':'dimension'));setVal('qk-density',md.density!==undefined?md.density:(typeof gradeDensity==='function'?gradeDensity(md.grade||'EGI'):''));setVal('qk-matkg',old.matkg!==undefined?old.matkg:(md.unitPrice||''));setVal('qk-t',md.thickness||'');setVal('qk-w',md.width||'');setVal('qk-l',md.length||'');setVal('qk-useqty',md.qty||1);setVal('qk-allow',md.allow||'auto');setVal('qk-sw',md.scrapW||'');setVal('qk-sl',md.scrapL||'');setVal('qk-matw',old.matw||md.weight||'');setVal('qk-recoverw',md.recoverWeight||0);setVal('qk-ovh',old.ovh!==undefined?old.ovh:(typeof BASE!=='undefined'?BASE.ovh:0));setVal('qk-defect',typeof BASE!=='undefined'?BASE.defect:0);setVal('qk-profit',old.profit!==undefined?old.profit:(typeof BASE!=='undefined'?BASE.profit:0));window.quickMaterialMode();window.quickGradeChange();window.quickAllowanceChange();renderSteps();window.quickCalc()};
+  window.quickSaveToProduct=function(){var idx=val('qk-product');if(idx===''){if(typeof toast==='function')toast('저장할 기존 제품을 선택하세요');return}var p=products()[+idx];if(!p)return;var steps=[],ovs={};Q.forEach(function(s){if(!(clean(s.proc)||clean(s.st)))return;var i=steps.length,mode=modeOf(s);steps.push({proc:clean(s.proc),gubun:clean(s.gubun),part:clean(s.part),equip:clean(s.equip),st:clean(s.st)===''?'':n(s.st),qty:mode==='flat'?defaultQty(s):1,calcMode:mode});if(s.override!==''&&s.override!=null)ovs[i]=n(s.override)});p.steps=steps;var md=materialObject(),cm;try{cm=calculateMaterial(steps,{material:md,matw:val('qk-matmode')==='direct'?val('qk-matw'):'',matkg:val('qk-matkg')})}catch(e){cm={weight:n(val('qk-matw'))}}var prev=(typeof OV!=='undefined'&&OV[p.pn])||{};OV[p.pn]=Object.assign({},prev,{steps:ovs,material:md,matw:val('qk-matmode')==='direct'?val('qk-matw'):cm.weight,matkg:val('qk-matkg'),ovh:val('qk-ovh'),profit:val('qk-profit')});try{saveProd();saveOV();if(typeof LS_PRICE!=='undefined')localStorage.setItem(LS_PRICE,JSON.stringify(PRICES));if(typeof buildFilters==='function')buildFilters();if(typeof renderCost==='function')renderCost(false);clearTimeout(syncTimer);syncTimer=setTimeout(function(){try{if(typeof bomSyncSave==='function')bomSyncSave(true)}catch(e){}},250);if(typeof toast==='function')toast('제품별 원가 팝업과 같은 공정 기준으로 저장했습니다')}catch(e){console.error(e)}};
+  window.quickReset=function(){setVal('qk-product','');window.quickLoadProduct()};
+  function renderQuickV89(){fillProducts();rewriteHeader();if(!Q.length)window.quickLoadProduct();else{renderSteps();window.quickCalc()}}
+  window.renderQuick=renderQuickV89;
+
+  /* 설비위치·설비구분 값별 연한 색상 */
+  var palette=[['#eef6ff','#c9ddf3'],['#f0faf4','#cce8d5'],['#fff8e8','#ecdcae'],['#f8f0ff','#dfc9f2'],['#fff1f3','#f1ccd3'],['#eefafa','#c9e7e7'],['#f5f5ee','#dedec6'],['#f1f4ff','#ccd5f2']];
+  function hash(s){var h=0;for(var i=0;i<s.length;i++)h=((h<<5)-h+s.charCodeAt(i))|0;return Math.abs(h)}
+  function tone(el,value,kind){value=clean(value);if(!el)return;if(!value){el.style.removeProperty('background-color');el.style.removeProperty('border-color');el.removeAttribute('data-v89-tone');return}var c=palette[hash(kind+'|'+value)%palette.length];el.style.setProperty('background-color',c[0],'important');el.style.setProperty('border-color',c[1],'important');el.setAttribute('data-v89-tone',String(hash(kind+'|'+value)%palette.length))}
+  function paintEquipment(){var root=id('view-equipanalysis');if(!root)return;root.querySelectorAll('.equip-row').forEach(function(tr){tr.querySelectorAll('.equip-master-input').forEach(function(inp){var a=String(inp.getAttribute('onchange')||'');if(a.indexOf("'location'")>=0)tone(inp,inp.value,'location');else if(a.indexOf("'type'")>=0)tone(inp,inp.value,'type')})});var lf=id('equipLocationFilter'),tf=id('equipTypeFilter');if(lf)tone(lf,lf.value,'location');if(tf)tone(tf,tf.value,'type')}
+  function installEquipmentHook(){var old=window.renderEquipmentAnalysisV23;if(typeof old==='function'&&!old.__v89Tone){var w=function(){var r=old.apply(this,arguments);paintEquipment();requestAnimationFrame(paintEquipment);return r};w.__v89Tone=true;window.renderEquipmentAnalysisV23=w}}
+  document.addEventListener('change',function(e){var t=e.target;if(t&&(t.id==='equipLocationFilter'||t.id==='equipTypeFilter'||(t.classList&&t.classList.contains('equip-master-input'))))requestAnimationFrame(paintEquipment)},true);
+
+  function install(){setVersion();rewriteHeader();installEquipmentHook();paintEquipment();var old=window.switchTab;if(typeof old==='function'&&!old.__v89Quick){var sw=function(t){var r=old.apply(this,arguments);if(t==='quick')requestAnimationFrame(renderQuickV89);if(t==='equipanalysis')requestAnimationFrame(paintEquipment);return r};sw.__v89Quick=true;window.switchTab=sw}if(id('view-quick')&&!id('view-quick').classList.contains('hidden'))renderQuickV89()}
+  install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,250)});setTimeout(setVersion,1500);
+})();
+</script>
+
 </body>
 </html>
