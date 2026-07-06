@@ -1,11 +1,41 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>제품별 제조원가 프로그램 v99 | (주)동방파스텍</title>
 <script id="v99-static-browser-title-init">
-window.__legacyDocumentTitleV99='제품별 제조원가 프로그램 v99 | (주)동방파스텍';
+window.__legacyDocumentTitleV99='제품별 제조원가 프로그램 v106 | (주)동방파스텍';
+window.__DBF_SAFE_BOOT_PENDING=true;
+(function(){
+  if(window.__DBF_SAFE_OBSERVER_INSTALLED)return;
+  window.__DBF_SAFE_OBSERVER_INSTALLED=true;
+  var Native=window.MutationObserver;
+  if(typeof Native!=='function')return;
+  function SafeObserver(callback){
+    var self=this,queued=false,records=[];
+    self._callback=callback;
+    self._inner=new Native(function(batch){
+      records=records.concat(Array.prototype.slice.call(batch||[]));
+      if(queued)return;queued=true;
+      setTimeout(function(){
+        queued=false;var send=records.splice(0,records.length);
+        try{callback(send,self)}catch(e){console.error(e)}
+      },32);
+    });
+  }
+  SafeObserver.prototype.observe=function(target,options){
+    options=options||{};
+    /* 누적 버전에서 생긴 문서 전체 감시 루프는 차단 */
+    if(options.subtree&&(target===document||target===document.documentElement||target===document.body))return;
+    try{this._inner.observe(target,options)}catch(e){}
+  };
+  SafeObserver.prototype.disconnect=function(){try{this._inner.disconnect()}catch(e){}};
+  SafeObserver.prototype.takeRecords=function(){try{return this._inner.takeRecords()}catch(e){return []}};
+  window.__NativeMutationObserver=Native;
+  window.MutationObserver=SafeObserver;
+})();
 </script>
 <style>
 :root{
@@ -244,7 +274,6 @@ html,body{background:#fff!important;min-width:0;overflow-x:auto}
 .bom-empty{padding:30px;text-align:center;color:var(--mut)}
 .lv0>.bom-row{background:#eef4fb;font-size:13.5px}
 </style>
-
 <style id="final-header-position-fix">
 /* 최종 보정: 메인 제품표 제목줄이 리스트 중간에 걸쳐 보이는 문제 수정
    원인: 메인 thead th에 sticky top 값이 적용되어 스크롤/렌더링 시 본문 행 위로 떠서 표시됨.
@@ -296,8 +325,6 @@ html,body{background:#fff!important;min-width:0;overflow-x:auto}
   z-index: auto !important;
 }
 </style>
-
-
 <style id="group-flow-bom-input-fix">
 /* 품목군 첫 화면 / 제품 리스트 전환 */
 #groupPanel{background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 1px 3px rgba(20,40,74,.05);overflow:hidden;margin-bottom:14px}
@@ -333,8 +360,6 @@ html,body{background:#fff!important;min-width:0;overflow-x:auto}
 .bom-entry button:hover{background:#1ab268}
 @media(max-width:1100px){.bom-entry-grid{grid-template-columns:1fr 1fr}.bom-entry-grid button{grid-column:1/-1}.group-table{min-width:900px}}
 </style>
-
-
 <style id="product-list-restore-column-align-fix">
 /* 첫 화면: 품목군 패널은 숨기고 기존 제품 리스트를 바로 표시 */
 #view-cost #groupPanel{display:none!important}
@@ -397,9 +422,6 @@ html,body{background:#fff!important;min-width:0;overflow-x:auto}
 #view-cost table.cost-table td.actioncell button{margin-left:4px!important}
 @media(max-width:900px){#view-cost table.cost-table{min-width:1540px!important}}
 </style>
-
-
-
 <style id="no-horizontal-scroll-column-balance-filter-counts">
 /* 최종 보정: 페이지/표 가로 스크롤 제거, 제목열과 셀열 균등 폭 배분 */
 html,body{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important;background:#fff!important}
@@ -452,9 +474,6 @@ header{max-width:100%!important;overflow-x:hidden!important}
   #view-cost table.cost-table td.flowcell .proc-chip{max-width:54px!important;font-size:9.3px!important;padding:2px 4px!important}
 }
 </style>
-
-
-
 <style id="final-searchbox-width-fix">
 /* 검색박스와 제품표 제목줄 겹침 방지 + 기준 HTML 폭(1680px)으로 화면 폭 정리 */
 html,body{
@@ -562,8 +581,6 @@ header{
   .filters .fclear,.filters .fcount{justify-self:start!important}
 }
 </style>
-
-
 <style id="final-inline-bom-row-fix">
 /* 하위 BOM 표: 규격 1줄 표시, 모든 단계 행높이 통일, 제목줄 연한 검정 */
 .inline-bom{
@@ -668,7 +685,6 @@ header{
   padding-bottom:5px!important;
 }
 </style>
-
 <style id="bom-status-raw-menu-style">
 /* BOM 있음/없음 구분 */
 #f-bom{min-width:132px}
@@ -698,7 +714,6 @@ header{
 .bom-entry-grid .be-spec{min-width:180px}
 @media(max-width:1200px){.bom-entry-grid{grid-template-columns:repeat(2,minmax(160px,1fr))!important}.bom-entry-grid button{grid-column:1/-1}.raw-search{min-width:180px}}
 </style>
-
 <style id="search-filter-active-raw-only-fix">
 /* 검색란을 필터 아래 전체 폭으로 이동하고, 사용 중인 필터는 약한 파랑색으로 표시 */
 #view-cost .filters{
@@ -744,13 +759,11 @@ header{
   #view-cost .filters .fclear,#view-cost .filters .fcount{grid-column:auto!important}
 }
 </style>
-
 <style id="detail-equip-edit-style">
 /* 제품 상세 팝업에서 공정명과 설비명을 같이 수정할 수 있도록 폭 보정 */
 #overlay .modal{max-width:1040px!important}
 .stepm input.d-proc,.stepm input.d-equip{text-align:left!important;width:100%!important}
 </style>
-
 <style id="final-raw-search-usage-fix">
 /* 검색란/필터 외곽선 정리 */
 #view-cost .filters{
@@ -799,8 +812,6 @@ header{
 .raw-use-empty,.raw-use-more{font-size:12px;color:var(--mut);padding:10px;background:#fff;border:1px dashed #d2dceb;border-radius:8px}
 .raw-use-more{margin-top:8px}
 </style>
-
-
 <style id="gap-and-raw-usage-count-fix">
 /* 제품별 원가: 검색필드와 표 리스트 사이 간격 축소 */
 #view-cost .filters{
@@ -825,7 +836,6 @@ header{
   text-align:right!important;
 }
 </style>
-
 <style id="bom-spec-full-visible-fix">
 /* 하위 BOM 규격 전체 표시: 규격 칸은 말줄임 없이 줄바꿈으로 모두 보이게 처리 */
 .inline-bom{
@@ -876,9 +886,6 @@ header{
   word-break:break-word!important;
 }
 </style>
-
-
-
 <style id="bom-spec-one-line-full-fix">
 /* 하위 BOM 규격: 1줄로 전체 표시(말줄임/잘림 제거). 내용이 긴 경우 BOM 영역 안에서만 가로로 확인 */
 .inline-bom{
@@ -950,8 +957,6 @@ header{
 .inline-bom::-webkit-scrollbar-track,
 .bom-nest::-webkit-scrollbar-track{background:#f3f6fa;border-radius:8px}
 </style>
-
-
 <style id="final-filter-order-edit-raw-full-fix">
 /* 선택필드 순서: 1 구분 · 2 파트 · 3 품목군 · 4 설비 · 5 공정 · 6 BOM */
 #view-cost .filters{
@@ -991,7 +996,6 @@ header{
   #view-raw .raw-tablebox{height:calc(100vh - 230px)!important;min-height:420px!important}
 }
 </style>
-
 <style id="final-sticky-product-page-and-button-guide">
 /* 제품별 원가: 상단 버튼 설명 */
 header .button-guide{
@@ -1080,7 +1084,6 @@ body{overflow-x:hidden!important}
   #view-cost .filters{top:var(--sticky-head)!important}
 }
 </style>
-
 <style id="final-sticky-hard-fix-v2">
 /* 제품별 원가 페이지 고정 보정: 구분박스/검색바/제품표 제목바를 스크롤 시 상단에 유지 */
 html,body{overflow-x:hidden!important;overflow-y:auto!important;}
@@ -1116,8 +1119,6 @@ header{position:sticky!important;top:0!important;z-index:3000!important;backgrou
   #view-cost table.cost-table thead th{position:sticky!important;top:calc(var(--sticky-head,150px) + var(--sticky-filter,120px))!important;}
 }
 </style>
-
-
 <style id="draw-group-boxline-remove-v4">
 /* 요청 반영: 도면분석 > 품목군별 도면 보유 현황 외곽 박스라인 제거 */
 #view-draw > .draw-card{
@@ -1142,8 +1143,6 @@ header{position:sticky!important;top:0!important;z-index:3000!important;backgrou
   border-radius:0!important;
 }
 </style>
-
-
 <style id="requested-ui-cleanup-20260703">
 /* 요청 반영: 도면분석 필터/보기 버튼 */
 .draw-analysis-tools{margin-bottom:12px!important;gap:8px!important;align-items:center!important;display:flex!important;flex-wrap:wrap!important;}
@@ -1181,8 +1180,6 @@ header{position:sticky!important;top:0!important;z-index:3000!important;backgrou
 #view-usage > .draw-card > .db,
 #view-raw .raw-card > .cb{padding-left:0!important;padding-right:0!important;}
 </style>
-
-
 <style id="requested-alignment-box-title-fix-20260704">
 /* 원자재 목록: BOM사용 제목과 셀 내용을 가운데 정렬 */
 #view-raw .raw-table thead th:first-child,
@@ -1228,8 +1225,6 @@ header{position:sticky!important;top:0!important;z-index:3000!important;backgrou
   padding:12px 16px!important;
 }
 </style>
-
-
 <style id="user-request-cost-analysis-bom-fix-20260704">
 /* 1) 제품별 원가 페이지: PC 화면에서 표 영역을 조금 더 넓게 사용 */
 .wrap{
@@ -1272,7 +1267,6 @@ header{position:sticky!important;top:0!important;z-index:3000!important;backgrou
   transform:none!important;
 }
 </style>
-
 <style id="final-delete-button-and-bom-header-fix-20260704">
 /* 제품별 원가표는 도면 열 포함 실제 13열 기준으로 폭을 재배분 */
 #view-cost .tablebox{
@@ -1409,10 +1403,6 @@ header{position:sticky!important;top:0!important;z-index:3000!important;backgrou
   #view-cost table.cost-table td.actioncell button{min-width:35px!important;padding:4px 4px!important;font-size:9.8px!important}
 }
 </style>
-
-
-
-
 <style id="user-request-v56-material-chart-style">
 /* 공용품/전용품/비규격 메뉴 및 원자재 단가 강종별 카드 */
 #view-matprice .material-price-box{max-height:none!important;overflow:visible!important;border:0!important;background:#fff!important}
@@ -1462,8 +1452,6 @@ header{position:sticky!important;top:0!important;z-index:3000!important;backgrou
 #view-matprice .mp-source-note{margin:0 0 12px;padding:9px 12px;border-left:4px solid #2f6fb0;background:#f5f9ff;color:#5f6f85;font-size:11px;border-radius:7px}
 @media(max-width:900px){#view-matprice .mp-grade-actions{margin-left:0;width:100%}#view-matprice .mp-grade-table{min-width:1050px}}
 </style>
-
-
 <style id="v101-drawing-group-search-style">
 #view-draw .draw-search-row{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:9px 10px;border:1px solid #d8e2f0;border-radius:9px;background:#f8fbff}
 #view-draw .draw-search-icon{flex:0 0 auto;font-size:15px;line-height:1}
@@ -1477,439 +1465,428 @@ header{position:sticky!important;top:0!important;z-index:3000!important;backgrou
 </head>
 <body>
 <header>
-  <div class="htop">
-    <div class="brand-wrap">
-      <span class="logo-badge"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUFBgwICQcKDgwPDg4MDQ0PERYTDxAVEQ0NExoTFRcYGRkZDxIbHRsYHRYYGRj/2wBDAQQEBAYFBgsGBgsYEA0QGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBj/wAARCABwAgMDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7+ooooAKKKDQAUV554z+Nnw88DyyWuqa0Lq/Tg2NgvnyqfRscL/wIivHNZ/a8naQr4f8ABahB0k1C65P/AAFBx/31XHWx9Ck7Slr959LlvCGb5jFTw9B8r6u0V8r2v8rn1NRXx3/w1r478zd/wjnh7b/dxN/PfW7o/wC15crIF8QeC42TvJYXRBH/AAFxz+dYRzfDN25vwZ6tXw5z2nHmVJP0lH9Wj6norzrwZ8b/AIdeN5o7TTtaFnfvwtjqC+RKx9Fydrf8BJr0Wu+nVhUXNB3R8hjMBicFU9liqbhLs1YKKKK0OQKKKKACivGf2kPj1p/wG+F6aytvBqGu3832fTNOlYhZWHLu+3kIq9SO5A71zH7Pf7W/h/4668fC3/CJaxo3iCK2NzMqgXNoEXALecMFMkgAMo5IGSaAPo2iuA+Inxr+F/wnvLC1+IPiuHRZb9Hktlkt5pfMVCAx/do2MEjrXFf8Nkfs1/8ARULP/wAAbv8A+NUAe6UV4X/w2R+zX/0VCz/8Abv/AONVs+FP2nPgX448YWXhbwr4/ttR1e+Ypb2qWlyhkIBJGWjAHAPU0Aet0V5l8bfjd4c+BfgOHxP4j0nWNQhuZvs0CadAHBl27gruSFjBwcE9cHAOK8p/Zz/bBs/jd8S9W8Iav4fg8O3Zj+06REs5mNxGv+sR2IAMg4bgAEZ9KAPqOiig0AFFeE+Jv2wvgH4Q8Zap4W17xZd2+qaZcvaXUK6XcyBJEOGAZUIPI6g1lf8ADcv7Nv8A0Ol7/wCCi7/+N0AfRdFfOn/Dcv7Nv/Q6Xv8A4KLv/wCN0f8ADcv7Nv8A0Ol7/wCCi7/+N0AfRdFfOn/Dcv7Nv/Q6Xv8A4KLv/wCN0f8ADcv7Nv8A0Ol7/wCCi7/+N0AfRdFeIeDv2tvgX498c6b4Q8MeKbu61bUZDFbQvptxEHYKWwWZABwp6mvb+1ABRXgerftnfs86Jrt9o+peNLmK8sbiS1uIxpd022RGKsMiPBwQeRXulhe22paVbajZuZLa5iSeJyCNyMAwODyOCKALFFFeL+NP2rPgd8PvHl/4O8V+LJ7PWLBlS4t1064lCFkDj5kQqflYHg0Ae0UVieD/ABboXjvwRp3i7wzdtd6TqMXnW07RNGXXJGdrAEcg9RVfx1468NfDfwLe+MPF189lpFls8+dIXlK7mCj5UBJ5I6CgDo6K8d8A/tRfBb4m+Orbwf4N8T3F9q9ykkkUD6fcQgqilm+Z0AGAD3r2KgAorwPXP2zP2ffDvifUvD+reLryG/066ks7mNdKunCSxuUcAiPBwQeRxVD/AIbl/Zt/6HS9/wDBRd//ABugD6Lor50/4bl/Zt/6HS9/8FF3/wDG6X/huT9m0n/kc73/AMFF3/8AG6APoqiue8D+NvDvxE8CWHjDwpePd6RfqzW87xNEXCsVPysARyD1FO8aeMvD/wAPvA2oeL/FN49ppGnoJLiZImlKgkKPlUEnkjoKAN+ivGPAv7VPwS+JHj2y8G+EfFFzeaxe+Z5ED6dcRBtiF2+Z0AHyqTya9noAKKKKACioL28tNO06e/v7iO3tbeNpZppW2rGijLMT2AAJr55k/bm/ZxjlZP8AhLdQbaSNyaTckH3B2dKAPo2isnwz4l0Pxj4Q07xR4b1CK/0rUYFuLa5j6Oh9jyCOQQeQQQeRWtQAUUUUAFFeIeMP2t/gV4E8cal4R8TeKbu11bTZfJuYU0y5lCNgNgMqEHgjoaw/+G5f2bf+h0vf/BRd/wDxugD6Lor50/4bl/Zt/wCh0vf/AAUXf/xuu2+GX7Rvwl+L/ie58PeAvEFxqF/bWxu5Y5LGeACMMqk5kUA8sOOtAHqtFea/FH48/DL4NXWm2/xA1ufTpNRV3thFZzXG8IQG/wBWpx1HWrPwy+NXw7+MGkalqfgLWJtQttNkWK5aS0lgKMylgAJFBPAPSgD0Givno/ttfs6C/wDsX/CY3vneZ5W3+ybr72duM+X619CKQygjoaAFooooAKKKCRQBT1TVNP0XR7nVdVvIbSytozJNPM21UUdya+Ovit+0Trvi64n0bwhNcaPoWShmQ7Lm7HqSOY1P90c+p7VB+0F8WZvGviqXwxo10f8AhHtNlKkoeLydTgufVFOQo9cn0rxq3trm8u1tbO2muZ3+7FChd2/Ac18xmOZSnJ0qT079/wDgH7vwTwPRwlGOYZjG9R6qL2iuja/m9dvUj45x3OTSV2Fv8KfibdRCSDwFrxQjILWrLn86l/4U/wDFIf8AMha3/wB+P/r15PsKr+y/uZ+ivNsCnZ14f+BR/wAziqK7b/hT3xT25/4QLWv+/P8A9ek/4VB8Uv8AoQtc/wC/H/16f1er/K/uYv7XwH/QRD/wKP8AmcVgHqM17b8Kv2h9e8HXEGj+K5rjWdA4Te5L3NoPVWPLqP7p59D2rz+8+F3xIsLdp7vwLryRqMs4tGYD8s1yjo8UrRSo0ciHDI4Ksp9CD0qqdSrhpc0bpnPjcHl2eUHQq8tSPk02vNNbM/TPSdW03XdEttX0i8ivLG5QSQzxNlXU9/8A63artfEXwB+LU/gTxbH4e1e5J8OalKFbecizmbgSj0UnAb8D25+3AwIyDX12CxkcTT5lv1P5x4p4bq5Fi/YSd4S1jLuvPzXX7+otFFcb8WfFn/CC/Avxb4vV9sumaVcXEJ/6ahD5Y/77Kiuw+aPy3/a5+KUvxN/aZ1qSC5MmjaE7aTp6g5XbGxEsg/3pA3PcBa+9f2PvgzD8KPgHaX+oWgTxL4hRNQ1F2X540IzFB9EU5I/vM1fmv8CvCQ8f/tI+DvDN4GlivdTjkui3zbo0PmyZ+oU/nX7VxqqRqqKFUDAAGABTYj5L/bG/Z5+Ivxt8Q+FLzwPHpLRaZb3Edx9uu/IOXZCuPlOeFNfGnxL/AGVfij8JfAU3i/xpceGrbT45EhVIdR8yaeRjgJGm0bm6nHYAntX6/wAkkcMLSyuqIoLMzHAAHUk9hX5J/tb/AB5k+M/xjez0W6ZvCOhO9rpiqTtuZM4kuSO+4jC/7IHQk0IZw3wk+CHjL41ajqOn+CbrQze2CLLLa6he+RI8bHG9BtO5QeCexI9RX098Af2PfjJ8Ov2jfDHjTxJFoA0vTp3knNtqHmSYMbLwu0Z5Ir5V8G+J/G/wF+OFhry2FzpuuaRKrXOnXYMZlidQWhkH910YfTIPUV+yHgLxvoPxH+HGkeNfDVz5+m6nAJo8/ejPRo2HZlYFSPUGhiRF8Q/Amh/Er4X6x4H8RQCSx1O3MLMBlon6pIv+0rBWHuK/G1D4q+B/x85Jt9f8K6qQccB2ibnH+w6/mr1+3VfmJ/wUE8HRaF+0bp3im2jWNPEGmLJKQPvTQN5bH/vgx/lQgZ+kHg/xNp/jLwDo3ivSnD2WqWcV5CR2V1DY/DOPwrbPQ18tfsDeL5PEX7K39h3Ehebw/qU1iu45PlPiZPwHmED/AHa+pD0NIZ+LP7Q5x+1j8ST6eIbw/wDkQ17n4R/YD8Z+LvAWjeKbX4g6Dbw6pZRXqQyWkxaMSKGCkjgkZrw39ocZ/ax+JA9fEN4P/Ihr1Lwz+3X8ZfCng3SvDOmaN4Qez0y1js4GntJi5RFCgsRKATgdgKYjuf8Ah3D47/6KR4d/8A56P+HcPjv/AKKR4d/8A565v/h4X8c/+gJ4K/8AAKf/AOPUf8PDPjl/0BPBX/gFP/8AHqNQOk/4dw+O/wDopHh3/wAA56P+HcPjv/opHh3/AMA565v/AIeF/HP/AKAngr/wCn/+PUf8PC/jn/0BPBX/AIBT/wDx6jUD174N/sN+L/hn8dfDXjvUPHOiX1tpNyZ5LaC1lR5AY2TAJ4/i719wHp+Ir4C+B37avxb+I/7QnhbwRr+leFYdN1S7aCd7O1mWUKI3b5S0pAOVHY19+np+IpDPw5+Jw3fGzxmPXXb7/wBHvX0/pH/BQzx5pHh6w0mL4f8AhuSOzt47dXa4nBYIoUE/lXy/8Tzj41eNCOo12+/9HvX6X+GP2Mf2dNS8D6NqN54Eme5ubGCaVv7Uuxudo1LHAkwOSaYj58/4eOeP/wDonfhn/wACJ6+Xfil8Qb74qfGDWPH+pafbWF1qkkbvbWzM0abI1jGC3PRAfxr9Oj+xJ+zX/wBCDN/4Nbz/AOO1+dH7R3g3w78Pv2o/FXg/wnYNYaPYSwLbWzSvKUDW8bn5nJY/MxPJ70ID9N/2UP8AkzT4f/8AYNH/AKG1Yf7av/JlPi//ALdv/SiOtz9lD/kzT4f/APYNH/obVh/tq/8AJlPi/wD7dv8A0ojpDPzd+AHxQsPg58edN8fanpV1qdtZwXELW1q6o7GSJkBBbjjNfqL8Afj1pPx88Katrmk6BfaPHpt4tm0d3KkjOSgfI29BzX5f/s8/DDR/jD+0BpngLXtQv7Cxu4LmZ57EoJVMcTOAN6sMEjniv1I+BfwH8N/AXwvqmh+G9Y1XUodRuxdySaiYyysECYGxVGMCmxI+E/2o/wBlzxF8Pl8S/F698VaXeWOqa/JIlhDBIsqC5md1BY8fKDzXjnwM+DOq/HT4lT+DdI1uz0m4hsJL8z3cbSIVR0QqAvOf3gP4Gv0D/b6/5NEk/wCw1Z/zavl//gnr/wAnXaj/ANi5c/8Ao+3oAxPjR+xx4o+C/wAJrrx3qvjPSNTt7eeGA2trbSo7GRtoILccV5h8E/hHqXxr+Ki+CNJ1i00q5NpLd/aLqNpExHjK4XnJ3V+if7eP/Jmur/8AYQsv/R1fI37A/wDyeFF/2Brv/wBkoQH6G/A34d33wp+A+geAtS1C31C50yORHubdGVH3SM4wG56NiuU/a9/5Mv8AHX/Xon/o1K9vrxD9r3/ky/x1/wBeif8Ao1KQz85/2UfEmgeEf2u/C/iDxNq1ppWl2wu/OvLp9kabraRVye2SQPxr9YPBvxE8EfEG1urjwX4n03XIrR1jnexl8wRswJAPpkA/lX4vfD/wB4g+J/xIsfBHhaO1fVb/AMwwrdS+VH8iNI2WwcfKpr9LP2N/gd47+CXhfxVYeOIdOil1K8gnt/sVyJgVSNlOcAY5IpsSPpyiivEf2nfjvZ/A/wCEMt7aSRS+J9T3W2kWrfN8+PmmYf3EBz7naO9IZ87/ALdv7Q+1Jfgh4QvvmYK/iG5hboOGW0BHrwz+21e7Cviy1+HvjC9+FV/8SLbRZ5PDVheJY3F+B8qSuOOO4GQC3QFlHetP4ceA/Ffxt+NVn4Y06aW61TVrhri+1GfLeSmd01xIfbJPuSB1Nfr/AOH/AIUeCvD/AMEofhXb6PDN4cWxNjNbSjP2hWGHdz3diSxPr0xgU9hbnwN+w/8AtCHwN4wX4VeK77b4d1mfOnTSthbK7bjZk9Ek6egbB/iNfpgDkZr8YPj38GtY+BvxlvPCt0ZptNkJutI1AjH2i2J+Xkfxoflb3GehFfoF+xt+0EPix8Nf+ES8SXobxfoMKpMznDX1t91Jx6sOFf3wf4qAPp2iiikM/HD9qn/k8n4g/wDYT/8AaUddb4M/ZSsfF3w+0fxO/wAdfh9pDalapcnT765CzW24Z2ON4ww6HiuS/ap/5PJ+IP8A2E//AGlHUnhv9k/48+L/AAjp3ijw/wCBEu9K1KBbq1uDqFshkjYZDbWcEZ9xTEejf8MX6f8A9HGfDH/wLX/4uvX/ANnr4ZeDv2a/Gut/EPxT8b/A2q6W+mCwkGmz72haSeMqzBSxC5XHTqRXzd/wxZ+0h/0TiP8A8Gdp/wDHK7PwP+xh8eptA8V6JqfhnTtDk1Gxgjt7m91CJoi6XUUhU+UXYEqh7Y460AXf26vih4A+Jmv+C5/Animw12OyguluTaFj5RZk25yB1wfyr0//AIJ0f8kw+If/AGEIP/RD18kfGf4B+N/gVe6Ra+NLrRp31VJHt/7NneUAIQG3bkXH3hjrX1v/AME6P+SYfEP/ALCEH/oh6OgHwV/zOg/7CH/tav3ai/1K/QV+Ep/5HMf9hD/2tX7tRf6lfoKGA+iiikMK8u+PvjaTwV8G717KbytS1JhYWrKcMhcHe4/3UDc+pFeo18i/tb609x470DQFfMVpZvdMv+3I+3+SfrXDmNZ0sPKS32+8+q4KyyOY5xRpVFeKfM/SOtvm7I8Z8DeDdT8d+OLHwxpACSTndJMwysES/ekP0HQdyQK+yjF8Mv2efh/HPJEsLv8AuxIEEl5fyY556n17Ktef/skeHYo/D+veK5I8zT3C2MTnsiDcwH1Zh+VeNfHPxbdeLfjdrEkkxez02VtPtI8/KqIcMR7s2Sfw9K8ahy4PDKva85beR+o5pGrxNnk8pc3HDUUnO32npp97t5Wb3PV779rw/aD/AGb4FYxdmub0Bj+CrxVN/wBr3U1jZv8AhBbXhSf+P0+n+7XzbTZP9RJ/uN/KuR5piv5/wX+R9DDgHIUkvq//AJNP/wCSP0U1DxlLZfBGXx4NOR5Y9K/tH7IXwCfL37N36ZrwAfteal/0Itr/AOBp/wDia9Y1/A/Yzu8kAf8ACMDk/wDXAV8JB48f6xP++hXpZljK1FwUJWuvI+H4H4Yy3MaeJliqPNy1GlrJWXbRo+ptL/a7tWu0XWvBU8FuSN8tndCRkHrtIGfpmut+L3w+8NfFH4VN448NRwNqkdp9ttL2FdpuowNxjf1yAcZ5BFfF0ZEkqxxHzJGOFSP5mY+gA5Jr7i8ELN8Nv2SYJPFebaWz0+aaSGXqhkLFIz7ncox6mowWJni4zp19Y237HTxRkmF4eq4bGZQnCs5qPKm3zJ76Nt9k+mp8OAh077WFfdf7PXjaXxj8HbWO9mMmo6U32C4YnlwoHlsfquPyr4UGduSME8kelfQn7JesvbfEbWtCLHyr2xW4C5/jifGfyf8ASuPKazp4hLo9D6XxEyyOMyedS3vUrSX5P8Hf5I+v6+fv219QksP2J/F4iOGuTa25Ps1zHn9Aa+ga+f8A9tXTpNR/Yn8YGIZa2+y3OPZbmPP6E19efzafEX7ClpHdftk6XJIob7Npt7OufXYF/wDZq/V3oK/KH9hW8itP2ydJjkYL9q028t1z6+WGA/8AHa/V7qKbEj46/bo+PR8G+Bx8KvDN6U13XISdQlibDWlmeCuezScr/uhvUV82fsW/A8/FL4zjxPrVn5nhfwy6XEwdcpc3XWKH3Axvb2AB+8K+nv2mv2M7X4o6xffEDwDqH2DxbOA13aXspa2vyqhRhjkxPgAcfKcdB1r3j4JfCzSvg58FdH8EabskmgTzr66Awbm6fBkkPtngeiqo7UDPmL9vr4IHVvDUHxl8P2m690xFttZSNeZbbOEmPqUJwT/dYdlryP8AYe+PX/CAfEQ/DXxHe7PDniCcfZJJWwtnenAHJ6LJgKf9oKfWv0x1LTrHV9Hu9K1O1jurK7he3uIJRlZY3UqykehBIr4c8Df8E+LO1+NGraj4z1szeDbO9L6TYWkpW4vIuGQTSDmMLnadvzMVJBUYNAH3YORXwx/wUi0+I+FPAWqbR5q3l1b59jGrfzWvuSCGO3to4IgRHGoRRknAAwOTXw1/wUi1GIeFvAOlbh5r3l3cY9hGq/zakBQ/4JsajIV+I2kliUU2Fyo9CRMp/wDQR+VffFfBH/BNjTZBF8RdXZSI2axtlPqQJmP/AKEv5197HkUMD5b8aWP7D7/EXXH8anwV/wAJGb2U6n9qmlEv2jcfM3gHG7dnOKwv7P8A+CfHr4A/8CJv8a8l+Lf7FHxn8afHjxh4t0f/AIRz+z9W1a4vbbz70q/lu5Zdw28HB6V5n4t/Yt+LngbwRqfi3xNfeE7PStNga4uJm1A9B0VRt5ZjhQO5IFMD6lbT/wDgnztOD4AzjvcTf41+b98LMeI7gWuz7GLtwm37vl+YcY9tuKpxRPPKkUMLPJIwVI0XLMx4AAHU+1ek3n7PXxv0/wAKt4kvPhd4ji01Y/NaU2xLKmM7jGPmAx7UCPuJNP8A+CfPlruPgDOBnFxP/jTv7P8A+CfHr4A/8CJv8a/NFERpApKICQCzDge5+lfTGm/sKfGrWNGtdW0q88IXljdxLPb3EOolkljYZVlO3kEGgD6w8IXP7Dnh/wAdaXq/g+88E2muw3Cixmtp5TIsrfINuSRk7sc+tfU56fiK/Mjwt+wn8cdI8caNqt3/AMIz9ntL+3uJfLvyW2pKrHA29cA1+nFIZ+JPxL8P67L8aPGLx6Jqbo+uXrKy2khDAzvgg7a04PiP8fra1jtrfxf4/iiiQIiJNcgKoGAAMdMV+0Plx5z5a/lR5Uf/ADzT8qdwPxi/4Wd+0H/0OfxC/wC/9z/hXIavb+N/EOuz6zr1pr+pahcEGa7u7eaSSTAAG5iuTgAD8K/cpkhVSzIgA5JIHFfnh+0f+25r114nvvBnwYvY9M0u0doLjxDGivPduDhvIJBCRg5AfG5uoIHUA+s/2WIJ7X9jzwFb3UEsEqacA0cqFGHzt1B5rH/bG0+/1T9jjxXY6ZY3N7dSfZgkFtE0rti4QnCqCTxX5jjxH8ctXt5PFSa78Qr2AHe+qJcXboPfzAcV7X8Cv23PiD4G8QWulfEnVLrxZ4XlYJLPdfvL2zU/8tEk6yAdSjZJHQjuWAr/ALFvhLxVpP7Y+gX2qeGdasbVbS9Vp7qwliRSbd8AsygDNfqbVPSdV07XdCs9a0i8ivNPvYUuLa5hbcksbgMrA+hBBq5SA+Av2yP2jvht46+Fur/C3QrjVG8QabrqRzpNZmOIG3kZJMPnnkccc14H+yV8WfCPwa+Ot54s8azXkWny6PNZIbS3M7mRpYmAKgjAwjc/Svo7xp/wT51XxZ8SvEPilPiha2q6tqdzqAtzpbMYhLKzhc+YM43Yz7Vh/wDDtnWP+itWn/gob/45TEJ+1F+1b8Jfi3+ztqHgzwjdaxJqk93bTItzYGFCscm5ssWOOK8C/ZX+KHhX4RftBp4w8Yy3cemjTri13WsBmfe+3b8oI44PNe/f8O2dY/6K3af+Chv/AI5QP+CbOsAg/wDC27T/AMFDf/HKAPuH4feO9B+Jfw603xr4Ze4bS9QVmgNxF5T4VipyuTjlTXm37Xv/ACZf46/69E/9GpXY/Bb4cy/Cf4IaF4Bn1VNUfTI3Q3aReUJN0jP90k4+9jrXHfte/wDJl/jr/r0T/wBGpSGfn5+xf/yfB4O+l7/6SS1+uXavyN/Yv/5Pg8HfS9/9JJa/XHtTe4kY/i3xVofgjwRqfizxJepZaVpsDXFxO3ZR2A7sTgAdSSB3r8b/AI0fFjxB8b/jHe+K9RSZY5WFtpmnLl/s1uG/dxKB1Y5ycdWP0r7N/bL0X4/fFbXrbwJ4F+H2rz+D9OZZ57qN0QalcY4OC2fLjzgA9Wyey1zf7I/7JHifSPiafH3xb8OPpq6MwbS9NumVzNcEf65gpI2p/CD1Y57UDPd/2R/2f4vgx8Khqmu2qDxhriJNqDEZNrH1S2B/2c5b1Y+iivomgdKKQHjn7SfwQsPjh8HbjRkSKLxBY7rrR7xhjy5scxsf7jgbT+B7V+UfhDxX4w+DPxitfEGmLNp2vaHdtHNaTgrkqdssEo7qwyp/Mdq/b88iviH9sv8AZX1zxp4jtviV8L9D+3axclbfV9NtyqNPgfJcLkgbhja3r8p9aYH1Z8LfiT4e+LPws0vxx4blza3sf7yBjl7aYcPC/wDtKePcYPQiuyr8+/2SvCX7RfwV+Jzabr/w21n/AIQ7WnWO/XejfZJeiXKgN26MB1U+oFfoJ2pAfj/+1HomtXP7YPj6e20fUJon1LKyR2sjK37qPoQMGuV0zx38c9G0e20rSfE3jqysbWMRQW1vJcJHEg6KqgcAelfpV8SP2u/hJ8L/AIkX/grxNb642p2WwzG1sRJH86BhhtwzwRXKf8N9/AX/AJ9vE3/gsH/xVMD4K/4Wd+0H/wBDn8Qf+/8Ac/4V9P8A7DPjD4oeIPjzrdn421/xRqFimhvJHHq0krRiTz4hkbxjdgn8zXq3/DffwF/59vE3/gsH/wAVSj9v34Dqcrb+Jx9NNH/xVAHlX/BRnTNRv/E3gE2Gn3d0Et7zcYIWk25aPGdoOK3/APgnnp9/YfDP4gJfWN1bM9/AVE8LRlh5D9MgZrtj+378B2+9b+Jz9dNH/wAVQP2/vgOowsHicfTTR/8AFUAfm8fD2vjxjuOhapgX+c/Y5Onm5/u1+5EX+pX6CvlqL9vf4DzXEcKWvibc7hR/xLR1Jx/er6nUhlDDoaQC0UUUAFfEP7TrO37QU4fOBp9uF+mD/XNfb1fHv7WekPa/E/RtZCERXunmEt2Lxuc/o615Wcxbw910aP0LwyqxhnSjL7UZJfg/yTPVv2Wwo+AUW3qdRuC313L/AExXx34iLnxlrBkzv+3z7s+vmNX1D+yTr8c3g/XPDDSDzrS7F4iHqUkUAn8GX9a8J+M/hqfwt8cNfspIikNzcG+tjjho5Tu4+h3L9Qa8rGe9g6M1stP6+4+/4aaw/EuY4ep8U7SXpe//ALcjgqbJ/qJP9xv5U6myf6iT/cP8q8c/TFufododzotn8ANMuvEZh/smLRYnu/PQunlCIbtygHIx2xXADxv+zB/f8M/+Ct//AI3W94h4/Y1u/wDsWB/6IFfCg6CvpcfjZYfkSinddUfhvCXDFLOFiatStUhy1GrQkku+uj1PuXQfiB+z3BqUf9h6p4XsrksNkn2X7OQf990GPzrE+Pvw78a+PPD6ap4Z8QC/022QXC6EihRMQP8AWI4/1jY6BuPTmvjXgjkZr60/ZL1/U73wjrvh+6mkls9Onje13HPlCRSWQe2RkDtk1jhsYsY/q9SNk+2h6Gd8MS4ais6wVZzlTauqiUtG7aOytv01tezXX5LIIJBBBHBBGCD717D+zIzj9oayC9DY3Ib6YX/61c78btMtNI/aA8TWdiqpC1ys+xRgK0iK7AfixrvP2T9Je6+LOp6vt/d2OnGPd/tSuMD8kNefhaTji4w7P8j7TiDHwr8O1sXaynTv/wCBpW/M+x65P4neE18dfBnxT4PZQW1XS7i0jJ7SNGQh/Btp/Cusor7M/mA/E/4L+K3+HH7RvhPxLqCtAum6oiXiv8pRGPlShvoGOfpX7WxSJLCskbBkYAqwOQQehr8m/wBs34UyfDj9pPUdTs7XZoniYtqlqyjCrIx/fx/UOd30kHpX2t+xj8aIfih8CLfQNUvA/iXw0iWV2rt880GMQz++VG0n+8p9RTEegfFj9oD4b/Ba90y18eaheWsmpJJJbC3tHn3BCA2dvT7wrzn/AIbv/Z4/6D+r/wDgrlql+1n+zZ4z+POueGLzwtrGi2KaVDcRzDUWkUsZGUjbsU/3TXxh8ZP2TPH3wT+HkfjHxLrvh+9s3vI7MRWDymTc4Yg/MoGPlNAz7c/4bv8A2eP+g/q//grlrofA/wC158FfiF4+07wd4Z1jUp9V1FzHbxy6fJGpIUscseBwDX5ofBX4KeJfjn4zvfDXhjUtMsbm0szeO+os4QruC4GwE5ya+tfgf+xP8Svhn8f/AA3451rxF4ZubHS53klitJJjIwMbL8u5AOpHegD7vzkZr8wP2/8AxrF4i/aTs/C9pKskXh3TlgkwfuzzHzHH4L5X51+iHxP+IeifCr4S6z4516QfZtOty6Q7sNcSniOJfdmIHtknoDX496BpXin47ftCQWLyNca34o1RpLmZRkRh2LSP7KiZx6BQKEJn6L/sH+DJPC/7KNvrFzE0dx4iv5tS+YYPlDEUf4FY9w/3q+nazPDmhaf4Y8I6Z4c0mFYbHTrWO0t4wMbURQo/QVp0hhXx3/wUS12+sPgBoOiW7slvqesqLjb/ABrHGzKp9txB+qivsSvB/wBrj4S6h8W/2cL/AE3Qbfz9c0uZdUsIQPmnZAQ8Q92Rmx6sFFAHx7/wT98FaH4l+Pur+INYtormbQLBZ7GOQAhJpH2+bg91UHB7E5r9Odi9h+NfjB8C/jDrnwH+MUXimzsmuYCjWWqaZITGZ4SwLLn+F1ZQRnuMGvvW8/b/APgdD4UOo2cfiK61Lyty6V9hMb78fdaQnYB7gmmxHyD+2t4K0PwR+1jqMXh+2itLbVbKHVntogFSKWQur4A6Bim7Hqxr7b/Yb1q+1j9jjRYr6V5Tp95dWMLucnylkJUfQBto9gK/Nz4geNvF3x3+OV14jurB7nWNZuEt7PTbQF/LX7sUEfc4HfuSTxX6zfAD4av8JP2efDngi5ZHvraEzXzocg3ErGSTB7gMxUH0AoA9LooopDCiiigDyL9qLxHqHhT9kLx3rOlyvDdjTvs0cqHDJ50iwlgexAkJBr8wf2b/AADpPxK/aa8LeEtdQSaVNO091DnHnRxIXMf0YgA+2a/Wr4reBofiV8FPE3gWaVYTq1hJbxSsMiOXG6Nj7Bwp/Cvx30LVfGPwO+OltqT2TWHiTw3f4ltLkYG5eHjb1RlJ5HUEEUxH7X2enWNhpUOnWNnBbWcUYijtoUCRooGNoUcAe1flb+278N9A+H37SQm8NWkNjZa7YrqT2cA2pFNvZJCqjhQxG7A4yTX1bpX/AAUA+Cdz4PTUNVg8Qafqoiy+lLZGZi4H3UlB2EZ6EkfSvgr42fFfWfjp8a7rxbPp7wLMEstN02ImVooQcInH3nYkk46k4HahAz9Av2BfEd/rv7JCWF9K8i6Nq9zp9uWOcRYSULn0BlYewxX1FXjH7LPwtvvhH+zRo3hzWI/K1i6d9S1GL/nlNLg+WfdUVFPupr2ekMKKKKACiiigArxD9r3/AJMv8df9eif+jUr2+vEP2vf+TL/HX/Xon/o1KAPz8/Yv/wCT4PB30vf/AEklr9cu1fkb+xf/AMnweDvpe/8ApJLX64k4Qn0FN7iQbVJzgUAAdAK/Ob4z/tmfGvwN+0F4v8IaFfaEmm6XqUlrbLNpwdwgxjLbuT71wv8Aw3t+0D/0EfDn/grX/wCLpWGfqpRX5V/8N7ftA/8AQR8Of+Ctf/i6P+G9v2gf+gj4c/8ABWv/AMXTsB+qlBAPUV+Vf/De37QP/QR8Of8AgrX/AOLo/wCG9v2gf+gj4c/8Fa//ABdFgP1T2r6Cl7V+YfhL9uT48az4/wBC0i81Dw8ba91G3tpgmmANseVVbB38cE1+ng6UgPkX41fsSn4u/GrVvH3/AAsM6V/aAiH2T+zhNs2RhPvbxnOM9K4D/h20f+itN/4KB/8AHK++aKAPgb/h20f+itN/4KB/8co/4dtH/orTf+Cgf/HK++aKAPgb/h20f+itN/4KB/8AHKZL/wAE3TFA8h+LRwqlv+QQOw/66V9+VBef8g+f/rm38jQB+ElvD9n8TwW+7d5d4se7GM4kAz+lfu/F/qV+gr8JT/yOg/7CH/tav3ai/wBSv0FNiQ+iiikMK8b/AGlPBknif4Ny6lZwmS90ST7cgUZLRYxKB/wH5v8AgFeyUySNJYmikRXRgVZWGQQeoNZV6SrU3TfU9DKsxqZbjKWMpbwafr3XzWh+d3w18d3vw7+Idp4jtEM8ABhu7ZTjz4W+8B7jgj3HvX174r8HeAv2gPAllq2n6oPNjUm01K2AMkBP3o5EPbPVTggjIxXzD8a/hfcfDjx3IbSFjoF+7S2EoHEfdoCfVe3quPQ1w2h+I9f8M35vvD2s3umXBxue1lKbv94dG/EGvlaOIeFcsPXjePb/ACP6AzLJqfECo5zlVb2dZL3ZdGu0l3Wqe/VNPp7Pffsm+PYbhhYa5oN5Fn5Wd5IWI9xtbH51Sf8AZU+JxhdRdeHslSB/pcnp/wBc6xrX9o34uWsQQ+I7e4A/iuLKNm/MYqz/AMNMfFv/AKC2mf8AgvX/ABqubL30kYqjxjDT2lF+dn/8ij6r1fwlql9+z5P4Kga2GpSaMLAMzkReZ5YX72M4z3xXzJ/wyr8Tsf8AHz4e/wDAuT/43VL/AIab+LWzH9paT9f7PGf/AEKm/wDDTPxbx/yFdM/8F6//ABVdGIxWCrtOalpoePk3D/FGUxqRw0qXvvmd+Z6/ca9p+yj8RJbhUu9V8P2sRPzSCaSUj6KEGfzFe++GfDvhD4A/CW6mv9T3IpNxeXsoCvdS4wFRf0VRn+Zr5luP2kfi5cRlBr9nBn+KGwQH9c1594h8V+JPFl8t54k1y91OVc7DcyZVP91RhV/AVlDF4XD3lQg3LzO/FcN5/nXLRzbEQjRTTcYJ3dvVL82lvZieKfEFz4r8bar4lvVEct/cvOUzkRqfur+CgD8K+wf2ZvB0nhv4RDWLyIx3mty/ayGGCsIG2Mfllvxr5v8Agz8MLr4k+O447iF10KxdZdQn6Bh1EKn+836DJ9K+9oIIre2jghjWOONQioowFAGAB7YroyfDSlN4ify/VnjeJed0qGHhkuG6WckuiXwx/X5LuSUUUV9Efi55R+0F8EdL+Ovwnk8L3NzHYanBMtzp2otHv+zSjg5HUqykgjPoe1cl8Bf2SvBvwN1weJrbXdX1nxE0DW8l1JJ5EGxsblWFeCMgH5yxBANe/XV1b2VlNeXcqQwQoZJJHOAigZJPsBXHD4v/AAyZQw8baMQec+f/APWoA7evGf2mvg7rfxw+DEPg3QdVsNNuk1GG9M18HKFUVwR8oJz8wr1jStZ0nXLAXuj6la39uekttKJFz6ZHQ+1GraxpWhaXJqWs6hbWNpH96a4kCKPbJ7+1AHy1+y7+yn4v+BXxO1TxN4g8SaJqdvd6cbJIrFZQ6t5itk7gBjg19Z1wFj8bfhXqOpiwtfGummcttAkZo1J/3mAH612l9qmn6bo82q315DBZQxmWS4dsIqddxPpQBwXxm+CfhH44+DIPDvi241S3itpTcW81hcmJo5Cu3cVOVfAzjcDjJx1rzX9nj9knR/gT471vxRNr48Q3lzGLbTppLYQtawHlwRkguxCjcMcDpzX0BofiDRPEul/2loOqWuo2m8x+dbuHUMOo+tQ3finw9YeJ7Tw7eaxaQ6rdrut7N3xJKOeVHfofyoA2KKzNc8RaH4a0w6jr2q2mnWwOPMuJAgJ9B3J9hXL6R8Zvhjrmprp+m+MtNkuGbaqOxj3H0BYAUAd3RVDWNa0rw/o8mq61fwWNlEQHnnbaq5IAyfckCuZT4ufDV3VV8baNknA/0gCgDyj41/sb/DT4vaxP4jtpbjwt4jn+aa/09FaO5b+9NCeGb/aUqT3JrwOL/gm1rhvws/xZ08Wu7l49IcyEf7plxn8a/QO2ube8tI7q0ningkUMksThlceoI4IrM8QeKvDnhW0iufEes2emRTOY43uZNgdsZwPwoA8m+CX7K/w1+CU/9raXDPrPiJk2NrOo7TJGD1ESAbYwfUckdSa9xqOGaK4to7iCRZIpFDo6nIZSMgg+mKx4/GXheXxe/hZNdsTrKZ3WPmjzRhd33fpzQBuUVT1XVtO0PR59V1e8hs7KABpZ5m2qgJAyT9SKTT9X03VdEh1jT76C4sJo/NjuY2yjL/eB9KALtFef3vxu+FWn6mbC68a6aJg20hCzqD/vKCK7PStY0vXNLj1LR9Qt760k+5NbyB1Ptkd/agC7XjHxt/Zl+HHxxjS9123m0zXoo/Lh1rT9qzbR0SQEESKPRuR2Ir2eua1v4g+C/DmrHTNc8S6dYXgQSGCeXa205wcehwaAPh2b/gm1rY1ArbfFjTzabuHl0l/MA+glwT+Ne+/BL9jr4b/B7WIfElxNP4n8SQ8w6hfxqsds396GIcK3+0SzDsRXsmj/ABC8Ea/qI0/R/FOl3l0wysMU43t9Aev4V0uaAForEsPGHhjU/E114e0/XbG41S03efaRygyR7Thsj2JANbRIAyeBQAtFcHdfGj4X2etnSbjxppi3StsYByyg5xguBt/WtvWvHXhDw79l/tvxFp9kLtPNgMsoAlXj5lI6jkc0AdDRXE/8Lf8AhnnH/CbaN/3/AKuXHxK8B2mkWWqXPivTIrO9Mgtp2mwspQ4fae+CcGgDqq57xx4K0H4h+AtR8HeJ4Jp9K1BBHcRwytEzAMGGGXkcgVlf8Le+Gn/Q66P/AN//AP61dXaanYX2jRataXcMtjLEJ0uFb5GQjO7PpjnNAHjngH9k74MfDX4g2HjXwpo+pW+r2PmeRLNqM0qjejI2VY4Pysa9uwCMGvP7v43/AAqstTNhceNtNEwO07CzqD/vAEV2mmarputaZHqOk39ve2koyk1vIHVvxH8qAOK1f4GfB7X9eu9b1v4aeGL/AFG8kM1xdXNgjySuerMxGSapf8M6/Ar/AKJL4Q/8Fsf+FenVS1XWNL0PS5NS1jULaxtI/vTXEgRR+J7+1AHn3/DOvwK/6JL4Q/8ABbH/AIUf8M6/Ar/okvhD/wAFsf8AhV6x+N3wq1DUxYWvjbTTOW2gSFo1J/3mAH613ySJJGskbBkYAqwOQQe4NAHmf/DOvwK/6JL4Q/8ABbH/AIUf8M6/Ar/okvhD/wAFsf8AhXS+J/iP4H8GziDxJ4lsbCYjd5Lvukx67VyR+NSeGfiD4M8YsyeGvEVjqEijc0Ub4cD12nBx74oA5y1/Z/8AglZX0F7Z/CvwpBcQSLLFLHp0YZHUgqwOOCCAa9IoooAKKqanqdho2kz6nql3FaWduu+WeVsKi+pNN0nV9N13R4NV0i9hvLKcExTwtuRwCQcH6g0AXaKzNd8RaJ4Z0wahr+p22n2rSCITXDbVLHOBn14Nc5/wt74Z5x/wm2jf9/6AO2psiLJE0bfdYEH8a5aP4l+A5dEuNYj8V6Y1jbSpDNcCb5I3cZVSfU1Xj+LXw1llWNPGujFmOBm4A/U0AePH9hX4AG/+2f2br/m+Z5uf7Vk+9nP86+k1AVQB0FR29zb3dslzazRzwyDckkbBlYeoI4NS0AFFFFABRRRQBi+KvCuh+M/C1z4f8QWa3NlcDkdGRh0dD/CwPINfD/xR+DPif4a6hJcSRyaloLN+51OJOFHZZQPuN79D29K++qjnghubd4LiJJYpFKukihlYHqCDwRXDjcBDFLXR9z6zhji7F5DUah71J7xf5p9H+fVbH5g9hRX2l4z/AGYvA3iKaW90F5/Dl45LEWoDwMfeM9P+AkV4/rH7K3xGsZW/su70bVYh0KzNA5/BgR+tfOVsrxFN6RuvI/bMt4+ybGxTdX2cu0tPx+H8Tw2ivUv+Gdvi75mz/hGIv977bFj+db+kfsr/ABHvpV/tS50bSoj1LTNO4H+6oA/WsI4HESdlB/cerV4qyelHmlioW8pJ/grs8O7Zr0b4YfBzxP8AEvUY5YIn0/Q1bE+qTJ8pHdYgfvt+g7ntX0V4N/Zg8D+H5o7zxBLP4iu0wQlyPLt1P/XMdf8AgRNe229vBa2sdvbQxwwxqFSONQqqB0AA4Ar1cLksm+au9Ox8BxB4n0owdHKVeT+21ovRPV/Oy8mZHhLwlofgrwrbeH/D9oLe0gGeeXkY9Xc/xMe5rcoor6KMVFKMVofitatOtOVWrJuTd23u2FFFFMzOf8df8kx8Rf8AYNuP/RbV4h+z98NfAXin4I22qeIfCmm6hetczRm4mjy5UNgDPsK9v8cgn4ZeIQASTptxwP8Arm1fOHwY+NnhX4f/AAmg8Pa1p+ty3iTyzf6Lab0Ic5AySOaYFrxz4ZX4DfFXw54o8D3Vxa6Pql2La70wyloyMjcvPVSpJGeQRwa0Dpp+N37UGt6X4knlbwz4WJjj05HKrM4bblsf3iGJPXAA4qC5Txd+0F8R9DvT4cu9E8G6TOLjzr1drzkEE4BxuY7QoxwASSc1oeKLHxF8GPjnqPxI0vSLjV/C+t/8hKO2XdJbMSCSR2+YbgenJBxwaAPUda+Dfw21vw8+kTeEtNtY9m2OazhWKWI9mVgM5+uQe+a8J8O6xrGlfDH4q/CjWb175NBs5vsc7HJWPdtK8/w8qwHbJFeg6l+1B4CGkn/hHYNT1fVpBiCwS2KkuegY84H0ya5XSPAfiHSvgh8RfHfjGFote8Q2csptsfNDGSWwwHQkn7vYADrmgDjPhV4j1j4RyaD4m1EmXwd4nUx3JQHFtKjFdxH94AZ/2lz3WvRPHcsNx+2v8P7i3kSWKS0DpIhDBlPmEEHuMVufC7whpfjb9kTTPDWtwt5FxFLtfbh4XEjFZFz0IPP6dDXjnhDS/FWg/tQ+EvC3igyyy6JM1pbSlTta3Ku6FW7qc8enI7UCO18C6JD8dfjB4h8W+NC95oujXH2Sw0pmPlDk43DuABk/3i3PAxXSeObP9nDUrG98M6lqXhnRdRti0IltVWGa1lH0HOOMg8GsCM63+zz8UdY1CbSLvUvA2uS+ebi0Te1o+SRuHYjcRzgMMYORiq/iP4kfBbXPtMvhHwHH4o8UXzFo4f7OY7pW/ikPU+4HX1FAxmvX0T/sb6/oSeO9O8Xtps9vGl3aBgYo2lQoj7ickYbB9MDtXNaZ4q/Z5g+GVvY6x4JmudcWx8ueeKwKs823lhLnA5/ire1P4c6n4E/Y48R/21GF1jVbq3ubiCP5hAPNQJHx3HJOOBnHatHwn8dPh5ovw10rQdQ8N6veX1rZJbyoumqySuBggEnkH1IoEdh+zHZ31r8C4nutRiuYZ7uWW3hjkD/Zk4Gw46HILbe273ri/FekzfHn9oHU9AguXTQPDVlJCJ05U3TAgeoPzj8VjPrWZ4I1DXvhl8JPHPji80e40WDWLhV0XS5FYMJG34YIeQFDDkgZCewrW8BfADxT/wAIZaasfiNrfh681JFurq0s0Awzcjcc5LYPPpmgZ2n7PPiq71LwDc+Dtb3R614bmNjNFIfm8sEhD+GCv4D1rxfx5oHiDW/2ovGF34UmaLWNHiTVbcR/fcxrECqf7WGzjvjHeunm8O6x8B/jdoXiW91681zSdbZrPUb2ePDhjjl8ZzjhgfY10Pg1W/4bu8YPtbY2ncNg4PEHfpQA/wAQ/Eax+JP7HXiLVECRajBbxw39qD/qpfNTkD+63Ufl2rhtQ1XWNc+HHwq+Eek3r2EGt2aS306HBaPzGUL9BtckdyFqz8ePAGp+CNU1LxN4UV49B8RJ9m1S1iTcsUhYODgdFZhkHs2fWrs3gbxJffBH4b/ETwbA0+u+H7RWa02/NPEHLYA7kHPy9wxxzigR6ZfeFfgT8N/D1npPiLT/AA/ZQ3KsiS6nGry3JUDcS5GSeQfbPFcb8PI/APhf40s3w/8AihpL6Hq58o+HCzSMZSDjy2zjIPTIzgkZ6U7UPjj8GfFOlW3/AAn+gTpqdoGB0+9sjK0Tnhgh464HXFZ/w08GT+M/jTb/ABDtPB6eFPCmmgnT7YxeVJdvggOR365J6cADPJoGfTHavl74iQ+FJv21rSPxqNPOinTE8/7eQIs7X27iffpX1BjAwK+bPGGg6Z4j/bmsNK1vTUvtPm0tTJDKpKMQjkZI9DQgOY+NFv8ABez8M6dL8M30xPEwvE+z/wBhybjt77tpxnO3HfPtmvfvFnjO58C/ApvEuskDVIrCNfLf+O7ZAMY/38k+wNXtF+F3w+8O6qmp6N4S0y0u4+UmWLcyH1G4nB9xXkPxbhv/AIs/HHS/hXpVzJb6fpsbXmo3SpuWNyvHHQkAgAern0oA4K18LeIPhb4b8G/GiZrmW8ubtpdYhfqIZzlc/wC8uc5/iZfSvpP4iRar4n+Besp4OmaW8vrDdaNC+1pUbBIU+rJuH415zqH7O/iLUdJl0+9+L3iC8tnXH2a5jDRNjkAjPTIFZvw08UeOrX4NeI/BGkwRnxf4VkKW9vdRFxPAH+6oyMkYYDn+760Ac54H1D4Lp8PY/h58QPDbeHNeKNFcXuo2fluZSTiRZiMoRxgHAGMcivadB+D3gP8A4QbSdI1a3h8WWtirixvNRVJWSJzu2qygDb6V5Rr3xw+Hvi74TSaX4y8Py3PisWxtzYmzIZbjGA0b9UG7nHUdMGvUP2f9A13w38DtOsfEEUsFw8kk8dvKMNDG7ZVSP4T3x2zigDyf4ZeAvBmsftGeP9B1Tw1p91punti0tZI8pB+8A+UduKl/aH0bwx4W1H4eaZbaXb2eg21xcSS2kMeUEZkiaT5R1zk8e9b3wgRx+1X8TWKMAXOCVIB/eiqv7TlxFZeMvAGoXMMk1tbXMs0yJHvJRXhJGOh4HQ0AUz4u/ZMAJ/4Rmz/8FEv+FWPifqa+KNb8A/CPwbcHSfDmsWkN25gUpm2OfLTaeQAqsdp77c9K0/8Ahfvwd/6FHVP/AASx/wCNJ8RtD1TxRp/hD40/DSxlku9MgWRdOki2SSW+cgBB3GWBUdm45FAHpOl/CD4a6VoCaTB4O0uaAJtZ7mBZZJPUs7ck/wCRWF4K+Ed58PPibfal4Y14ReFb5CZdEmVnMcmOGRs44PqM4ODnisaw/ag+Hh0oNrUeqaZqSDE2nvbFnVu4U8Z/HFXvht4s+JHxB8cXPiO6sjoXglEK2lnc24E923QNuPIHckcdAM8mgD2Cvmv+zv8Ahd/7TGt6Z4jnlbwx4XPlxacjlVmfO3LY9WDEnrgADHNfSdfOviix8R/Bj426j8RtJ0e41fwvrXOpRWw3PbNnJOO3PzA9OSDjg0gPUtX+D3w21jw++kTeENLgiKbUltYFili9CrgZB/ya4uOy8VfAz4CeI3ufEUOtw2Y/4k++Ih7fewQK2SQQCwbHTqOlJf8A7T/w/wD7KJ0GLVNV1R1xBp6WpVmc9Ax5x+GavaF4b+IHxE+C+uWHxMuYbO41lT9is0txGbJQdyF8ck7gDg8gD1NMDH+Cvwm8PXngm18deMLOPX9e1pTePNqA84RqxyoAPBYjkn3wOBVT43/C/RvDnhZviT4GgTw/rWjyJOzWI8pJULBSdo43AkH3GQc1Q8CfFmf4SaSnw9+K2k32nNp2Y7PUYojJFNFnIGR1AzwR2wCARUXjv4kX/wAbLRfh58LtKvLm0u5E/tDVbiIxwxxhgcZ7LkAknk4wBzQB7p4C8SP4u+GmieJJIxHLe2qSSqvQP0bHtuBxXR153ZeIfDXwzufCfwvdL+S4ns9lvPHDmLEYO9pGz8uSCfxrV+G/jd/iD4K/4SUaPLplvJcSRW6SSiQyojbfM4AwCQePakBQ+Nf/ACQLxT/14t/6EtVPgDx+zn4Zx/zxk/8ARr1c+NQJ+AfikAFj9hbgDJ+8teQ/C/49eDvBnwm0bw1q1hrz3lnGyytb2W9CS7NwcjPBFMD6F8Q+GPD/AIr0pdM8SaTbanZrIJhDcLuUOMgNj1GT+dfNuv8AgLwZa/tl6D4Ut/DWnx6LPYCSWwWP907bZTkj1+Vfyr3P4f8AxO8P/EiK/k0K21KEWTIkv2238rJYZG3k5ry/xMj/APDfPhp9jlf7NHzbTj7s3egBfj94O8L+D/2er+LwvoVnpSXOoWzzLbJtEjDcAT9BXU+HPgv8LtY+GujTXvgzTTPdadBJLPGpSRnaJSW3A5BySap/tPI8nwClVFZib634AJ7n0rC0P9pHwfpHgXStJj0TxHd39pZQ23lR2eFd0jCkBs9Mj0oAz/h/DqPwp/akk+GVtqdzd+HNUt2uLWG4bcYjsLqR6MNjKSMZGDjivpSvnXwFo3i3xD8WtQ+OHjrR5tHsrOzk+w2DKfNKBCBhTzgLu5OCWbpivaPBPjPSvHvhCDxHo0N5FaTMyKt3F5cmVODlcmhgdFRRRSAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAAgEYIyKZ5UX/ADyT/vkU+igAAAGAMUhAIwQCD2NLRQBUg0rS7a5NxbabaQzHrJHCqsfxAzVogEYIBHoaWigBAAowoAHoKCqlgxUEjvilooARlV0KOoZSMEEZBqtbabp1k7PZ2Frbs33mhiVCfrgVaooAQgMMMAR6Gm+VF/zzT8hT6KAEZVYYZQfqM0tFFACMqsMMoYe4zQEUNuCgH1xS0UAIQGGGAI9DQAAMAAD0FLRQBUl0vTLi6W6n060lnXpK8Ksw/EjNWwAOlFFABSbV3bto3euOaWigApAqhiwUAnqcUtFABSBVDFgoBPU4paKAKraZprXwvW0+1NyOk5iXf/31jNWqKKAECqGLBQCepAoZEb7yhseozS0UAM8qL/nkn/fIpwAAwAAB2FLRQBUl0rS57sXU2m2kk46SvCpYfiRmrYAAwBxRRQAUEAjBGR6UUUAVIdK0u2uTc2+m2kMzdZI4VVj+IGat0UUAQ3NnaXsPlXlrDcR/3JkDj8jS29ra2kIhtLaKCMdEiQKPyFS0UAQXdpb31nNa3Me+KaNonGSCVYYIBHI4Paq+iaLpnh3w9Z6Ho1otrYWcQhghUkhFHQZPJ+pq/RQAhAIwQCPQ03yov+eaf98in0UAIqKv3VA+go2ru3bRu9cc0tFACFVYYYAj0IpvlRg5EaflT6KADApAqqMKAB6ClooAKKKKAP/Z" alt="(주)동방파스텍"></span>
-      <div class="brand">제품별 제조원가 프로그램<small>(주)동방파스텍 · 방화문부자재사업부 · 공정단가 기반 원가산정</small></div>
-    </div>
-    <div class="hbtns">
-      <button class="prim" onclick="openAdd()">+ 품목 추가</button>
-      <button class="xls" onclick="exportXlsx()">엑셀 저장</button>
-      <button onclick="shareData()">공유</button>
-      <button onclick="exportJson()">백업</button>
-      <button onclick="document.getElementById('imp').click()">불러오기</button>
-      <button class="danger" onclick="resetAll()">전체 초기화</button>
-      <input type="file" id="imp" accept=".json" class="hidden" onchange="importJson(event)">
-    </div>
-  </div>
-  <div class="button-guide" aria-label="상단 버튼 설명">
-    <span><b>+ 품목 추가</b> 새 제품과 공정 정보를 직접 등록</span>
-    <span><b>엑셀 저장</b> 현재 제품별 원가/BOM 데이터를 엑셀로 다운로드</span>
-    <span><b>공유</b> 현재 데이터를 공유용 파일로 저장</span>
-    <span><b>백업</b> 전체 데이터를 JSON 백업파일로 저장</span>
-    <span><b>불러오기</b> 저장된 백업파일을 다시 불러오기</span>
-    <span><b>전체 초기화</b> 입력·수정 데이터를 초기 상태로 되돌리기</span>
-  </div>
-  <div class="tabs v61-tabs-ready">
-    <button id="tab-cost" class="on" onclick="switchTab('cost')">📊 제품별 원가</button>
-    <button id="tab-groupcost" type="button" onclick="switchTab('groupcost')">품목군 분석</button>
-    <button id="tab-usage" type="button" onclick="switchTab('usage')">🏷 제품 구분별 분석</button>
-    <button id="tab-equipanalysis" type="button" onclick="switchTab('equipanalysis')">설비별 분석</button>
-    <button id="tab-draw" type="button" onclick="switchTab('draw')">🗂 도면분석</button>
-    <button id="tab-ana" onclick="switchTab('ana')">📈 구분 분석</button>
-    <button id="tab-price" onclick="switchTab('price')">⚙ 공정 단가표</button>
-    <button id="tab-quick" onclick="switchTab('quick')">🧾 원가 간편산정</button>
-    <button id="tab-matprice" onclick="switchTab('matprice')">💰 원자재 단가</button>
-    <button id="tab-saleslink" type="button" onclick="switchTab('saleslink')">📥 매출 연동</button>
-    <button id="tab-raw" onclick="switchTab('raw')">🧱 원자재 목록</button>
-    <button id="tab-base" onclick="switchTab('base')">🧮 단가산정 기준 및 관리</button>
-  </div>
+<div class="htop">
+<div class="brand-wrap">
+<span class="logo-badge"><img alt="(주)동방파스텍" src="data:image/jpeg;base64,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"/></span>
+<div class="brand">제품별 제조원가 프로그램<small>(주)동방파스텍 · 방화문부자재사업부 · 공정단가 기반 원가산정</small></div>
+</div>
+<div class="hbtns">
+<button class="prim" onclick="openAdd()">+ 품목 추가</button>
+<button class="xls" onclick="exportXlsx()">엑셀 저장</button>
+<button onclick="shareData()">공유</button>
+<button onclick="exportJson()">백업</button>
+<button onclick="document.getElementById('imp').click()">불러오기</button>
+<button class="danger" onclick="resetAll()">전체 초기화</button>
+<input accept=".json" class="hidden" id="imp" onchange="importJson(event)" type="file"/>
+</div>
+</div>
+<div aria-label="상단 버튼 설명" class="button-guide">
+<span><b>+ 품목 추가</b> 새 제품과 공정 정보를 직접 등록</span>
+<span><b>엑셀 저장</b> 현재 제품별 원가/BOM 데이터를 엑셀로 다운로드</span>
+<span><b>공유</b> 현재 데이터를 공유용 파일로 저장</span>
+<span><b>백업</b> 전체 데이터를 JSON 백업파일로 저장</span>
+<span><b>불러오기</b> 저장된 백업파일을 다시 불러오기</span>
+<span><b>전체 초기화</b> 입력·수정 데이터를 초기 상태로 되돌리기</span>
+</div>
+<div class="tabs v61-tabs-ready">
+<button class="on" id="tab-cost" onclick="switchTab('cost')">📊 제품별 원가</button>
+<button id="tab-groupcost" onclick="switchTab('groupcost')" type="button">품목군 분석</button>
+<button id="tab-usage" onclick="switchTab('usage')" type="button">🏷 제품 구분별 분석</button>
+<button id="tab-equipanalysis" onclick="switchTab('equipanalysis')" type="button">설비별 분석</button>
+<button id="tab-draw" onclick="switchTab('draw')" type="button">🗂 도면분석</button>
+<button id="tab-ana" onclick="switchTab('ana')">📈 구분 분석</button>
+<button id="tab-price" onclick="switchTab('price')">⚙ 공정 단가표</button>
+<button id="tab-quick" onclick="switchTab('quick')">🧾 원가 간편산정</button>
+<button id="tab-matprice" onclick="switchTab('matprice')">💰 원자재 단가</button>
+<button id="tab-saleslink" onclick="switchTab('saleslink')" type="button">📥 매출 연동</button>
+<button id="tab-raw" onclick="switchTab('raw')">🧱 원자재 목록</button>
+<button id="tab-base" onclick="switchTab('base')">🧮 단가산정 기준 및 관리</button>
+</div>
 </header>
-
 <div class="wrap">
-  <!-- ===== COST TAB ===== -->
-  <div id="view-cost">
-    <div class="kpis" id="kpis"></div>
-    <div class="filters">
-      <input class="search" id="q" placeholder="🔍 품번 · 품목 · 규격 · 공정 · 설비 검색 (공백=모두 포함)" oninput="renderCost()">
-      <select id="f-gubun" onchange="renderCost()"></select>
-      <select id="f-part" onchange="renderCost()"></select>
-      <select id="f-item" onchange="renderCost()"></select>
-      <select id="f-equip" onchange="renderCost()"></select>
-      <select id="f-proc" onchange="renderCost()"></select>
-      <select id="f-bom" onchange="renderCost()"></select>
-      <div id="usageMultiWrapV66">
-        <button type="button" id="usageMultiBtnV66" class="v66-multi-btn">제품 구분 (전체)</button>
-        <div class="v66-multi-panel">
-          <div class="v66-multi-top"><label><input type="checkbox" id="usageMultiAllV66" checked> 전체 선택</label><button type="button" id="usageMultiResetV66" class="v66-multi-reset">초기화</button></div>
-          <div id="usageMultiListV66"></div>
-          <div class="v66-multi-foot"><button type="button" id="usageMultiCloseV66" class="v66-multi-close">닫기</button></div>
-        </div>
-      </div>
-      <button class="fclear" onclick="clearF()">필터 초기화</button>
-      <span class="fcount" id="fcount"></span>
-    </div>
-    <div id="groupPanel" class="group-panel hidden"></div>
-    <div id="productPanel">
-      <div id="groupPath" class="group-path hidden"></div>
-      <div class="tablebox">
-      <table class="cost-table">
-        <colgroup>
-          <col style="width:86px"><col style="width:118px"><col style="width:210px"><col style="width:270px"><col style="width:70px">
-          <col style="width:540px"><col style="width:86px"><col style="width:86px"><col style="width:90px">
-          <col style="width:94px"><col style="width:102px"><col style="width:80px">
-        </colgroup>
-        <thead><tr>
-          <th>BOM</th>
-          <th class="sortable" data-key="pn" onclick="setSort('pn')">품번<span class="sar"></span></th>
-          <th class="sortable" data-key="item" onclick="setSort('item')">품명<span class="sar"></span></th>
-          <th class="sortable" data-key="spec" onclick="setSort('spec')">규격<span class="sar"></span></th>
-          <th class="sortable num" data-key="n" onclick="setSort('n')">공정수<span class="sar"></span></th>
-          <th>전체 공정 흐름</th>
-          <th class="sortable num" data-key="mat" onclick="setSort('mat')">재료비<span class="sar"></span></th>
-          <th class="sortable num" data-key="proc" onclick="setSort('proc')">가공비<span class="sar"></span></th>
-          <th class="sortable num" data-key="ovh" onclick="setSort('ovh')">제조경비<span class="sar"></span></th>
-          <th class="sortable num" data-key="cost" onclick="setSort('cost')">제조원가<span class="sar"></span></th>
-          <th class="sortable num" data-key="sale" onclick="setSort('sale')">판매가(참고)<span class="sar"></span></th>
-          <th class="manage-head">관리</th>
-        </tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-      <div id="emptymsg" class="empty hidden">조건에 맞는 제품이 없습니다.</div>
-      <div id="moreRows" class="bom-more hidden"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== RAW MATERIAL TAB ===== -->
-  <div id="view-raw" class="hidden">
-    <div class="card raw-card">
-      <div class="ch">🧱 원자재 목록 <span id="rawMeta" style="margin-left:auto;font-size:12px;font-weight:600;opacity:.85"></span></div>
-      <div class="cb">
-        <div class="raw-tools">
-          <input id="rawSearch" class="raw-search" placeholder="🔍 원자재 품번 · 품명 · 규격 검색 (공백=모두 포함)" oninput="renderRawMaterials()">
-          <select id="rawKind" onchange="renderRawMaterials()">
-            <option value="">전체 구분</option>
-            <option value="원자재">원자재</option>
-            <option value="스크랩">스크랩</option>
-          </select>
-          <button class="raw-only-btn" onclick="showOnlyRawMaterials()">원자재만</button>
-          <button class="fclear" onclick="clearRawFilters()">초기화</button>
-        </div>
-        <div class="tablebox raw-tablebox" style="box-shadow:none;border-radius:9px">
-          <table class="raw-table">
-            <colgroup><col style="width:82px"><col style="width:82px"><col style="width:135px"><col style="width:205px"><col style="width:230px"><col class="raw-used-items-col"><col style="width:64px"></colgroup>
-            <thead><tr><th class="num">BOM사용</th><th>구분</th><th>품번</th><th>품명</th><th>규격</th><th>사용품목</th><th>단위</th></tr></thead>
-            <tbody id="rawBody"></tbody>
-          </table>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== PRICE TAB (별도 페이지) ===== -->
-  <div id="view-price" class="hidden">
-    <div class="note">
-      <b>공정별 단가 입력 (기본값)</b> — 여기서 정한 단가가 <b>모든 제품에 기본으로 적용</b>됩니다. 제품마다 다르게 쓰려면 [제품별 원가]에서 해당 제품을 열어 개별 수정하세요.<br>
-      · <b>시간기준</b> : 참고단가(시간) = 임율(원/시간) × 평균 S/T(초) ÷ 3,600 · 시간/수량 = 3,600 ÷ 평균 S/T · 제품별 실제 가공비는 각 제품 S/T로 자동 계산<br>
-      · <b>포밍기준</b> : 기준 길이 1,000mm · 시간당 250개 · 기준 S/T 14.4초/개 · 참고단가(시간) = 임율 ÷ 250<br>
-      · <b>수량기준</b> : 공정단가 = 산정변수(횟수·변·홀·개소·점) × 단위단가 · 제품 상세에서 산정수량을 개별 조정<br>
+<!-- ===== COST TAB ===== -->
+<div id="view-cost">
+<div class="kpis" id="kpis"></div>
+<div class="filters">
+<input class="search" id="q" oninput="renderCost()" placeholder="🔍 품번 · 품목 · 규격 · 공정 · 설비 검색 (공백=모두 포함)"/>
+<select id="f-gubun" onchange="renderCost()"></select>
+<select id="f-part" onchange="renderCost()"></select>
+<select id="f-item" onchange="renderCost()"></select>
+<select id="f-equip" onchange="renderCost()"></select>
+<select id="f-proc" onchange="renderCost()"></select>
+<select id="f-bom" onchange="renderCost()"></select>
+<div id="usageMultiWrapV66">
+<button class="v66-multi-btn" id="usageMultiBtnV66" type="button">제품 구분 (전체)</button>
+<div class="v66-multi-panel">
+<div class="v66-multi-top"><label><input checked="" id="usageMultiAllV66" type="checkbox"/> 전체 선택</label><button class="v66-multi-reset" id="usageMultiResetV66" type="button">초기화</button></div>
+<div id="usageMultiListV66"></div>
+<div class="v66-multi-foot"><button class="v66-multi-close" id="usageMultiCloseV66" type="button">닫기</button></div>
+</div>
+</div>
+<button class="fclear" onclick="clearF()">필터 초기화</button>
+<span class="fcount" id="fcount"></span>
+</div>
+<div class="group-panel hidden" id="groupPanel"></div>
+<div id="productPanel">
+<div class="group-path hidden" id="groupPath"></div>
+<div class="tablebox">
+<table class="cost-table">
+<colgroup>
+<col style="width:86px"/><col style="width:118px"/><col style="width:210px"/><col style="width:270px"/><col style="width:70px"/>
+<col style="width:540px"/><col style="width:86px"/><col style="width:86px"/><col style="width:90px"/>
+<col style="width:94px"/><col style="width:102px"/><col style="width:80px"/>
+</colgroup>
+<thead><tr>
+<th>BOM</th>
+<th class="sortable" data-key="pn" onclick="setSort('pn')">품번<span class="sar"></span></th>
+<th class="sortable" data-key="item" onclick="setSort('item')">품명<span class="sar"></span></th>
+<th class="sortable" data-key="spec" onclick="setSort('spec')">규격<span class="sar"></span></th>
+<th class="sortable num" data-key="n" onclick="setSort('n')">공정수<span class="sar"></span></th>
+<th>전체 공정 흐름</th>
+<th class="sortable num" data-key="mat" onclick="setSort('mat')">재료비<span class="sar"></span></th>
+<th class="sortable num" data-key="proc" onclick="setSort('proc')">가공비<span class="sar"></span></th>
+<th class="sortable num" data-key="ovh" onclick="setSort('ovh')">제조경비<span class="sar"></span></th>
+<th class="sortable num" data-key="cost" onclick="setSort('cost')">제조원가<span class="sar"></span></th>
+<th class="sortable num" data-key="sale" onclick="setSort('sale')">판매가(참고)<span class="sar"></span></th>
+<th class="manage-head">관리</th>
+</tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+<div class="empty hidden" id="emptymsg">조건에 맞는 제품이 없습니다.</div>
+<div class="bom-more hidden" id="moreRows"></div>
+</div>
+</div>
+</div>
+<!-- ===== RAW MATERIAL TAB ===== -->
+<div class="hidden" id="view-raw">
+<div class="card raw-card">
+<div class="ch">🧱 원자재 목록 <span id="rawMeta" style="margin-left:auto;font-size:12px;font-weight:600;opacity:.85"></span></div>
+<div class="cb">
+<div class="raw-tools">
+<input class="raw-search" id="rawSearch" oninput="renderRawMaterials()" placeholder="🔍 원자재 품번 · 품명 · 규격 검색 (공백=모두 포함)"/>
+<select id="rawKind" onchange="renderRawMaterials()">
+<option value="">전체 구분</option>
+<option value="원자재">원자재</option>
+<option value="스크랩">스크랩</option>
+</select>
+<button class="raw-only-btn" onclick="showOnlyRawMaterials()">원자재만</button>
+<button class="fclear" onclick="clearRawFilters()">초기화</button>
+</div>
+<div class="tablebox raw-tablebox" style="box-shadow:none;border-radius:9px">
+<table class="raw-table">
+<colgroup><col style="width:82px"/><col style="width:82px"/><col style="width:135px"/><col style="width:205px"/><col style="width:230px"/><col class="raw-used-items-col"/><col style="width:64px"/></colgroup>
+<thead><tr><th class="num">BOM사용</th><th>구분</th><th>품번</th><th>품명</th><th>규격</th><th>사용품목</th><th>단위</th></tr></thead>
+<tbody id="rawBody"></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- ===== PRICE TAB (별도 페이지) ===== -->
+<div class="hidden" id="view-price">
+<div class="note">
+<b>공정별 단가 입력 (기본값)</b> — 여기서 정한 단가가 <b>모든 제품에 기본으로 적용</b>됩니다. 제품마다 다르게 쓰려면 [제품별 원가]에서 해당 제품을 열어 개별 수정하세요.<br/>
+      · <b>시간기준</b> : 참고단가(시간) = 임율(원/시간) × 평균 S/T(초) ÷ 3,600 · 시간/수량 = 3,600 ÷ 평균 S/T · 제품별 실제 가공비는 각 제품 S/T로 자동 계산<br/>
+      · <b>포밍기준</b> : 기준 길이 1,000mm · 시간당 250개 · 기준 S/T 14.4초/개 · 참고단가(시간) = 임율 ÷ 250<br/>
+      · <b>수량기준</b> : 공정단가 = 산정변수(횟수·변·홀·개소·점) × 단위단가 · 제품 상세에서 산정수량을 개별 조정<br/>
       · <b>절곡 예시</b> : 절곡변수 2변 × 변당단가 200원 = 400원
     </div>
-    <div class="card">
-      <div class="ch">⚙ 공정 단가표 <span style="margin-left:auto;font-size:12px;font-weight:600;opacity:.85" id="priceMeta"></span></div>
-      <div class="cb">
-        <div class="btnrow" style="margin-top:0;margin-bottom:12px">
-          <button class="bblue" onclick="applyBaseRate()">기준 임률 일괄적용</button>
-          <button class="bghost" onclick="addProc()">+ 공정 추가</button>
-        </div>
-        <div class="tablebox" style="box-shadow:none;border-radius:9px">
-          <table class="ptbl">
-            <thead><tr>
-              <th>공정명</th><th>산정방식</th><th class="num">임율(원/시간)</th><th class="num">정액(원/개)</th>
-              <th class="num">평균 S/T(초)</th><th class="num">시간/수량(개/h)</th><th class="num">참고단가(시간)</th><th class="num">사용</th><th></th>
-            </tr></thead>
-            <tbody id="pricebody"></tbody>
-          </table>
-        </div>
-        <div class="btnrow">
-          <button class="bsave" onclick="savePrices()">단가표 저장</button>
-          <button class="bghost" onclick="resetPrices()">기본값 복원</button>
-          <button class="bblue" onclick="exportSettings()">기준정보 백업</button>
-          <button class="bghost" onclick="document.getElementById('impset').click()">기준정보 불러오기</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- ===== QUICK COST TAB ===== -->
-  <div id="view-quick" class="hidden">
-    <div class="note"><b>독립 원가 간편산정</b> — 제품을 선택하면 등록 공정과 재료 속성을 불러오며, 제품을 선택하지 않아도 강종·치수·공정을 직접 입력하여 제조원가를 계산할 수 있습니다.</div>
-    <div class="quick-layout">
-      <div>
-        <div class="card">
-          <div class="ch">🧾 산정 대상</div>
-          <div class="cb">
-            <div class="basegrid quick-top-grid">
-              <div class="bfld qk-product-field"><label>기존 제품 선택</label>
-                <div class="qk-product-picker">
-                  <div class="qk-product-search-row">
-                    <input id="qk-product-search" type="search" autocomplete="off" style="text-align:left" placeholder="제품명 · 규격 · 품번 검색 (공백=모두 포함)" oninput="quickFilterProducts(false)" onkeydown="quickProductSearchKey(event)">
-                    <button type="button" class="qk-search-clear" onclick="quickClearProductSearch()" title="검색 초기화">초기화</button>
-                  </div>
-                  <select id="qk-product" onchange="quickLoadProduct()"><option value="">직접 산정(제품 미선택)</option></select>
-                </div>
-                <div class="hint"><span id="qk-product-count">전체 제품</span> · 선택 시 품번·공정·개별 원가속성 자동 불러오기</div>
-              </div>
-              <div class="bfld"><label>제품명 / 견적명</label><div class="ir"><input id="qk-name" style="text-align:left" placeholder="예: 경첩보강대"></div></div>
-              <div class="bfld"><label>산정 수량</label><div class="ir"><input id="qk-orderqty" type="number" value="1" min="1" oninput="quickCalc()"><span class="u">개</span></div></div>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="ch">① 재료비 자동산정</div>
-          <div class="cb">
-            <div class="material-grid quick-material-grid">
-              <div class="mfld"><label>산정 방식</label><select id="qk-matmode" onchange="quickMaterialMode();quickCalc()"><option value="dimension">치수 자동계산</option><option value="direct">중량 직접입력</option></select></div>
-              <div class="mfld"><label>강종</label><select id="qk-grade" onchange="quickGradeChange();quickCalc()"></select></div>
-              <div class="mfld"><label>비중</label><input id="qk-density" type="number" step="0.01" oninput="quickCalc()"></div>
-              <div class="mfld"><label>재료단가</label><div class="input-unit"><input id="qk-matkg" type="number" placeholder="기준단가 자동" oninput="quickCalc()"><span>원/kg</span></div></div>
-              <div class="mfld qk-dim"><label>두께</label><div class="input-unit"><input id="qk-t" type="number" step="0.01" oninput="quickCalc()"><span>mm</span></div></div>
-              <div class="mfld qk-dim"><label>재료폭</label><div class="input-unit"><input id="qk-w" type="number" step="0.1" oninput="quickCalc()"><span>mm</span></div></div>
-              <div class="mfld qk-dim"><label>길이</label><div class="input-unit"><input id="qk-l" type="number" step="0.1" oninput="quickCalc()"><span>mm</span></div></div>
-              <div class="mfld qk-dim"><label>제품 1개당 소재수량</label><div class="input-unit"><input id="qk-useqty" type="number" step="0.01" value="1" oninput="quickCalc()"><span>매/개</span></div></div>
-              <div class="mfld qk-dim"><label>여유 기준</label><select id="qk-allow" onchange="quickAllowanceChange();quickCalc()"><option value="auto">공정 자동판단</option><option value="press">프레스 기준</option><option value="laser">레이저 기준</option><option value="none">여유 없음</option><option value="custom">직접 입력</option></select></div>
-              <div class="mfld qk-dim"><label>폭 여유</label><div class="input-unit"><input id="qk-sw" type="number" step="0.1" oninput="quickCalc()"><span>mm</span></div></div>
-              <div class="mfld qk-dim"><label>길이 여유</label><div class="input-unit"><input id="qk-sl" type="number" step="0.1" oninput="quickCalc()"><span>mm</span></div></div>
-              <div class="mfld qk-direct hidden"><label>직접 중량</label><div class="input-unit"><input id="qk-matw" type="number" step="0.0001" oninput="quickCalc()"><span>kg/개</span></div></div>
-              <div class="mfld"><label>스크랩 회수중량</label><div class="input-unit"><input id="qk-recoverw" type="number" step="0.0001" value="0" oninput="quickCalc()"><span>kg/개</span></div></div>
-            </div>
-            <div class="material-result" id="qk-material-result"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="ch">② 공정비 산정</div>
-          <div class="cb">
-            <div class="quick-order-guide"><span class="qog-icon">↕</span><span><b>공정순서 변경</b> · 왼쪽 손잡이를 드래그하거나 ▲·▼ 버튼으로 이동하세요. 변경된 순서대로 제품에 저장됩니다.</span></div>
-            <div class="step-table-wrap quick-step-wrap"><table class="stepm quick-step-table"><thead><tr><th class="qk-order-head">순서</th><th>공정명</th><th class="num">S/T(초)</th><th class="num">수량</th><th>방식</th><th class="num">기본단가</th><th class="num">적용단가</th><th class="qk-act-head">이동·삭제</th></tr></thead><tbody id="qk-stepbody"></tbody><tfoot><tr><td colspan="6" class="num strong">공정비 합계</td><td class="num cost" id="qk-procsum">0</td><td></td></tr></tfoot></table></div>
-            <button class="bghost full-dash-btn" onclick="quickAddStep()">+ 공정 추가</button>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="card quick-summary-card">
-          <div class="ch">③ 제조원가 결과</div>
-          <div class="cb">
-            <div class="basegrid quick-rate-grid">
-              <div class="bfld"><label>제조경비율</label><div class="ir"><input id="qk-ovh" type="number" oninput="quickCalc()"><span class="u">%</span></div></div>
-              <div class="bfld"><label>불량률</label><div class="ir"><input id="qk-defect" type="number" oninput="quickCalc()"><span class="u">%</span></div></div>
-              <div class="bfld qk-rate-profit"><label>목표 이윤율</label><div class="ir"><input id="qk-profit" type="number" oninput="quickCalc()"><span class="u">%</span></div></div>
-            </div>
-            <div class="summ" id="qk-summary"></div>
-            <div class="quick-total" id="qk-total"></div>
-            <div class="btnrow">
-              <button class="bsave" onclick="quickSaveToProduct()">선택 제품에 저장</button>
-              <button class="bghost" onclick="quickReset()">새로 계산</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== MATERIAL PRICE TAB ===== -->
-  <div id="view-matprice" class="hidden">
-    <div class="note"><b>원자재 단가 관리</b> — 강종·업체별 월 매입단가를 기록하고, 가장 최근 월의 평균단가를 제품 원가 기준에 적용합니다. 입력값은 이 브라우저에 자동 저장됩니다.</div>
-    <div class="card">
-      <div class="ch">💰 원자재 월별 매입단가 <span id="mp-updated" style="margin-left:auto;font-size:11px;font-weight:600;opacity:.85"></span></div>
-      <div class="cb">
-        <div class="raw-tools material-price-tools">
-          <div class="mp-year-picker"><span>기준연도</span><select id="mp-year" onchange="renderMaterialPricePage()"></select></div>
-          <div class="mp-tool-actions">
-            <button class="mp-btn mp-btn-primary" onclick="applyAllLatestMaterials()"><span class="mp-ico">✓</span><span>최근단가 전체 적용</span></button>
-            <button class="mp-btn mp-btn-market" onclick="applyAllMarketMaterials()"><span class="mp-ico">✓</span><span>시장단가 전체 적용</span></button>
-            <button class="mp-btn mp-btn-export" onclick="exportMaterialPrices()"><span class="mp-ico">⇩</span><span>엑셀 내보내기</span></button>
-            <button class="mp-btn mp-btn-import" onclick="document.getElementById('mp-import').click()"><span class="mp-ico">⇧</span><span>엑셀 불러오기</span></button>
-          </div>
-          <input id="mp-import" type="file" accept=".xlsx,.xls" class="hidden" onchange="importMaterialPrices(event)">
-        </div>
-        <div class="tablebox material-price-box"><table class="material-price-table"><colgroup><col class="mp-col-grade"><col class="mp-col-vendor"><col span="12" class="mp-col-month"><col class="mp-col-latest"><col class="mp-col-market"><col class="mp-col-standard"></colgroup><thead><tr><th>구분(강종)</th><th>업체명</th><th class="num">1월</th><th class="num">2월</th><th class="num">3월</th><th class="num">4월</th><th class="num">5월</th><th class="num">6월</th><th class="num">7월</th><th class="num">8월</th><th class="num">9월</th><th class="num">10월</th><th class="num">11월</th><th class="num">12월</th><th class="num">최근단가</th><th class="num">시장단가</th><th class="num">적용 기준단가</th></tr></thead><tbody id="mp-body"></tbody></table></div>
-        <div class="note raw-note">적용 방식: 최근단가는 해당 강종의 가장 최근 월 업체 평균입니다. 시장단가는 기본적으로 <b>최근단가 + 100원/kg</b>이며 직접 수정할 수 있습니다.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== BASE TAB ===== -->
-  <div id="view-base" class="hidden">
-    <div class="note">전 제품 공통 산정 기준입니다. 변경 후 <b>[단가산정 기준 저장]</b>을 누르면 모든 제품의 재료비·제조원가가 다시 계산됩니다. 제품 상세창에서 입력한 개별값은 해당 제품에 우선 적용됩니다.</div>
-    <div class="criteria-grid">
-      <div class="card">
-        <div class="ch">🧮 공통 원가 기준</div>
-        <div class="cb">
-          <div class="basegrid">
-            <div class="bfld"><label>기본 가공임률</label><div class="ir"><input id="b-wage" type="number"><span class="u">원/시간</span></div><div class="hint">시간기준 공정단가 = S/T × (임률÷3,600)</div></div>
-            <div class="bfld"><label>재료 기본단가</label><div class="ir"><input id="b-matkg" type="number"><span class="u">원/kg</span></div><div class="hint">강종 미선택 또는 사용자 강종의 대체단가</div></div>
-            <div class="bfld"><label>제조경비율</label><div class="ir"><input id="b-ovh" type="number"><span class="u">%</span></div><div class="hint">(재료비+가공비)에 적용</div></div>
-            <div class="bfld"><label>불량률</label><div class="ir"><input id="b-defect" type="number"><span class="u">%</span></div><div class="hint">제조원가 = 소계 ÷ (1−불량률)</div></div>
-            <div class="bfld"><label>목표 이윤율</label><div class="ir"><input id="b-profit" type="number"><span class="u">%</span></div><div class="hint">판매가 참고 = 제조원가 × (1+이윤율)</div></div>
-            <div class="bfld"><label>스크랩 회수단가</label><div class="ir"><input id="b-scrap" type="number"><span class="u">원/kg</span></div><div class="hint">제품별 회수중량 입력 시 재료비에서 차감</div></div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ch">📐 재료 치수 여유 기준</div>
-        <div class="cb">
-          <div class="basegrid">
-            <div class="bfld"><label>프레스 폭 여유</label><div class="ir"><input id="b-press-sw" type="number"><span class="u">mm</span></div></div>
-            <div class="bfld"><label>프레스 길이 여유</label><div class="ir"><input id="b-press-sl" type="number"><span class="u">mm</span></div></div>
-            <div class="bfld"><label>레이저 폭 여유</label><div class="ir"><input id="b-laser-sw" type="number"><span class="u">mm</span></div></div>
-            <div class="bfld"><label>레이저 길이 여유</label><div class="ir"><input id="b-laser-sl" type="number"><span class="u">mm</span></div></div>
-          </div>
-          <div class="formula-note">중량(kg/개) = (재료폭 + 폭여유) × (길이 + 길이여유) × 두께 × 비중 ÷ 1,000,000 × 소재수량</div>
-        </div>
-      </div>
-    </div>
-    <div class="criteria-reference-grid">
-      <div class="card criteria-reference-card material-reference-card is-collapsed">
-        <div class="ch criteria-toggle-head" role="button" tabindex="0" aria-expanded="false" aria-controls="criteria-material-panel" onclick="toggleMaterialCriteria(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMaterialCriteria(this)}">
-          <span>🧱 강종별 비중 · 기준단가</span><span class="criteria-toggle-icon" aria-hidden="true">▼</span>
-        </div>
-        <div class="cb criteria-collapsible-body hidden" id="criteria-material-panel">
-          <div class="tablebox" style="box-shadow:none"><table class="criteria-table material-criteria-table"><colgroup><col class="cm-grade"><col class="cm-desc"><col class="cm-density"><col class="cm-price"><col class="cm-latest"></colgroup><thead><tr><th>강종</th><th>설명</th><th class="num">비중</th><th class="num">기준단가</th><th class="num">최근단가</th></tr></thead><tbody id="criteria-material-body"></tbody></table></div>
-        </div>
-      </div>
-      <div class="card criteria-reference-card press-reference-card">
-        <div class="ch">🏭 프레스 설비 참고 기준</div>
-        <div class="cb"><div class="tablebox" style="box-shadow:none"><table class="criteria-table press-criteria-table"><thead><tr><th>설비</th><th class="num">시간당 설비차지</th><th class="num">기준 SPM</th></tr></thead><tbody id="criteria-press-body"></tbody></table></div><div class="formula-note">프레스 개당 설비비 = 시간당 설비차지 ÷ 시간당 생산량<br>시간당 생산량 = SPM × 60 × 가동률 ÷ 타발수</div></div>
-      </div>
-      <div class="card criteria-reference-card laser-reference-card">
-        <div class="ch">✨ 레이저 두께별 참고 기준</div>
-        <div class="cb"><div class="tablebox" style="box-shadow:none"><table class="criteria-table laser-criteria-table"><thead><tr><th class="num">두께(T)</th><th class="num">둘레 mm당 단가</th></tr></thead><tbody id="criteria-laser-body"></tbody></table></div><div class="formula-note">레이저 가공비 = 두께별 단가 × 제품 둘레[(폭+길이)×2]</div></div>
-      </div>
-    </div>
-    <div class="card forming-reference-card">
-      <div class="ch">↔ 포밍 참고 기준</div>
-      <div class="cb">
-        <div class="basegrid forming-basegrid">
-          <div class="bfld"><label>기준 제품 길이</label><div class="ir"><input id="b-forming-length" type="number" min="1" step="1" oninput="updateFormingPreviewV55()"><span class="u">mm</span></div><div class="hint">포밍 생산성 기준이 되는 제품 길이</div></div>
-          <div class="bfld"><label>시간당 생산수량</label><div class="ir"><input id="b-forming-qty" type="number" min="1" step="1" oninput="updateFormingPreviewV55()"><span class="u">개/h</span></div><div class="hint">기준 길이 제품의 1시간 생산수량</div></div>
-          <div class="bfld"><label>기준 S/T</label><div class="ir"><input id="b-forming-st" type="text" readonly><span class="u">초/개</span></div><div class="hint">3,600 ÷ 시간당 생산수량</div></div>
-        </div>
-        <div class="formula-note" id="forming-formula-note">포밍 기준 S/T = 3,600 ÷ 250개 = 14.4초/개 · 참고단가(시간) = 임율(원/시간) ÷ 250개</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ch">📘 제조원가 산정 순서</div>
-      <div class="cb criteria-formulas">
-        <div><b>① 재료비</b><span>총 소재중량 × 강종단가 − 스크랩 회수중량 × 회수단가</span></div>
-        <div><b>② 가공비</b><span>시간기준: S/T × 원/초 · 정액기준: 개당 고정단가</span></div>
-        <div><b>③ 제조경비</b><span>(재료비 + 가공비) × 제조경비율</span></div>
-        <div><b>④ 불량 반영</b><span>(재료비 + 가공비 + 제조경비) ÷ (1−불량률)</span></div>
-        <div><b>⑤ 판매가 참고</b><span>제조원가 × (1+목표 이윤율)</span></div>
-      </div>
-    </div>
-    <div class="btnrow criteria-actions">
-      <button class="bsave" onclick="saveBase()">단가산정 기준 저장</button>
-      <button class="bghost" onclick="resetBase()">기본값 복원</button>
-      <button class="bblue" onclick="exportSettings()">기준정보 백업</button>
-      <button class="bghost" onclick="document.getElementById('impset').click()">기준정보 불러오기</button>
-      <input type="file" id="impset" accept=".json" class="hidden" onchange="importSettings(event)">
-    </div>
-  </div>
-  <!-- ===== ANALYSIS TAB ===== -->
-  <div id="view-ana" class="hidden">
-    <div class="kpis" id="kpis2"></div>
-    <div class="subtabs">
-      <button class="on" data-ax="gubun" onclick="setAxis('gubun')">구분별</button>
-      <button data-ax="part" onclick="setAxis('part')">파트별</button>
-      <button data-ax="item" onclick="setAxis('item')">제품(품목)별</button>
-      <button data-ax="proc" onclick="setAxis('proc')">공정별</button>
-      <button data-ax="equip" onclick="setAxis('equip')">설비별</button>
-    </div>
-    <div class="tablebox">
-      <table>
-        <thead><tr id="ana-head"></tr></thead>
-        <tbody id="ana-body"></tbody>
-      </table>
-    </div>
-  </div>
+<div class="card">
+<div class="ch">⚙ 공정 단가표 <span id="priceMeta" style="margin-left:auto;font-size:12px;font-weight:600;opacity:.85"></span></div>
+<div class="cb">
+<div class="btnrow" style="margin-top:0;margin-bottom:12px">
+<button class="bblue" onclick="applyBaseRate()">기준 임률 일괄적용</button>
+<button class="bghost" onclick="addProc()">+ 공정 추가</button>
 </div>
-
+<div class="tablebox" style="box-shadow:none;border-radius:9px">
+<table class="ptbl">
+<thead><tr>
+<th>공정명</th><th>산정방식</th><th class="num">임율(원/시간)</th><th class="num">정액(원/개)</th>
+<th class="num">평균 S/T(초)</th><th class="num">시간/수량(개/h)</th><th class="num">참고단가(시간)</th><th class="num">사용</th><th></th>
+</tr></thead>
+<tbody id="pricebody"></tbody>
+</table>
+</div>
+<div class="btnrow">
+<button class="bsave" onclick="savePrices()">단가표 저장</button>
+<button class="bghost" onclick="resetPrices()">기본값 복원</button>
+<button class="bblue" onclick="exportSettings()">기준정보 백업</button>
+<button class="bghost" onclick="document.getElementById('impset').click()">기준정보 불러오기</button>
+</div>
+</div>
+</div>
+</div>
+<!-- ===== QUICK COST TAB ===== -->
+<div class="hidden" id="view-quick">
+<div class="note"><b>독립 원가 간편산정</b> — 제품을 선택하면 등록 공정과 재료 속성을 불러오며, 제품을 선택하지 않아도 강종·치수·공정을 직접 입력하여 제조원가를 계산할 수 있습니다.</div>
+<div class="quick-layout">
+<div>
+<div class="card">
+<div class="ch">🧾 산정 대상</div>
+<div class="cb">
+<div class="basegrid quick-top-grid">
+<div class="bfld qk-product-field"><label>기존 제품 선택</label>
+<div class="qk-product-picker">
+<div class="qk-product-search-row">
+<input autocomplete="off" id="qk-product-search" oninput="quickFilterProducts(false)" onkeydown="quickProductSearchKey(event)" placeholder="제품명 · 규격 · 품번 검색 (공백=모두 포함)" style="text-align:left" type="search"/>
+<button class="qk-search-clear" onclick="quickClearProductSearch()" title="검색 초기화" type="button">초기화</button>
+</div>
+<select id="qk-product" onchange="quickLoadProduct()"><option value="">직접 산정(제품 미선택)</option></select>
+</div>
+<div class="hint"><span id="qk-product-count">전체 제품</span> · 선택 시 품번·공정·개별 원가속성 자동 불러오기</div>
+</div>
+<div class="bfld"><label>제품명 / 견적명</label><div class="ir"><input id="qk-name" placeholder="예: 경첩보강대" style="text-align:left"/></div></div>
+<div class="bfld"><label>산정 수량</label><div class="ir"><input id="qk-orderqty" min="1" oninput="quickCalc()" type="number" value="1"/><span class="u">개</span></div></div>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="ch">① 재료비 자동산정</div>
+<div class="cb">
+<div class="material-grid quick-material-grid">
+<div class="mfld"><label>산정 방식</label><select id="qk-matmode" onchange="quickMaterialMode();quickCalc()"><option value="dimension">치수 자동계산</option><option value="direct">중량 직접입력</option></select></div>
+<div class="mfld"><label>강종</label><select id="qk-grade" onchange="quickGradeChange();quickCalc()"></select></div>
+<div class="mfld"><label>비중</label><input id="qk-density" oninput="quickCalc()" step="0.01" type="number"/></div>
+<div class="mfld"><label>재료단가</label><div class="input-unit"><input id="qk-matkg" oninput="quickCalc()" placeholder="기준단가 자동" type="number"/><span>원/kg</span></div></div>
+<div class="mfld qk-dim"><label>두께</label><div class="input-unit"><input id="qk-t" oninput="quickCalc()" step="0.01" type="number"/><span>mm</span></div></div>
+<div class="mfld qk-dim"><label>재료폭</label><div class="input-unit"><input id="qk-w" oninput="quickCalc()" step="0.1" type="number"/><span>mm</span></div></div>
+<div class="mfld qk-dim"><label>길이</label><div class="input-unit"><input id="qk-l" oninput="quickCalc()" step="0.1" type="number"/><span>mm</span></div></div>
+<div class="mfld qk-dim"><label>제품 1개당 소재수량</label><div class="input-unit"><input id="qk-useqty" oninput="quickCalc()" step="0.01" type="number" value="1"/><span>매/개</span></div></div>
+<div class="mfld qk-dim"><label>여유 기준</label><select id="qk-allow" onchange="quickAllowanceChange();quickCalc()"><option value="auto">공정 자동판단</option><option value="press">프레스 기준</option><option value="laser">레이저 기준</option><option value="none">여유 없음</option><option value="custom">직접 입력</option></select></div>
+<div class="mfld qk-dim"><label>폭 여유</label><div class="input-unit"><input id="qk-sw" oninput="quickCalc()" step="0.1" type="number"/><span>mm</span></div></div>
+<div class="mfld qk-dim"><label>길이 여유</label><div class="input-unit"><input id="qk-sl" oninput="quickCalc()" step="0.1" type="number"/><span>mm</span></div></div>
+<div class="mfld qk-direct hidden"><label>직접 중량</label><div class="input-unit"><input id="qk-matw" oninput="quickCalc()" step="0.0001" type="number"/><span>kg/개</span></div></div>
+<div class="mfld"><label>스크랩 회수중량</label><div class="input-unit"><input id="qk-recoverw" oninput="quickCalc()" step="0.0001" type="number" value="0"/><span>kg/개</span></div></div>
+</div>
+<div class="material-result" id="qk-material-result"></div>
+</div>
+</div>
+<div class="card">
+<div class="ch">② 공정비 산정</div>
+<div class="cb">
+<div class="quick-order-guide"><span class="qog-icon">↕</span><span><b>공정순서 변경</b> · 왼쪽 손잡이를 드래그하거나 ▲·▼ 버튼으로 이동하세요. 변경된 순서대로 제품에 저장됩니다.</span></div>
+<div class="step-table-wrap quick-step-wrap"><table class="stepm quick-step-table"><thead><tr><th class="qk-order-head">순서</th><th>공정명</th><th class="num">S/T(초)</th><th class="num">수량</th><th>방식</th><th class="num">기본단가</th><th class="num">적용단가</th><th class="qk-act-head">이동·삭제</th></tr></thead><tbody id="qk-stepbody"></tbody><tfoot><tr><td class="num strong" colspan="6">공정비 합계</td><td class="num cost" id="qk-procsum">0</td><td></td></tr></tfoot></table></div>
+<button class="bghost full-dash-btn" onclick="quickAddStep()">+ 공정 추가</button>
+</div>
+</div>
+</div>
+<div>
+<div class="card quick-summary-card">
+<div class="ch">③ 제조원가 결과</div>
+<div class="cb">
+<div class="basegrid quick-rate-grid">
+<div class="bfld"><label>제조경비율</label><div class="ir"><input id="qk-ovh" oninput="quickCalc()" type="number"/><span class="u">%</span></div></div>
+<div class="bfld"><label>불량률</label><div class="ir"><input id="qk-defect" oninput="quickCalc()" type="number"/><span class="u">%</span></div></div>
+<div class="bfld qk-rate-profit"><label>목표 이윤율</label><div class="ir"><input id="qk-profit" oninput="quickCalc()" type="number"/><span class="u">%</span></div></div>
+</div>
+<div class="summ" id="qk-summary"></div>
+<div class="quick-total" id="qk-total"></div>
+<div class="btnrow">
+<button class="bsave" onclick="quickSaveToProduct()">선택 제품에 저장</button>
+<button class="bghost" onclick="quickReset()">새로 계산</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ===== MATERIAL PRICE TAB ===== -->
+<div class="hidden" id="view-matprice">
+<div class="note"><b>원자재 단가 관리</b> — 강종·업체별 월 매입단가를 기록하고, 가장 최근 월의 평균단가를 제품 원가 기준에 적용합니다. 입력값은 이 브라우저에 자동 저장됩니다.</div>
+<div class="card">
+<div class="ch">💰 원자재 월별 매입단가 <span id="mp-updated" style="margin-left:auto;font-size:11px;font-weight:600;opacity:.85"></span></div>
+<div class="cb">
+<div class="raw-tools material-price-tools">
+<div class="mp-year-picker"><span>기준연도</span><select id="mp-year" onchange="renderMaterialPricePage()"></select></div>
+<div class="mp-tool-actions">
+<button class="mp-btn mp-btn-primary" onclick="applyAllLatestMaterials()"><span class="mp-ico">✓</span><span>최근단가 전체 적용</span></button>
+<button class="mp-btn mp-btn-market" onclick="applyAllMarketMaterials()"><span class="mp-ico">✓</span><span>시장단가 전체 적용</span></button>
+<button class="mp-btn mp-btn-export" onclick="exportMaterialPrices()"><span class="mp-ico">⇩</span><span>엑셀 내보내기</span></button>
+<button class="mp-btn mp-btn-import" onclick="document.getElementById('mp-import').click()"><span class="mp-ico">⇧</span><span>엑셀 불러오기</span></button>
+</div>
+<input accept=".xlsx,.xls" class="hidden" id="mp-import" onchange="importMaterialPrices(event)" type="file"/>
+</div>
+<div class="tablebox material-price-box"><table class="material-price-table"><colgroup><col class="mp-col-grade"/><col class="mp-col-vendor"/><col class="mp-col-month" span="12"/><col class="mp-col-latest"/><col class="mp-col-market"/><col class="mp-col-standard"/></colgroup><thead><tr><th>구분(강종)</th><th>업체명</th><th class="num">1월</th><th class="num">2월</th><th class="num">3월</th><th class="num">4월</th><th class="num">5월</th><th class="num">6월</th><th class="num">7월</th><th class="num">8월</th><th class="num">9월</th><th class="num">10월</th><th class="num">11월</th><th class="num">12월</th><th class="num">최근단가</th><th class="num">시장단가</th><th class="num">적용 기준단가</th></tr></thead><tbody id="mp-body"></tbody></table></div>
+<div class="note raw-note">적용 방식: 최근단가는 해당 강종의 가장 최근 월 업체 평균입니다. 시장단가는 기본적으로 <b>최근단가 + 100원/kg</b>이며 직접 수정할 수 있습니다.</div>
+</div>
+</div>
+</div>
+<!-- ===== BASE TAB ===== -->
+<div class="hidden" id="view-base">
+<div class="note">전 제품 공통 산정 기준입니다. 변경 후 <b>[단가산정 기준 저장]</b>을 누르면 모든 제품의 재료비·제조원가가 다시 계산됩니다. 제품 상세창에서 입력한 개별값은 해당 제품에 우선 적용됩니다.</div>
+<div class="criteria-grid">
+<div class="card">
+<div class="ch">🧮 공통 원가 기준</div>
+<div class="cb">
+<div class="basegrid">
+<div class="bfld"><label>기본 가공임률</label><div class="ir"><input id="b-wage" type="number"/><span class="u">원/시간</span></div><div class="hint">시간기준 공정단가 = S/T × (임률÷3,600)</div></div>
+<div class="bfld"><label>재료 기본단가</label><div class="ir"><input id="b-matkg" type="number"/><span class="u">원/kg</span></div><div class="hint">강종 미선택 또는 사용자 강종의 대체단가</div></div>
+<div class="bfld"><label>제조경비율</label><div class="ir"><input id="b-ovh" type="number"/><span class="u">%</span></div><div class="hint">(재료비+가공비)에 적용</div></div>
+<div class="bfld"><label>불량률</label><div class="ir"><input id="b-defect" type="number"/><span class="u">%</span></div><div class="hint">제조원가 = 소계 ÷ (1−불량률)</div></div>
+<div class="bfld"><label>목표 이윤율</label><div class="ir"><input id="b-profit" type="number"/><span class="u">%</span></div><div class="hint">판매가 참고 = 제조원가 × (1+이윤율)</div></div>
+<div class="bfld"><label>스크랩 회수단가</label><div class="ir"><input id="b-scrap" type="number"/><span class="u">원/kg</span></div><div class="hint">제품별 회수중량 입력 시 재료비에서 차감</div></div>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="ch">📐 재료 치수 여유 기준</div>
+<div class="cb">
+<div class="basegrid">
+<div class="bfld"><label>프레스 폭 여유</label><div class="ir"><input id="b-press-sw" type="number"/><span class="u">mm</span></div></div>
+<div class="bfld"><label>프레스 길이 여유</label><div class="ir"><input id="b-press-sl" type="number"/><span class="u">mm</span></div></div>
+<div class="bfld"><label>레이저 폭 여유</label><div class="ir"><input id="b-laser-sw" type="number"/><span class="u">mm</span></div></div>
+<div class="bfld"><label>레이저 길이 여유</label><div class="ir"><input id="b-laser-sl" type="number"/><span class="u">mm</span></div></div>
+</div>
+<div class="formula-note">중량(kg/개) = (재료폭 + 폭여유) × (길이 + 길이여유) × 두께 × 비중 ÷ 1,000,000 × 소재수량</div>
+</div>
+</div>
+</div>
+<div class="criteria-reference-grid">
+<div class="card criteria-reference-card material-reference-card is-collapsed">
+<div aria-controls="criteria-material-panel" aria-expanded="false" class="ch criteria-toggle-head" onclick="toggleMaterialCriteria(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMaterialCriteria(this)}" role="button" tabindex="0">
+<span>🧱 강종별 비중 · 기준단가</span><span aria-hidden="true" class="criteria-toggle-icon">▼</span>
+</div>
+<div class="cb criteria-collapsible-body hidden" id="criteria-material-panel">
+<div class="tablebox" style="box-shadow:none"><table class="criteria-table material-criteria-table"><colgroup><col class="cm-grade"/><col class="cm-desc"/><col class="cm-density"/><col class="cm-price"/><col class="cm-latest"/></colgroup><thead><tr><th>강종</th><th>설명</th><th class="num">비중</th><th class="num">기준단가</th><th class="num">최근단가</th></tr></thead><tbody id="criteria-material-body"></tbody></table></div>
+</div>
+</div>
+<div class="card criteria-reference-card press-reference-card">
+<div class="ch">🏭 프레스 설비 참고 기준</div>
+<div class="cb"><div class="tablebox" style="box-shadow:none"><table class="criteria-table press-criteria-table"><thead><tr><th>설비</th><th class="num">시간당 설비차지</th><th class="num">기준 SPM</th></tr></thead><tbody id="criteria-press-body"></tbody></table></div><div class="formula-note">프레스 개당 설비비 = 시간당 설비차지 ÷ 시간당 생산량<br/>시간당 생산량 = SPM × 60 × 가동률 ÷ 타발수</div></div>
+</div>
+<div class="card criteria-reference-card laser-reference-card">
+<div class="ch">✨ 레이저 두께별 참고 기준</div>
+<div class="cb"><div class="tablebox" style="box-shadow:none"><table class="criteria-table laser-criteria-table"><thead><tr><th class="num">두께(T)</th><th class="num">둘레 mm당 단가</th></tr></thead><tbody id="criteria-laser-body"></tbody></table></div><div class="formula-note">레이저 가공비 = 두께별 단가 × 제품 둘레[(폭+길이)×2]</div></div>
+</div>
+</div>
+<div class="card forming-reference-card">
+<div class="ch">↔ 포밍 참고 기준</div>
+<div class="cb">
+<div class="basegrid forming-basegrid">
+<div class="bfld"><label>기준 제품 길이</label><div class="ir"><input id="b-forming-length" min="1" oninput="updateFormingPreviewV55()" step="1" type="number"/><span class="u">mm</span></div><div class="hint">포밍 생산성 기준이 되는 제품 길이</div></div>
+<div class="bfld"><label>시간당 생산수량</label><div class="ir"><input id="b-forming-qty" min="1" oninput="updateFormingPreviewV55()" step="1" type="number"/><span class="u">개/h</span></div><div class="hint">기준 길이 제품의 1시간 생산수량</div></div>
+<div class="bfld"><label>기준 S/T</label><div class="ir"><input id="b-forming-st" readonly="" type="text"/><span class="u">초/개</span></div><div class="hint">3,600 ÷ 시간당 생산수량</div></div>
+</div>
+<div class="formula-note" id="forming-formula-note">포밍 기준 S/T = 3,600 ÷ 250개 = 14.4초/개 · 참고단가(시간) = 임율(원/시간) ÷ 250개</div>
+</div>
+</div>
+<div class="card">
+<div class="ch">📘 제조원가 산정 순서</div>
+<div class="cb criteria-formulas">
+<div><b>① 재료비</b><span>총 소재중량 × 강종단가 − 스크랩 회수중량 × 회수단가</span></div>
+<div><b>② 가공비</b><span>시간기준: S/T × 원/초 · 정액기준: 개당 고정단가</span></div>
+<div><b>③ 제조경비</b><span>(재료비 + 가공비) × 제조경비율</span></div>
+<div><b>④ 불량 반영</b><span>(재료비 + 가공비 + 제조경비) ÷ (1−불량률)</span></div>
+<div><b>⑤ 판매가 참고</b><span>제조원가 × (1+목표 이윤율)</span></div>
+</div>
+</div>
+<div class="btnrow criteria-actions">
+<button class="bsave" onclick="saveBase()">단가산정 기준 저장</button>
+<button class="bghost" onclick="resetBase()">기본값 복원</button>
+<button class="bblue" onclick="exportSettings()">기준정보 백업</button>
+<button class="bghost" onclick="document.getElementById('impset').click()">기준정보 불러오기</button>
+<input accept=".json" class="hidden" id="impset" onchange="importSettings(event)" type="file"/>
+</div>
+</div>
+<!-- ===== ANALYSIS TAB ===== -->
+<div class="hidden" id="view-ana">
+<div class="kpis" id="kpis2"></div>
+<div class="subtabs">
+<button class="on" data-ax="gubun" onclick="setAxis('gubun')">구분별</button>
+<button data-ax="part" onclick="setAxis('part')">파트별</button>
+<button data-ax="item" onclick="setAxis('item')">제품(품목)별</button>
+<button data-ax="proc" onclick="setAxis('proc')">공정별</button>
+<button data-ax="equip" onclick="setAxis('equip')">설비별</button>
+</div>
+<div class="tablebox">
+<table>
+<thead><tr id="ana-head"></tr></thead>
+<tbody id="ana-body"></tbody>
+</table>
+</div>
+</div>
+</div>
 <div id="toast"></div>
-
 <!-- DETAIL MODAL -->
-<div id="overlay" class="overlay hidden">
-  <div class="modal">
-    <div class="mhead"><div><h3 id="m-title">제품 원가</h3><div class="sub" id="m-sub"></div></div><button class="x" onclick="closeModal()">✕</button></div>
-    <div class="mbody">
-      <div class="product-attr-layout">
-        <div class="product-attr-left">
-      <div class="hint-drag">⠿ 끌어서 공정 순서 변경 · 공정명/설비/S·T 직접 수정 · 적용단가 입력 시 기본단가 대신 적용 · 행 추가/삭제 가능</div>
-      <div class="step-table-wrap">
-        <table class="stepm">
-          <thead><tr><th style="width:22px"></th><th style="width:30px">#</th><th style="min-width:150px">공정명</th><th style="min-width:110px">구분</th><th style="min-width:120px">파트</th><th style="min-width:120px">설비</th><th class="num">S/T(초)</th><th>방식</th><th class="num">기본단가</th><th class="num">적용단가(개당)</th><th style="width:34px"></th></tr></thead>
-          <tbody id="stepbody"></tbody>
-          <tfoot><tr><td colspan="9" style="text-align:right;font-weight:700;color:var(--mut);padding-top:10px">가공비 합계</td><td class="num" style="font-weight:800;color:#0b5e34;padding-top:10px" id="m-procsum">0</td><td></td></tr></tfoot>
-        </table>
-      </div>
-      <button class="bghost" style="width:100%;border:1px dashed #9cc2e8!important;background:#eef5fc;color:#1b4d80;margin-top:8px;padding:9px;border-radius:8px;font-weight:700" onclick="addDetailStep()">+ 공정 단계 추가</button>
-      <div class="material-editor">
-        <div class="material-editor-head"><div><b>재료비 속성</b><span>강종·두께·재료폭·길이 입력 시 중량과 재료비 자동산정</span></div><div class="material-mode-switch"><button id="m-mode-dim" type="button" onclick="setModalMaterialMode('dimension')">치수 자동계산</button><button id="m-mode-direct" type="button" onclick="setModalMaterialMode('direct')">중량 직접입력</button></div></div>
-        <div class="material-grid">
-          <div class="mfld"><label>강종</label><select id="m-grade" onchange="modalGradeChange();recalcModal()"></select></div>
-          <div class="mfld"><label>비중</label><input id="m-density" type="number" step="0.01" oninput="recalcModal()"><div class="ph">강종 선택 시 자동입력</div></div>
-          <div class="mfld"><label>재료단가 (원/kg)</label><input id="m-matkg" type="number" oninput="recalcModal()"><div class="ph" id="ph-matkg"></div></div>
-          <div class="mfld"><label>스크랩 회수중량 (kg/개)</label><input id="m-recoverw" type="number" step="0.0001" oninput="recalcModal()"><div class="ph">회수단가 기준으로 재료비 차감</div></div>
-          <div class="mfld m-dimension"><label>두께 (mm)</label><input id="m-thickness" type="number" step="0.01" oninput="recalcModal()"></div>
-          <div class="mfld m-dimension"><label>재료폭 (mm)</label><input id="m-width" type="number" step="0.1" oninput="recalcModal()"></div>
-          <div class="mfld m-dimension"><label>길이 (mm)</label><input id="m-length" type="number" step="0.1" oninput="recalcModal()"></div>
-          <div class="mfld m-dimension"><label>제품 1개당 소재수량</label><input id="m-useqty" type="number" step="0.01" value="1" oninput="recalcModal()"><div class="ph">예: 좌·우 2개 사용 시 2</div></div>
-          <div class="mfld m-dimension"><label>재료 여유 기준</label><select id="m-allow" onchange="modalAllowanceChange();recalcModal()"><option value="auto">공정 자동판단</option><option value="press">프레스 기준</option><option value="laser">레이저 기준</option><option value="none">여유 없음</option><option value="custom">직접 입력</option></select></div>
-          <div class="mfld m-dimension"><label>폭 여유 (mm)</label><input id="m-scrapw" type="number" step="0.1" oninput="recalcModal()"></div>
-          <div class="mfld m-dimension"><label>길이 여유 (mm)</label><input id="m-scrapl" type="number" step="0.1" oninput="recalcModal()"></div>
-          <div class="mfld m-direct hidden"><label>소재중량 (kg/개)</label><input id="m-matw" type="number" step="0.0001" oninput="recalcModal()" placeholder="0"><div class="ph">도면 또는 실측 중량 직접입력</div></div>
-        </div>
-        <div class="material-result" id="m-material-result"></div>
-      </div>
-        </div>
-        <aside class="product-attr-right">
-          <div class="product-cost-panel-title"><b>제조원가</b><span>개당 원가 및 적용 기준</span></div>
-          <div class="mgrid cost-option-grid">
-            <div class="mfld"><label>제조경비율 (%)</label><input id="m-ovh" type="number" oninput="recalcModal()"><div class="ph" id="ph-ovh"></div></div>
-            <div class="mfld"><label>이윤율 (%)</label><input id="m-profit" type="number" oninput="recalcModal()"><div class="ph" id="ph-profit"></div></div>
-          </div>
-          <div class="modal-cost-headline" id="m-cost-headline">
-            <div class="modal-cost-kpi primary"><span>제조원가 개당단가</span><b id="m-unit-cost-v61">0 원</b></div>
-            <div class="modal-cost-kpi"><span>공정단가 합계</span><b id="m-process-total-v61">0 원</b></div>
-          </div>
-          <div class="summ" id="m-summary"></div>
-        </aside>
-      </div>
-    </div>
-    <div class="mfoot">
-      <button class="reset" onclick="resetProduct()">이 제품 기본값으로</button>
-      <button class="cancel" onclick="closeModal()">닫기</button>
-      <button class="save" onclick="saveProduct()">저장</button>
-    </div>
-  </div>
+<div class="overlay hidden" id="overlay">
+<div class="modal">
+<div class="mhead"><div><h3 id="m-title">제품 원가</h3><div class="sub" id="m-sub"></div></div><button class="x" onclick="closeModal()">✕</button></div>
+<div class="mbody">
+<div class="product-attr-layout">
+<div class="product-attr-left">
+<div class="hint-drag">⠿ 끌어서 공정 순서 변경 · 공정명/설비/S·T 직접 수정 · 적용단가 입력 시 기본단가 대신 적용 · 행 추가/삭제 가능</div>
+<div class="step-table-wrap">
+<table class="stepm">
+<thead><tr><th style="width:22px"></th><th style="width:30px">#</th><th style="min-width:150px">공정명</th><th style="min-width:110px">구분</th><th style="min-width:120px">파트</th><th style="min-width:120px">설비</th><th class="num">S/T(초)</th><th>방식</th><th class="num">기본단가</th><th class="num">적용단가(개당)</th><th style="width:34px"></th></tr></thead>
+<tbody id="stepbody"></tbody>
+<tfoot><tr><td colspan="9" style="text-align:right;font-weight:700;color:var(--mut);padding-top:10px">가공비 합계</td><td class="num" id="m-procsum" style="font-weight:800;color:#0b5e34;padding-top:10px">0</td><td></td></tr></tfoot>
+</table>
 </div>
-
+<button class="bghost" onclick="addDetailStep()" style="width:100%;border:1px dashed #9cc2e8!important;background:#eef5fc;color:#1b4d80;margin-top:8px;padding:9px;border-radius:8px;font-weight:700">+ 공정 단계 추가</button>
+<div class="material-editor">
+<div class="material-editor-head"><div><b>재료비 속성</b><span>강종·두께·재료폭·길이 입력 시 중량과 재료비 자동산정</span></div><div class="material-mode-switch"><button id="m-mode-dim" onclick="setModalMaterialMode('dimension')" type="button">치수 자동계산</button><button id="m-mode-direct" onclick="setModalMaterialMode('direct')" type="button">중량 직접입력</button></div></div>
+<div class="material-grid">
+<div class="mfld"><label>강종</label><select id="m-grade" onchange="modalGradeChange();recalcModal()"></select></div>
+<div class="mfld"><label>비중</label><input id="m-density" oninput="recalcModal()" step="0.01" type="number"/><div class="ph">강종 선택 시 자동입력</div></div>
+<div class="mfld"><label>재료단가 (원/kg)</label><input id="m-matkg" oninput="recalcModal()" type="number"/><div class="ph" id="ph-matkg"></div></div>
+<div class="mfld"><label>스크랩 회수중량 (kg/개)</label><input id="m-recoverw" oninput="recalcModal()" step="0.0001" type="number"/><div class="ph">회수단가 기준으로 재료비 차감</div></div>
+<div class="mfld m-dimension"><label>두께 (mm)</label><input id="m-thickness" oninput="recalcModal()" step="0.01" type="number"/></div>
+<div class="mfld m-dimension"><label>재료폭 (mm)</label><input id="m-width" oninput="recalcModal()" step="0.1" type="number"/></div>
+<div class="mfld m-dimension"><label>길이 (mm)</label><input id="m-length" oninput="recalcModal()" step="0.1" type="number"/></div>
+<div class="mfld m-dimension"><label>제품 1개당 소재수량</label><input id="m-useqty" oninput="recalcModal()" step="0.01" type="number" value="1"/><div class="ph">예: 좌·우 2개 사용 시 2</div></div>
+<div class="mfld m-dimension"><label>재료 여유 기준</label><select id="m-allow" onchange="modalAllowanceChange();recalcModal()"><option value="auto">공정 자동판단</option><option value="press">프레스 기준</option><option value="laser">레이저 기준</option><option value="none">여유 없음</option><option value="custom">직접 입력</option></select></div>
+<div class="mfld m-dimension"><label>폭 여유 (mm)</label><input id="m-scrapw" oninput="recalcModal()" step="0.1" type="number"/></div>
+<div class="mfld m-dimension"><label>길이 여유 (mm)</label><input id="m-scrapl" oninput="recalcModal()" step="0.1" type="number"/></div>
+<div class="mfld m-direct hidden"><label>소재중량 (kg/개)</label><input id="m-matw" oninput="recalcModal()" placeholder="0" step="0.0001" type="number"/><div class="ph">도면 또는 실측 중량 직접입력</div></div>
+</div>
+<div class="material-result" id="m-material-result"></div>
+</div>
+</div>
+<aside class="product-attr-right">
+<div class="product-cost-panel-title"><b>제조원가</b><span>개당 원가 및 적용 기준</span></div>
+<div class="mgrid cost-option-grid">
+<div class="mfld"><label>제조경비율 (%)</label><input id="m-ovh" oninput="recalcModal()" type="number"/><div class="ph" id="ph-ovh"></div></div>
+<div class="mfld"><label>이윤율 (%)</label><input id="m-profit" oninput="recalcModal()" type="number"/><div class="ph" id="ph-profit"></div></div>
+</div>
+<div class="modal-cost-headline" id="m-cost-headline">
+<div class="modal-cost-kpi primary"><span>제조원가 개당단가</span><b id="m-unit-cost-v61">0 원</b></div>
+<div class="modal-cost-kpi"><span>공정단가 합계</span><b id="m-process-total-v61">0 원</b></div>
+</div>
+<div class="summ" id="m-summary"></div>
+</aside>
+</div>
+</div>
+<div class="mfoot">
+<button class="reset" onclick="resetProduct()">이 제품 기본값으로</button>
+<button class="cancel" onclick="closeModal()">닫기</button>
+<button class="save" onclick="saveProduct()">저장</button>
+</div>
+</div>
+</div>
 <!-- ADD PRODUCT MODAL -->
-<div id="addOverlay" class="overlay hidden">
-  <div class="modal">
-    <div class="mhead"><div><h3>품목 추가</h3><div class="sub">새 제품과 공정을 입력하면 단가표 기준으로 원가가 자동 계산됩니다</div></div><button class="x" onclick="closeAdd()">✕</button></div>
-    <div class="mbody">
-      <div class="mgrid" style="margin-top:0">
-        <div class="mfld"><label>품번</label><input id="a-pn" placeholder="예: NEW0001" style="text-align:left"></div>
-        <div class="mfld"><label>품목</label><input id="a-item" list="dl-item" placeholder="예: 이너프레임" style="text-align:left"></div>
-        <div class="mfld" style="grid-column:span 2"><label>규격</label><input id="a-spec" placeholder="예: 1.6x38.5" style="text-align:left"></div>
-      </div>
-      <label style="font-size:11px;font-weight:700;color:var(--mut)">공정 단계 (순서대로)</label>
-      <div class="step-table-wrap add-step-wrap">
-        <table class="stepm">
-          <thead><tr><th>#</th><th>공정명</th><th>구분</th><th>파트</th><th>설비</th><th class="num">S/T(초)</th><th></th></tr></thead>
-          <tbody id="addsteprows"></tbody>
-        </table>
-      </div>
-      <button class="bghost" style="width:100%;border:1px dashed #9cc2e8!important;background:#eef5fc;color:#1b4d80;margin-top:8px;padding:10px;border-radius:8px;font-weight:700" onclick="addStepRow()">+ 공정 단계 추가</button>
-    </div>
-    <div class="mfoot">
-      <button class="cancel" onclick="closeAdd()">취소</button>
-      <button class="save" onclick="saveNewProduct()">추가</button>
-    </div>
-  </div>
+<div class="overlay hidden" id="addOverlay">
+<div class="modal">
+<div class="mhead"><div><h3>품목 추가</h3><div class="sub">새 제품과 공정을 입력하면 단가표 기준으로 원가가 자동 계산됩니다</div></div><button class="x" onclick="closeAdd()">✕</button></div>
+<div class="mbody">
+<div class="mgrid" style="margin-top:0">
+<div class="mfld"><label>품번</label><input id="a-pn" placeholder="예: NEW0001" style="text-align:left"/></div>
+<div class="mfld"><label>품목</label><input id="a-item" list="dl-item" placeholder="예: 이너프레임" style="text-align:left"/></div>
+<div class="mfld" style="grid-column:span 2"><label>규격</label><input id="a-spec" placeholder="예: 1.6x38.5" style="text-align:left"/></div>
+</div>
+<label style="font-size:11px;font-weight:700;color:var(--mut)">공정 단계 (순서대로)</label>
+<div class="step-table-wrap add-step-wrap">
+<table class="stepm">
+<thead><tr><th>#</th><th>공정명</th><th>구분</th><th>파트</th><th>설비</th><th class="num">S/T(초)</th><th></th></tr></thead>
+<tbody id="addsteprows"></tbody>
+</table>
+</div>
+<button class="bghost" onclick="addStepRow()" style="width:100%;border:1px dashed #9cc2e8!important;background:#eef5fc;color:#1b4d80;margin-top:8px;padding:10px;border-radius:8px;font-weight:700">+ 공정 단계 추가</button>
+</div>
+<div class="mfoot">
+<button class="cancel" onclick="closeAdd()">취소</button>
+<button class="save" onclick="saveNewProduct()">추가</button>
+</div>
+</div>
 </div>
 <datalist id="dl-item"></datalist>
 <datalist id="dl-proc"></datalist>
@@ -2047,7 +2024,7 @@ function updateSortArrows(){
     else sar.textContent='';
   });
 }
-let VIEW_LIMIT=180;
+let VIEW_LIMIT=60;
 let CURRENT_GROUP='';
 function moreRows(){VIEW_LIMIT+=180;renderCost(false);}
 function resetViewLimit(){VIEW_LIMIT=180;}
@@ -2108,7 +2085,8 @@ function showItemGroups(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function renderCost(resetLimit=true){
-  if(resetLimit) VIEW_LIMIT=180;
+  if(window.__DBF_SAFE_BOOT_PENDING)return 0;
+  if(resetLimit) VIEW_LIMIT=60;
   // 첫 화면은 이전 방식인 전체 제품 리스트로 표시한다.
   // 품목군 화면은 사용하지 않고, 검색/필터는 전체 제품 기준으로 바로 적용한다.
   CURRENT_GROUP='';
@@ -3070,22 +3048,10 @@ clearRawFilters=function(){
 
 /* ====== INIT ====== */
 function syncStick(){const hd=document.querySelector('header');const fl=document.querySelector('.filters');if(hd)document.documentElement.style.setProperty('--hh',hd.offsetHeight+'px');if(fl&&fl.offsetParent!==null)document.documentElement.style.setProperty('--fh',fl.offsetHeight+'px');}
-function initApp(){try{load();buildFilters();renderCost();syncStick();initStepSort();setTimeout(syncStick,250);}catch(e){console.error(e);alert('프로그램 실행 중 오류가 발생했습니다. 백업 파일로 다시 열어주세요.');}}
+function initApp(){try{load();buildFilters();syncStick();if(!window.__DBF_SAFE_BOOT_PENDING){renderCost();initStepSort();setTimeout(syncStick,250);}}catch(e){console.error(e);var fc=document.getElementById('fcount');if(fc)fc.textContent='초기화 오류 — 필터 초기화를 눌러 다시 시도하세요.';}}
 window.addEventListener('resize',syncStick);
 if(document.readyState!=='loading') setTimeout(initApp,0); else document.addEventListener('DOMContentLoaded',()=>setTimeout(initApp,0));
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
 <style id="modal-top-layer-final-fix">
 /* 제품 클릭 팝업이 고정 헤더/필터/제목바 뒤로 들어가는 문제 최종 보정 */
 #overlay,
@@ -3118,9 +3084,6 @@ if(document.readyState!=='loading') setTimeout(initApp,0); else document.addEven
   z-index:30002!important;
 }
 </style>
-
-
-
 <style id="all-multi-filter-excel-style">
 /* 선택 필터 전체: 엑셀형 다중 선택 */
 #view-cost .filters select[id^="f-"]{
@@ -3490,10 +3453,6 @@ if(document.readyState!=='loading') setTimeout(initApp,0); else document.addEven
   else setTimeout(setup,30);
 })();
 </script>
-
-
-
-
 <!-- ===== 도면/담당자/공용전용 경량화 v3 ===== -->
 <style id="drawing-light-v3-style">
 /* 성능 개선: 도면/공용전용 기능은 1회 DOM 생성 + 메모리 캐시 기준으로 동작 */
@@ -3611,11 +3570,11 @@ if(document.readyState!=='loading') setTimeout(initApp,0); else document.addEven
   window.buildFilters=function(){ensureDom();var r=oldBuildFilters?oldBuildFilters.apply(this,arguments):undefined;buildDrawingFilter();buildUsageFilter();return r;};
   function markActive(){if(oldMarkActive)try{oldMarkActive();}catch(e){}['f-draw','f-usage'].forEach(function(id){var e=byId(id);if(e)e.classList.toggle('filter-active',!!e.value);});}
   window.markActiveFilters=markActive;
-  window.renderCost=function(resetLimit){ensureDom();loadD();if(resetLimit!==false&&typeof VIEW_LIMIT!=='undefined')VIEW_LIMIT=180;if(typeof CURRENT_GROUP!=='undefined')CURRENT_GROUP='';var gp=byId('groupPanel'),pp=byId('productPanel'),gpath=byId('groupPath');if(gp){gp.classList.add('hidden');gp.innerHTML='';}if(pp)pp.classList.remove('hidden');if(gpath){gpath.classList.add('hidden');gpath.innerHTML='';}
+  window.renderCost=function(resetLimit){if(window.__DBF_SAFE_BOOT_PENDING)return 0;ensureDom();loadD();if(resetLimit!==false&&typeof VIEW_LIMIT!=='undefined')VIEW_LIMIT=60;if(typeof CURRENT_GROUP!=='undefined')CURRENT_GROUP='';var gp=byId('groupPanel'),pp=byId('productPanel'),gpath=byId('groupPath');if(gp){gp.classList.add('hidden');gp.innerHTML='';}if(pp)pp.classList.remove('hidden');if(gpath){gpath.classList.add('hidden');gpath.innerHTML='';}
     var base=currentFiltered(),list=base.map(function(p){return {p:p,c:calc(p)};});
     function val(o){var p=o.p,c=o.c;var m={pn:p.pn,item:p.item,spec:p.spec,n:(p.steps||[]).length,draw:hasDrawing(p)?1:0,usage:usageOf(p),mat:c.mat,proc:c.proc,ovh:c.ovh,cost:c.withDef,sale:c.sale};return m[SORT.key];}
     list.sort(function(a,b){var va=val(a),vb=val(b);if(typeof va==='string')return SORT.dir==='asc'?String(va).localeCompare(String(vb),'ko'):String(vb).localeCompare(String(va),'ko');return SORT.dir==='asc'?(va||0)-(vb||0):(vb||0)-(va||0);});
-    if(typeof updateSortArrows==='function')updateSortArrows();var empty=byId('emptymsg');if(empty)empty.classList.toggle('hidden',list.length>0);var limit=Math.min(typeof VIEW_LIMIT==='undefined'?180:VIEW_LIMIT,list.length),view=list.slice(0,limit);var fc=byId('fcount');if(fc)fc.textContent=view.length.toLocaleString()+' / '+list.length.toLocaleString()+' 건 표시 · 전체 '+products().length.toLocaleString()+'건';var body=byId('tbody');if(body)body.innerHTML=view.map(function(o){var p=o.p,c=o.c,idx=products().indexOf(p),n=(p.steps||[]).length,bcnt=typeof bomCountForProduct==='function'?bomCountForProduct(p):0,flow=(p.steps||[]).map(function(s){return '<span class="chip proc-chip">'+escH(s.proc)+'</span>';}).join('<span class="arr">›</span>')||'<span class="muted">-</span>';var dcls=hasDrawing(p)?'draw-has':'draw-none';var bomCls=bcnt>0?'has-bom':'no-bom';var bomLabel=bcnt>0?'<span class="bom-status-chip has">있음</span>':'<span class="bom-status-chip none">없음</span>';return '<tr class="click prod-row '+bomCls+' '+dcls+'" data-pn="'+escH(p.pn)+'" onclick="openDetail('+idx+')"><td class="bomcol" onclick="event.stopPropagation()"><button class="bom-toggle" data-count="'+bcnt+'" onclick="toggleProductBom(event,'+idx+')">▸ BOM('+bcnt+')</button>'+bomLabel+'</td><td class="pncell"><span class="pn">'+escH(p.pn)+'</span>'+(c.custom?'<span class="chip tag-cust" title="개별수정됨">✎</span>':'')+'</td><td class="strong itemcell">'+escH(p.item)+usageChip(p)+'</td><td class="spec" title="'+escH(p.spec)+'">'+escH(p.spec)+'</td><td class="num proc-count"><span class="badge" style="background:'+(n>=4?'var(--warn)':n>=2?'var(--blue)':'var(--mut)')+'">'+n+'</span></td><td class="flowcell"><div class="flow">'+flow+'</div></td><td class="drawcell" onclick="event.stopPropagation()">'+drawButton(p)+'</td><td class="num matcell">'+(c.mat?won(c.mat):'<span class="muted">-</span>')+'</td><td class="num proccostcell">'+won(c.proc)+'</td><td class="num ovhcell">'+won(c.ovh)+'</td><td class="num cost costcell">'+won(c.withDef)+'</td><td class="num sale salecell">'+won(c.sale)+'</td><td class="act actioncell" onclick="event.stopPropagation()"><button onclick="openDetail('+idx+')">수정</button><button class="del" onclick="delProduct('+idx+')">삭제</button></td></tr>';}).join('');
+    if(typeof updateSortArrows==='function')updateSortArrows();var empty=byId('emptymsg');if(empty)empty.classList.toggle('hidden',list.length>0);var limit=Math.min(typeof VIEW_LIMIT==='undefined'?60:VIEW_LIMIT,list.length),view=list.slice(0,limit);var fc=byId('fcount');if(fc)fc.textContent=view.length.toLocaleString()+' / '+list.length.toLocaleString()+' 건 표시 · 전체 '+products().length.toLocaleString()+'건';var body=byId('tbody');if(body)body.innerHTML=view.map(function(o){var p=o.p,c=o.c,idx=products().indexOf(p),n=(p.steps||[]).length,bcnt=typeof bomCountForProduct==='function'?bomCountForProduct(p):0,flow=(p.steps||[]).map(function(s){return '<span class="chip proc-chip">'+escH(s.proc)+'</span>';}).join('<span class="arr">›</span>')||'<span class="muted">-</span>';var dcls=hasDrawing(p)?'draw-has':'draw-none';var bomCls=bcnt>0?'has-bom':'no-bom';var bomLabel=bcnt>0?'<span class="bom-status-chip has">있음</span>':'<span class="bom-status-chip none">없음</span>';return '<tr class="click prod-row '+bomCls+' '+dcls+'" data-pn="'+escH(p.pn)+'" onclick="openDetail('+idx+')"><td class="bomcol" onclick="event.stopPropagation()"><button class="bom-toggle" data-count="'+bcnt+'" onclick="toggleProductBom(event,'+idx+')">▸ BOM('+bcnt+')</button>'+bomLabel+'</td><td class="pncell"><span class="pn">'+escH(p.pn)+'</span>'+(c.custom?'<span class="chip tag-cust" title="개별수정됨">✎</span>':'')+'</td><td class="strong itemcell">'+escH(p.item)+usageChip(p)+'</td><td class="spec" title="'+escH(p.spec)+'">'+escH(p.spec)+'</td><td class="num proc-count"><span class="badge" style="background:'+(n>=4?'var(--warn)':n>=2?'var(--blue)':'var(--mut)')+'">'+n+'</span></td><td class="flowcell"><div class="flow">'+flow+'</div></td><td class="drawcell" onclick="event.stopPropagation()">'+drawButton(p)+'</td><td class="num matcell">'+(c.mat?won(c.mat):'<span class="muted">-</span>')+'</td><td class="num proccostcell">'+won(c.proc)+'</td><td class="num ovhcell">'+won(c.ovh)+'</td><td class="num cost costcell">'+won(c.withDef)+'</td><td class="num sale salecell">'+won(c.sale)+'</td><td class="act actioncell" onclick="event.stopPropagation()"><button onclick="openDetail('+idx+')">수정</button><button class="del" onclick="delProduct('+idx+')">삭제</button></td></tr>';}).join('');
     var more=byId('moreRows');if(more){var remain=list.length-view.length;more.classList.toggle('hidden',remain<=0);if(remain>0)more.innerHTML='<span>성능을 위해 '+view.length.toLocaleString()+'건만 먼저 표시 중입니다.</span><button onclick="moreRows()">더 보기 +180</button><span>남은 '+remain.toLocaleString()+'건</span>';}
     renderKpisLight(list);buildDrawingFilter();buildUsageFilter();markActive();};
   function renderKpisLight(list){var n=list.length||1,costSum=0,procSum=0,custN=0,has=0;list.forEach(function(o){costSum+=o.c.withDef;procSum+=o.c.proc;if(o.c.custom)custN++;if(hasDrawing(o.p))has++;});var rate=(typeof BASE!=='undefined'&&BASE.wage?BASE.wage:0)/3600;var html=[['대상 제품',list.length.toLocaleString(),'개'],['도면 보유율',(list.length?has/list.length*100:0).toFixed(1),'%'],['평균 제조원가',won(costSum/n),'원'],['평균 가공비',won(procSum/n),'원'],['기본 임률',f1(rate),'원/초'],['개별수정 제품',custN.toLocaleString(),'개']].map(function(a){return '<div class="kpi"><div class="k">'+a[0]+'</div><div class="v">'+a[1]+' <small>'+a[2]+'</small></div></div>';}).join('');var k=byId('kpis');if(k)k.innerHTML=html;}
@@ -3649,10 +3608,9 @@ if(document.readyState!=='loading') setTimeout(initApp,0); else document.addEven
   window.importJson=function(ev){var f=ev.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(e){try{var d=JSON.parse(e.target.result);if(Array.isArray(d)){if(!confirm('제품 '+d.length+'건을 불러옵니다. 기존 제품목록을 교체할까요?'))return;PRODUCTS=d;saveProd();PRICES=seedPrices(PRICES);localStorage.setItem(LS_PRICE,JSON.stringify(PRICES));}else if(d.products){if(!confirm('원가 백업을 불러옵니다. 현재 데이터를 덮어쓸까요?'))return;PRODUCTS=d.products;PRICES=d.prices||seedPrices();BASE=d.base||Object.assign({},DEFAULT_BASE);OV=d.overrides||{};USER_BOM=d.userBom||{};DRAW_CACHE=d.drawings||{};saveProd();localStorage.setItem(LS_PRICE,JSON.stringify(PRICES));localStorage.setItem(LS_BASE,JSON.stringify(BASE));saveOV();saveUserBom();saveD();}else throw 0;buildFilters();renderCost();if(typeof renderPrice==='function')renderPrice();if(typeof renderBase==='function')renderBase();refreshOpenPage();if(typeof toast==='function')toast('불러오기 완료');}catch(err){if(typeof toast==='function')toast('올바른 파일이 아닙니다');}};rd.readAsText(f);ev.target.value='';};
   window.resetAll=function(){if(!confirm('제품·단가표·기준값·개별수정·BOM·도면 정보를 모두 초기화합니다. 진행할까요?'))return;[LS_PROD,LS_PRICE,LS_BASE,LS_OV,LS_USER_BOM,LS_DRAW].forEach(function(k){localStorage.removeItem(k);});DRAW_CACHE=null;load();buildFilters();renderCost();if(typeof renderPrice==='function')renderPrice();if(typeof renderBase==='function')renderBase();if(typeof toast==='function')toast('전체 초기화 완료');};
   window.exportXlsx=async function(){if(typeof XLSX==='undefined'&&typeof ensureXlsxLib==='function'){try{await ensureXlsxLib();}catch(e){if(oldExportXlsx)return oldExportXlsx();}}if(typeof XLSX==='undefined'){alert('엑셀 저장용 라이브러리를 불러오지 못했습니다.');return;}var wb=XLSX.utils.book_new();var head=['품번','품목','규격','공정수','전체공정','도면','도면번호','개정','담당','최종수정일','관리상태','공용/전용/비규격','특정업체','재료비','가공비','제조경비','제조원가','판매가참고','개별수정'];var rows=[head];products().forEach(function(p){var c=calc(p),r=rec(p);rows.push([p.pn,p.item,p.spec,(p.steps||[]).length,(p.steps||[]).map(function(s){return s.proc;}).join(' › '),r.has?'있음':'없음',r.docNo||'',r.rev||'',r.owner||'',r.date||'',r.status||'',usageOf(p),r.customer||'',Math.round(c.mat),Math.round(c.proc),Math.round(c.ovh),Math.round(c.withDef),Math.round(c.sale),c.custom?'Y':'']);});XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'제품별제조원가');var gr=[['품목군','제품수','도면있음','도면없음','도면보유율','공용품','전용품','비규격','비규격비중']];groupRows().forEach(function(g){gr.push([g.item,g.total,g.has,g.none,g.total?Number((g.has/g.total*100).toFixed(1)):0,g.common,g.ded,g.nonstd,g.total?Number((g.nonstd/g.total*100).toFixed(1)):0]);});XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(gr),'품목군분석');var ow=[['담당자','제품수','도면있음','도면없음','보유율','개정필요']];ownerRows().forEach(function(o){ow.push([o.owner,o.total,o.has,o.none,o.total?Number((o.has/o.total*100).toFixed(1)):0,o.revNeed]);});XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ow),'담당자별도면');var us=[['구분','제품수','비중']];var st=statUsage(products());us.push(['공용품',st.common,st.commonRate.toFixed(1)+'%']);us.push(['전용품',st.ded,st.dedRate.toFixed(1)+'%']);us.push(['비규격',st.nonstd,st.nonstdRate.toFixed(1)+'%']);XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(us),'공용전용비규격비중');var d=new Date(),ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');XLSX.writeFile(wb,'Dongbang_Mfg_Cost_Drawing_Lite_'+ymd+'.xlsx');if(typeof toast==='function')toast('엑셀 파일이 저장되었습니다');};
-  function initLight(){ensureDom();loadD();buildDrawingFilter();buildUsageFilter();setTimeout(function(){try{renderCost(false);}catch(e){console.error(e);}},0);}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initLight);else initLight();
+  function initLight(){ensureDom();loadD();buildDrawingFilter();buildUsageFilter();}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initLight,{once:true});else initLight();
 })();
 </script>
-
 <style id="user-final-bom-drawing-sticky-fix-20260704">
 /* 페이지 스크롤 컨테이너 정상화: sticky가 실제 화면 스크롤을 따라가도록 처리 */
 html{
@@ -3808,7 +3766,6 @@ body{
   z-index:30!important;
 }
 </style>
-
 <style id="final-bom-spec-single-line-full-fix">
 /* 최종 보정: 제품표에서 BOM을 펼쳤을 때 규격을 줄임 없이 한 줄로 표시 */
 #view-cost .inline-bom{
@@ -3862,7 +3819,6 @@ body{
   text-overflow:clip!important;
 }
 </style>
-
 <script id="user-final-sticky-runtime-fix-20260704">
 (function(){
   function setImportant(el,prop,value){
@@ -3972,8 +3928,6 @@ body{
   }
 })();
 </script>
-
-
 <style id="ci-groupcost-back-final-20260704">
 /* CI 크기 확대 */
 .logo-badge img{
@@ -4042,7 +3996,6 @@ body{
   #view-groupcost>.tablebox{overflow-x:auto!important}
 }
 </style>
-
 <script id="ci-groupcost-back-final-script-20260704">
 (function(){
   'use strict';
@@ -4231,9 +4184,6 @@ body{
   window.addEventListener('load',function(){ensureDom();updateBackButton();});
 })();
 </script>
-
-
-
 <style id="bottom-back-transparent-draw-global-sort-final-20260704">
 /* 뒤로가기는 화면 왼쪽 하단에 고정 */
 #screenBackBtn{position:fixed!important;left:18px!important;bottom:18px!important;right:auto!important;top:auto!important;margin:0!important}
@@ -4266,7 +4216,6 @@ body{
 /* 기존 제품별 원가 정렬 화살표와 중복 방지 */
 #view-cost .cost-table thead th.page-sortable::after{content:none!important}
 </style>
-
 <script id="global-page-table-sort-final-20260704">
 (function(){
   'use strict';
@@ -4378,8 +4327,6 @@ body{
   window.addEventListener('load',function(){markHeaders(document);});
 })();
 </script>
-
-
 <style id="final-bom-cost-columns-filter-rowheight-20260704">
 /* BOM 원가 열 확장: 제품표의 도면·원가 항목을 BOM 제목줄/행에도 동일하게 표시 */
 #view-cost .inline-bom-table{
@@ -4478,7 +4425,6 @@ body{
   margin-bottom:0!important;
 }
 </style>
-
 <script id="final-bom-cost-columns-filter-rowheight-20260704-script">
 (function(){
   'use strict';
@@ -4669,8 +4615,6 @@ body{
   },true);
 })();
 </script>
-
-
 <style id="final-bom-row-click-draw-center-nested-raw-height-20260704">
 /* BOM 도면 열 제목과 데이터 가운데 정렬 */
 #view-cost .inline-bom-table tbody tr.inline-bom-head>th:nth-child(8),
@@ -4720,8 +4664,6 @@ body{
   line-height:18px!important;
 }
 </style>
-
-
 <style id="cost-material-enhancement-20260704">
 /* 제품 상세 재료비 속성 / 독립 원가산정 / 원자재 단가 / 단가산정 기준 */
 header .tabs{overflow-x:auto;scrollbar-width:thin}
@@ -5095,8 +5037,6 @@ header .tabs button{min-width:132px;flex:1 0 auto}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(initEnhancement,20);});else setTimeout(initEnhancement,20);
 })();
 </script>
-
-
 <style id="user-request-title-search-fix-20260704">
 /* 단가산정 기준: 제목줄 흰색/검정, 제목 박스선 제거 */
 #view-base > .card,
@@ -5202,7 +5142,6 @@ header .tabs button{min-width:132px;flex:1 0 auto}
   padding:8px 0 16px!important;
 }
 </style>
-
 <script id="user-request-smart-search-20260704">
 /* 규격 구분자 통합 검색: 1.6x61 = 1.6×61 = 1.6 61 = 1.6-61 */
 function smartSearchCompact(value){
@@ -5231,8 +5170,6 @@ function smartSearchMatch(text,query){
 window.smartSearchCompact=smartSearchCompact;
 window.smartSearchMatch=smartSearchMatch;
 </script>
-
-
 <style id="user-request-cost-page-v3-style">
 /* 원자재 월별 매입단가 도구모음 */
 #view-matprice{max-width:100%;margin:0 auto}
@@ -5394,7 +5331,6 @@ window.smartSearchPhrase=smartSearchPhrase;window.smartSearchTokens=smartSearchT
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initV3);else initV3();
 })();
 </script>
-
 <style id="user-request-v4-layout-style">
 /* 원가 간편산정: 요율 필드가 카드 밖으로 벗어나지 않도록 2열 + 마지막 전체폭 */
 #view-quick .quick-rate-grid{
@@ -5697,9 +5633,6 @@ window.smartSearchPhrase=smartSearchPhrase;window.smartSearchTokens=smartSearchT
   else setTimeout(init4,0);
 })();
 </script>
-
-
-
 <!-- ===== FINAL UNIFIED AND SEARCH ENGINE v6 ===== -->
 <script id="final-unified-and-search-v6">
 (function(){
@@ -5846,9 +5779,6 @@ window.smartSearchPhrase=smartSearchPhrase;window.smartSearchTokens=smartSearchT
   else initUnifiedSearch();
 })();
 </script>
-
-
-
 <style id="post-process-application-status-v7-style">
 #view-base .post-criteria-table col.pc-name{width:15%!important}
 #view-base .post-criteria-table col.pc-formula{width:25%!important}
@@ -5903,15 +5833,13 @@ window.smartSearchPhrase=smartSearchPhrase;window.smartSearchTokens=smartSearchT
 .post-products-empty{text-align:center;padding:34px;color:#6b7890;font-weight:700}
 @media(max-width:850px){#view-base .post-criteria-table{min-width:980px!important}.post-products-tools{align-items:stretch;flex-direction:column}.post-products-tools .guide{white-space:normal}.post-products-body{padding-left:8px;padding-right:8px}}
 </style>
-
-<div id="postProductsOverlayV7" class="post-products-overlay hidden" onclick="if(event.target===this)closePostProcessProductsV7()">
-  <div class="post-products-modal" role="dialog" aria-modal="true" aria-labelledby="postProductsTitleV7">
-    <div class="post-products-head"><span class="title" id="postProductsTitleV7">공정 적용 제품</span><span class="count" id="postProductsCountV7">0개</span><button type="button" onclick="closePostProcessProductsV7()">×</button></div>
-    <div class="post-products-tools"><input id="postProductsSearchV7" type="search" placeholder="품번, 제품명, 규격 검색 (공백=모두 포함)" oninput="filterPostProcessProductsV7()"><span class="guide">선택 공정은 초록색으로 표시됩니다.</span></div>
-    <div class="post-products-body" id="postProductsBodyV7"></div>
-  </div>
+<div class="post-products-overlay hidden" id="postProductsOverlayV7" onclick="if(event.target===this)closePostProcessProductsV7()">
+<div aria-labelledby="postProductsTitleV7" aria-modal="true" class="post-products-modal" role="dialog">
+<div class="post-products-head"><span class="title" id="postProductsTitleV7">공정 적용 제품</span><span class="count" id="postProductsCountV7">0개</span><button onclick="closePostProcessProductsV7()" type="button">×</button></div>
+<div class="post-products-tools"><input id="postProductsSearchV7" oninput="filterPostProcessProductsV7()" placeholder="품번, 제품명, 규격 검색 (공백=모두 포함)" type="search"/><span class="guide">선택 공정은 초록색으로 표시됩니다.</span></div>
+<div class="post-products-body" id="postProductsBodyV7"></div>
 </div>
-
+</div>
 <script id="post-process-application-products-v7">
 (function(){
   'use strict';
@@ -5959,9 +5887,6 @@ window.smartSearchPhrase=smartSearchPhrase;window.smartSearchTokens=smartSearchT
   document.addEventListener('keydown',function(ev){if(ev.key==='Escape')window.closePostProcessProductsV7();});
 })();
 </script>
-
-
-
 <!-- ===== USER REQUEST V8: 공정단가 사용제품 이동 · 산정기준 · 상세공정 DnD 통일 ===== -->
 <style id="process-price-usage-detail-dnd-v8-style">
 /* 공정 단가표 */
@@ -6129,7 +6054,6 @@ window.smartSearchPhrase=smartSearchPhrase;window.smartSearchTokens=smartSearchT
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(initV8,40);});else setTimeout(initV8,40);
 })();
 </script>
-
 <!-- ===== USER REQUEST V9: 전체 버튼 호버 모션 ===== -->
 <style id="global-button-hover-motion-v9">
 /* 모든 버튼: 부드럽게 떠오르는 공통 인터랙션 */
@@ -6201,8 +6125,6 @@ input[type="reset"]:disabled,
   }
 }
 </style>
-
-
 <!-- ===== USER REQUEST V10: 제품 숨김 / 숨김 제품 관리 ===== -->
 <style id="hidden-product-management-v10-style">
 #view-cost .hidden-products-btn{
@@ -6481,8 +6403,6 @@ input[type="reset"]:disabled,
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,80);});else setTimeout(init,80);
 })();
 </script>
-
-
 <style id="raw-material-market-price-v11-style">
 /* 원자재 사용제품 목록: 지정 열 왼쪽 정렬, 말줄임 제거, 제품 클릭 가능 */
 #view-raw .raw-use-box{overflow-x:auto!important}
@@ -6540,9 +6460,6 @@ input[type="reset"]:disabled,
 .mp-btn-market:hover{background:linear-gradient(135deg,#e49a10,#c97b00)!important;color:#fff!important;border-color:#c97b00!important}
 @media(max-width:900px){#view-raw .raw-use-table{min-width:1200px!important}.material-price-table{min-width:1950px!important}}
 </style>
-
-
-
 <!-- ===== USER REQUEST V12: 담당자 마스터 / 원자재 단가 한줄형 ===== -->
 <style id="user-request-v12-style">
 /* 담당자 마스터 관리 */
@@ -6649,9 +6566,6 @@ input[type="reset"]:disabled,
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){refreshOwnerMasterUI(false);});else refreshOwnerMasterUI(false);
 })();
 </script>
-
-
-
 <!-- 담당자 추가 먹통 보정 v13: 이벤트 위임 + 0건 담당자 표시 -->
 <style id="owner-master-fix-v13-style">
 #view-drawowner .owner-master-panel{position:relative!important;z-index:5!important}
@@ -6716,9 +6630,6 @@ input[type="reset"]:disabled,
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){drawOwnerList();});else drawOwnerList();
 })();
 </script>
-
-
-
 <!-- ===== USER REQUEST V14: 원자재 단가 한줄/적용상태 + 간편산정 제목 ===== -->
 <style id="user-request-v14-style">
 /* 원자재 월별 매입단가: 핵심 항목 한 줄 배치 */
@@ -6778,8 +6689,6 @@ input[type="reset"]:disabled,
   },true);
 })();
 </script>
-
-
 <!-- ===== USER REQUEST V17: 간편산정 제목줄 회색 강화 ===== -->
 <style id="user-request-v17-style">
 #view-quick .card>.ch{
@@ -6791,8 +6700,6 @@ input[type="reset"]:disabled,
 }
 #view-quick .card>.ch *{color:inherit!important}
 </style>
-
-
 <!-- ===== USER REQUEST V18: 간편산정 제목줄 검정/흰색 + 박스선 제거 ===== -->
 <style id="user-request-v18-style">
 #view-quick .card>.ch{
@@ -6805,9 +6712,6 @@ input[type="reset"]:disabled,
 }
 #view-quick .card>.ch *{color:#ffffff!important}
 </style>
-
-
-
 <!-- ===== USER REQUEST V19: 간편산정 제목줄 박스선 완전 제거 ===== -->
 <style id="user-request-v19-style">
 /* 제목줄 자체의 테두리·외곽선·그림자 제거 */
@@ -6831,8 +6735,6 @@ input[type="reset"]:disabled,
   outline:none!important;
 }
 </style>
-
-
 <!-- ===== USER REQUEST V20: 간편산정 박스선 복원 + 설비별 설비명/위치 ===== -->
 <style id="user-request-v20-style">
 /* 원가 간편산정: 검정 제목줄은 유지하고 카드 박스선을 다시 표시 */
@@ -6862,9 +6764,6 @@ input[type="reset"]:disabled,
 #view-ana #ana-head th:nth-child(1){min-width:150px}
 #view-ana #ana-head th:nth-child(2){min-width:150px}
 </style>
-
-
-
 <!-- ===== USER REQUEST V21: 설비 코드 유지 + 실제 설비명 마스터 입력/엑셀 연동 ===== -->
 <style id="user-request-v21-style">
 #equipMasterToolsV21{
@@ -7041,8 +6940,6 @@ input[type="reset"]:disabled,
   });
 })();
 </script>
-
-
 <style id="user-request-v22-base-layout">
 /* 단가산정 기준: 다른 페이지와 동일한 전체 폭 */
 #view-base{width:100%!important;max-width:none!important;margin:0!important}
@@ -7099,7 +6996,6 @@ function toggleMaterialCriteria(head){
   if(card)card.classList.toggle('is-collapsed',!opening);
 }
 </script>
-
 <style id="user-request-v23-style">
 /* ===== 설비별 분석: 독립 메인 메뉴 ===== */
 #tab-equipanalysis{white-space:nowrap}
@@ -7355,9 +7251,6 @@ function toggleMaterialCriteria(head){
   setTimeout(init,0);setTimeout(init,500);
 })();
 </script>
-
-
-
 <!-- ===== USER REQUEST V25: 도면/담당자 통합 + 설비 메뉴 순서/무테두리 + 기준표 제목 ===== -->
 <style id="user-request-v25-style">
 /* 담당자별 도면은 도면분석 안에서 함께 표시하고 별도 메뉴는 숨김 */
@@ -7484,8 +7377,6 @@ function toggleMaterialCriteria(head){
   setTimeout(initV25,0);setTimeout(initV25,500);setTimeout(applyV25Layout,1200);
 })();
 </script>
-
-
 <!-- ===== USER REQUEST V26: 설비구분 좌측정렬 + 도면 KPI 1줄 통합 + 품목/규격 전체표시 ===== -->
 <style id="user-request-v26-style">
 /* 설비별 분석: 설비구분 입력 글자는 왼쪽 정렬 */
@@ -7647,7 +7538,6 @@ function toggleMaterialCriteria(head){
   setTimeout(init,0);setTimeout(updateUnifiedDrawingKpis,500);
 })();
 </script>
-
 <style id="sales-sync-integration-v27-style">
 /* ===== 매출 엑셀 연동 + 구글시트 동기화 ===== */
 .saleslink-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:11px 12px;background:#f8fafc;border:1px solid var(--line);border-radius:10px}
@@ -7771,8 +7661,6 @@ async function init(){await loadSalesState();ensureUi();syncSnapshot=JSON.string
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
 <style id="sales-link-enhancement-v28-style">
 /* ===== 매출 엑셀 연동 화면 간결화 + 거래처 출고상세 ===== */
 #view-saleslink>.card{
@@ -7999,9 +7887,6 @@ function v28Init(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',v28Init);else setTimeout(v28Init,0);
 })();
 </script>
-
-
-
 <style id="admin-header-version-v30-style">
 /* ===== 상단 관리자 메뉴 + 동기화 시간 + 버전 표시 ===== */
 header .button-guide{display:none!important}
@@ -8167,9 +8052,6 @@ header .button-guide{display:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
-
 <style id="criteria-management-v31-style">
 /* ===== v31 단가산정 기준 및 관리 / 품목 추가 위치 / 전용 거래처명 ===== */
 #adminToolsWrap{display:none!important}
@@ -8302,8 +8184,6 @@ header .button-guide{display:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
 <style id="customer-sales-modal-width-v32-style">
 /* 거래처 출고 상세 팝업 폭 확대 */
 .sales-detail-modal-v28{
@@ -8327,8 +8207,6 @@ header .button-guide{display:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateVersion);else updateVersion();
 })();
 </script>
-
-
 <style id="product-search-raw-used-items-v33-style">
 /* 제품별 원가: 1행 필터 / 2행 검색 + 품목 추가 */
 #view-cost .filters{
@@ -8540,8 +8418,6 @@ header .button-guide{display:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
 <style id="product-search-order-v33-fix">
 /* 검색창 왼쪽, 품목 추가 버튼 오른쪽 순서 고정 */
 #view-cost #costSearchAdd #q{order:0!important}
@@ -8568,9 +8444,6 @@ header .button-guide{display:none!important}
   #view-cost #costSearchAdd{grid-row:auto!important}
 }
 </style>
-
-
-
 <!-- ===== v34 도면분석 특정업체 검색·직접입력 + 업체명 표시 개선 ===== -->
 <style id="drawing-customer-autocomplete-v34-style">
 /* 품목군별 도면 보유 현황: 제품명 아래 전용 업체명을 작고 일반체로 표시 */
@@ -8684,9 +8557,6 @@ header .button-guide{display:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
-
 <!-- ===== v35 도면/공용전용 관리 열 폭 + 특정업체 자동완성 확장 ===== -->
 <style id="drawing-usage-customer-layout-v35-style">
 /* 도면 보유 현황: 특정업체는 넓게, 비고는 간결하게 */
@@ -8844,9 +8714,6 @@ header .button-guide{display:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
-
 <!-- ===== v36 특정업체 폭 조정 · 원자재 사용품목 규격 · 동기화 안전 보완 ===== -->
 <style id="drawing-raw-sync-v36-style">
 /* 품목군별 도면 보유 현황: 특정업체 필드를 조금 축소 */
@@ -8867,9 +8734,6 @@ header .button-guide{display:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion);else setVersion();
 })();
 </script>
-
-
-
 <!-- ===== v37 동기화 설정 페이지 이동 · 상단 즉시 동기화 · 버전 위치 ===== -->
 <style id="sync-management-v37-style">
 /* 단가산정 기준 및 관리: 데이터 관리 아래 동기화 설정 */
@@ -9000,9 +8864,6 @@ header .brand #bomAppVer{display:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
-
 <!-- ===== v38 설비 필터 작동 보완 · 동기화 일시 표시 복원 ===== -->
 <style id="equipment-sync-v38-style">
 #view-equipanalysis .equip-main-tools select{
@@ -9098,9 +8959,6 @@ header .brand #bomAppVer{display:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
-
 <!-- ===== v39 동기화 전면 안정화 · BOM 전용 수정이력 · 사용자/버전 표시 ===== -->
 <style id="sync-history-v39-style">
 header .hbtns{display:flex!important;align-items:center!important;gap:6px!important}
@@ -9385,9 +9243,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
-
 <!-- ===== v40 원자재 정렬 · 품목군 비중폭 · 성능 안정화 ===== -->
 <style id="layout-performance-v40-style">
 /* 원자재 목록: BOM사용·구분 제목과 내용을 모두 가운데 정렬 */
@@ -9414,8 +9269,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v41');
 })();
 </script>
-
-
 <!-- ===== v41 공용/전용/비규격 통합 ===== -->
 <style id="usage-nonstandard-v41-style">
 .usage-chip.nonstandard{background:#f3e8ff;color:#7e22ce;border-color:#d8b4fe}
@@ -9449,8 +9302,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
 <!-- ===== v42 공용품/전용품/비규격 카드 필터 및 비중 표시 ===== -->
 <style id="usage-card-filter-v42-style">
 #view-usage #usageKpis .kpi{cursor:pointer;transition:border-color .14s,box-shadow .14s,transform .14s;background:#fff}
@@ -9563,9 +9414,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
-
 <!-- ===== v43 매출 엑셀 다중 불러오기 안정화 + 공용/전용/비규격 연동 정합성 ===== -->
 <style id="sales-usage-stability-v43-style">
 /* 품목군 관리 그래프 폭을 v42 이전의 자동 폭으로 복원 */
@@ -9793,9 +9641,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
-
 <!-- ===== v43 최종 공용품/전용품/비규격 데이터 정합성 렌더러 ===== -->
 <script id="usage-data-consistency-v43-script">
 (function(){
@@ -9836,9 +9681,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-
-
 <!-- ===== v44 대용량 매출 저장소 · 카드 원가목록 이동 · 상세폭 개선 ===== -->
 <style id="sales-usage-fix-v44-style">
 /* 카드의 '클릭' 보조문구 제거 */
@@ -9881,9 +9723,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   setTimeout(init,300);
 })();
 </script>
-
-
-
 <!-- ===== v45 제품 상세 도면정보 + 매출 연동 도구/파일표시 개선 ===== -->
 <style id="product-sales-ui-v45-style">
 /* 제품 원가 상세 제목: 도면/담당자 배지 */
@@ -9977,9 +9816,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   var oldRender=window.renderSalesFilesV43;if(typeof oldRender==='function'&&!oldRender.__v45Wrapped){var rr=function(){var r=oldRender.apply(this,arguments);renderCriteriaSalesFiles();return r};rr.__v45Wrapped=true;window.renderSalesFilesV43=rr}
 })();
 </script>
-
-
-
 <!-- ===== v46 제품 상세 도면 편집 · 매출 연결버튼 · 원자재 열 재배치 ===== -->
 <style id="product-drawing-raw-layout-v46-style">
 /* 제품 상세 팝업: 도면 상태·담당자를 제목에서 바로 편집 */
@@ -10132,9 +9968,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   setTimeout(init,350);setTimeout(init,1200);
 })();
 </script>
-
-
-
 <!-- ===== v47 제품별 원가 필터 선택방식 정리 ===== -->
 <style id="cost-filter-selection-v47-style">
 /* 전체 필터 초기화: 연한 붉은색 */
@@ -10310,9 +10143,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   [150,500,1200].forEach(function(ms){setTimeout(init,ms)});
 })();
 </script>
-
-
-
 <!-- ===== v48 BOM 단일필터 · 중복 구분필터 제거 · 상세 도면/담당 편집 보완 ===== -->
 <style id="cost-bom-drawing-edit-v48-style">
 /* BOM 필터는 도면구분과 동일한 일반 선택필드 */
@@ -10502,9 +10332,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   /* v75 성능개선: v48 중복 지연 초기화 제거 */
 })();
 </script>
-
-
-
 <!-- ===== USER REQUEST V49: 설비별 분석 열 순서 조정 ===== -->
 <style id="equipment-column-order-v49-style">
 /* 설비구분을 설비명 왼쪽에 배치한 뒤 입력 정렬 유지 */
@@ -10565,9 +10392,6 @@ header .hbtns #bomSyncBtn{order:10!important}
   [0,250,700,1500].forEach(function(ms){setTimeout(init,ms);});
 })();
 </script>
-
-
-
 <!-- ===== USER REQUEST V50: 뒤로가기 상단 · 원자재 구분필터 · 초기화 색상 · 설비구분별 대수 ===== -->
 <style id="user-request-v50-style">
 /* 뒤로가기 버튼을 왼쪽 상단(고정 헤더 아래)으로 이동 */
@@ -10792,9 +10616,6 @@ button[class*="reset" i]:hover{
   [0,250,700,1500].forEach(function(ms){setTimeout(init,ms);});
 })();
 </script>
-
-
-
 <!-- ===== USER REQUEST V51: 설비필터 외곽선 제거 · 설비구분 카드 복원 ===== -->
 <style id="user-request-v51-style">
 /* 설비별 분석: 표 위 필터 박스의 외곽선만 제거 */
@@ -10907,9 +10728,6 @@ button[class*="reset" i]:hover{
   [0,250,700,1500].forEach(function(ms){setTimeout(init,ms);});
 })();
 </script>
-
-
-
 <!-- ===== USER REQUEST V52: 생산 파트별 설비구분 카드 ===== -->
 <style id="user-request-v52-style">
 #view-equipanalysis #equipMainKpis{
@@ -11059,9 +10877,6 @@ button[class*="reset" i]:hover{
   [0,250,700,1500].forEach(function(ms){setTimeout(init,ms);});
 })();
 </script>
-
-
-
 <!-- ===== USER REQUEST V53: 데이터 관리 엑셀 저장/불러오기 왕복 지원 ===== -->
 <style id="user-request-v53-style">
 #view-base .criteria-management-tool[data-key="xlsx-import"] button{
@@ -11348,7 +11163,6 @@ button[class*="reset" i]:hover{
   [0,250,800,1600,3000].forEach(function(ms){setTimeout(function(){setVersion();wrapExcelExport();ensureManagementUi();},ms);});
 })();
 </script>
-
 <!-- ===== V54: 공정 단가표 임율·평균 S/T 기반 참고단가(시간) ===== -->
 <style id="process-reference-price-v54-style">
 #view-price .ptbl .p-rate{font-weight:800;color:#173d6d;background:#f7fbff}
@@ -11356,7 +11170,6 @@ button[class*="reset" i]:hover{
 #view-price .ptbl thead th:nth-child(6),#view-price .ptbl thead th:nth-child(7),#view-price .ptbl thead th:nth-child(8){background:#24527f!important}
 #view-price .ptbl td:nth-child(6),#view-price .ptbl td:nth-child(7),#view-price .ptbl td:nth-child(8){border-left:1px solid #e2eaf3}
 </style>
-
 <!-- ===== V55: 공정 시간/수량 및 포밍 생산성 기준 ===== -->
 <style id="forming-hour-quantity-v56-style">
 #view-price .ptbl .p-hourqty{font-weight:900;color:#1b5e9c;background:#f1f7ff;white-space:nowrap}
@@ -11388,8 +11201,6 @@ button[class*="reset" i]:hover{
   [100,500,1500,3000].forEach(function(ms){setTimeout(function(){setVersion();window.updateFormingPreviewV55();},ms);});
 })();
 </script>
-
-
 <script id="user-request-v56-final-tab-order">
 (function(){
   function moveUsageBeforeDrawing(){
@@ -11400,8 +11211,6 @@ button[class*="reset" i]:hover{
   setTimeout(moveUsageBeforeDrawing,50);setTimeout(moveUsageBeforeDrawing,500);setTimeout(moveUsageBeforeDrawing,1200);
 })();
 </script>
-
-
 <!-- ===== USER REQUEST V57: 설비필터 복구 · 원자재 그래프/EGI 접기 · 메뉴 위치 교환 ===== -->
 <style id="user-request-v57-style">
 #view-equipanalysis .equip-main-tools select.filter-active-v57{
@@ -11551,8 +11360,6 @@ button[class*="reset" i]:hover{
   [80,300,800,1600,3200].forEach(function(ms){setTimeout(init,ms);});
 })();
 </script>
-
-
 <!-- ===== USER REQUEST V58: 공정단가 변수×단위단가 방식 재정립 ===== -->
 <style id="process-variable-pricing-v58-style">
 #view-price .note{line-height:1.7!important}
@@ -11725,8 +11532,6 @@ button[class*="reset" i]:hover{
   [200,700,1600,3200].forEach(function(ms){setTimeout(function(){setVersion();updateHelp();normalizeAll(false);},ms);});
 })();
 </script>
-
-
 <!-- ===== V59: 공정 단가표 흰색 배경 ===== -->
 <style id="process-price-white-v59-style">
 #view-price .card,#view-price .card .cb,#view-price .tablebox,#view-price table.ptbl,
@@ -11746,7 +11551,6 @@ button[class*="reset" i]:hover{
 }
 #view-price .ptbl .p-ex{color:var(--navy)!important}
 </style>
-
 <script id="process-price-standard-v59-script">
 (function(){
   'use strict';
@@ -11802,8 +11606,6 @@ button[class*="reset" i]:hover{
   [500,1800,3600].forEach(function(ms){setTimeout(function(){migrateName();if(typeof renderPrice==='function')renderPrice();var note=document.querySelector('#view-price>.note');if(note&&note.textContent.indexOf('press_cost_estimator')<0)refresh();},ms);});
 })();
 </script>
-
-
 <!-- ===== V60: 도금 kg당 단가 표시 · 도면분석/매출연동 위치 최종 고정 ===== -->
 <style id="process-plating-unit-v60-style">
 #view-price .ptbl .p-flat-cell{white-space:nowrap!important}
@@ -11867,9 +11669,6 @@ button[class*="reset" i]:hover{
   [50,200,600,1200,2500,4500].forEach(function(ms){setTimeout(init,ms);});
 })();
 </script>
-
-
-
 <!-- ===== V61: 제품속성 2단 고정 요약 · 공정단가 적용단가 · 메뉴 초기 안정화 ===== -->
 <style id="product-attribute-price-menu-v61-style">
 /* 메뉴는 DOM 재배치와 무관하게 처음부터 같은 위치에 보이도록 CSS 순서 고정 */
@@ -11999,9 +11798,6 @@ header .tabs #tab-drawowner{order:130}
   [0,60,180,500,1200,2600,5000].forEach(function(ms){setTimeout(init,ms);});
 })();
 </script>
-
-
-
 <!-- ===== V62: 공통 기준 즉시저장·전체적용 / 제품속성 기본단가 분리 ===== -->
 <style id="common-base-unit-price-v62-style">
 /* 제품속성 팝업에서는 드래그로 순서를 바꾸므로 삭제 옆 위·아래 화살표는 표시하지 않음 */
@@ -12137,8 +11933,6 @@ header .tabs #tab-drawowner{order:130}
   [80,300,900,2200].forEach(function(ms){setTimeout(function(){setVersion();installModalHooks();refreshModalRows();},ms);});
 })();
 </script>
-
-
 <!-- ===== V64: 제품 구분별 분석·참고단가(시간)·필터 보정 ===== -->
 <style id="usage-category-price-v64-style">
 /* 공정 단가표 숫자 표시 및 적용단가 위치 */
@@ -12303,8 +12097,6 @@ header .tabs #tab-drawowner{order:130}
   [80,300,900,2200].forEach(function(ms){setTimeout(init,ms)});
 })();
 </script>
-
-
 <!-- ===== V65: 공정비 공통표 연동 · 제품구분 단일필터 · 품목군 카드필터 · 공정별 계산방식 ===== -->
 <style id="process-cost-category-mode-v65-style">
 /* 단가산정 기준: 공정비 공통 기준표 */
@@ -12535,7 +12327,6 @@ header .tabs #tab-drawowner{order:130}
   [80,300,900,2300,5200].forEach(function(ms){setTimeout(init,ms)});
 })();
 </script>
-
 <!-- ===== V66: 적용단가 입력 안정화 · 제품구분 다중필터 · 분석카드 클릭 확정 ===== -->
 <style id="v66-final-fixes-style">
 /* 공정 단가표 적용단가 입력 안정화 */
@@ -12676,9 +12467,6 @@ header .tabs #tab-drawowner{order:130}
   [80,300,900,2200,5000].forEach(function(ms){setTimeout(init,ms)});
 })();
 </script>
-
-
-
 <!-- ===== V67: 제품구분 필터 위치 · 분석카드 확정 · 구분방식별 기본단가 ===== -->
 <style id="v67-final-fixes-style">
 /* 제품구분 다중필터는 필터 초기화 버튼 바로 왼쪽에 표시 */
@@ -12797,7 +12585,6 @@ header .tabs #tab-drawowner{order:130}
   /* v75 성능개선: 구버전 반복 타이머 제거 */
 })();
 </script>
-
 <!-- ===== V68: 제품구분 필터 최종 위치 · 레이저 치수기준 가공비 ===== -->
 <style id="v68-laser-filter-style">
 /* 제품구분 다중필터는 모든 일반 필터 뒤, 초기화 버튼 바로 앞에 고정 */
@@ -13009,8 +12796,6 @@ header .tabs #tab-drawowner{order:130}
   var verEl=id('bomAppVer');if(verEl&&!verEl.__v68Observer){verEl.__v68Observer=new MutationObserver(function(){if(!/v68/.test(verEl.textContent||''))setVersion()});verEl.__v68Observer.observe(verEl,{childList:true,characterData:true,subtree:true})}
 })();
 </script>
-
-
 <!-- ===== V69: 레이저 배수·기본단가 연동 · 공정표 산출식 · 제품구분 필터 위치 확정 ===== -->
 <style id="v69-laser-multiplier-filter-style">
 /* 제품별 원가 필터: 제품 구분을 초기화 버튼 바로 왼쪽에 고정 */
@@ -13320,8 +13105,6 @@ header .tabs #tab-drawowner{order:130}
   var ver=id('bomAppVer');if(ver&&!ver.__v69Obs){ver.__v69Obs=new MutationObserver(function(){if(!/v69/.test(ver.textContent||''))setVersion()});ver.__v69Obs.observe(ver,{childList:true,subtree:true,characterData:true})}
 })();
 </script>
-
-
 <!-- ===== V70: 제품별 원가 검색줄 버튼 배치 · 도면/제품구분 필터 순서 · 레이저 현재방식 고정 ===== -->
 <style id="v70-cost-filter-laser-mode-fix-style">
 /* 1행: 일반 필터 → 도면 구분 → 제품 구분 → 초기화/건수 */
@@ -13508,8 +13291,6 @@ header .tabs #tab-drawowner{order:130}
   /* v75 성능개선: 중복 지연 초기화 제거 */
 })();
 </script>
-
-
 <!-- ===== V72: 제품속성 레이저 산출식 우측 배치 · 레이저 공정명 통합 · 동기화 보정 ===== -->
 <style id="v71-product-laser-sync-fix-style">
 /* 제품속성 창을 조금 더 넓히고 오른쪽 제조원가 패널 폭 확대 */
@@ -13673,9 +13454,6 @@ header .tabs #tab-drawowner{order:130}
   document.addEventListener('change',function(e){var t=e.target;if(t&&t.classList&&t.classList.contains('d-proc')&&exactLegacy(t.value)){t.value=CANON;try{window.recalcModal()}catch(x){}}},true);
 })();
 </script>
-
-
-
 <!-- ===== V73: 검색줄 버튼 우측 고정 · 제품구분 일반글꼴/위쪽 펼침 ===== -->
 <style id="v73-cost-search-usage-popup-style">
 /* 검색줄: 검색필드 오른쪽에 숨김 제품 보기와 품목 추가를 순서대로 고정 */
@@ -13815,9 +13593,6 @@ header .tabs #tab-drawowner{order:130}
   /* v75 성능개선: 중복 지연 초기화 제거 */
 })();
 </script>
-
-
-
 <!-- ===== V74: 검색줄 버튼 완전 한줄 · 제품구분 공정필터형 통일 ===== -->
 <style id="v74-cost-toolbar-usage-process-style">
 /* 검색창 → 숨김 제품 보기 → 품목 추가: 화면 폭과 관계없이 같은 줄 유지 */
@@ -14109,9 +13884,6 @@ header .tabs #tab-drawowner{order:130}
   }
 })();
 </script>
-
-
-
 <!-- ===== V75: 제품 원가 담당자 선택 연동 · 렌더링 경량화 ===== -->
 <style id="v75-owner-performance-style">
 #overlay .product-owner-attr-v75{
@@ -14287,8 +14059,6 @@ header .tabs #tab-drawowner{order:130}
   window.invalidateCostCacheV75=invalidate;
 })();
 </script>
-
-
 <!-- ===== V76: 팝업 즉시 표시 · BOM/도면 필터 경량화 · 전체 반응속도 개선 ===== -->
 <style id="v76-performance-style">
 /* 제품 원가 팝업은 외곽창을 먼저 표시하고 본문을 다음 프레임에 채운다. */
@@ -14540,9 +14310,6 @@ header .tabs #tab-drawowner{order:130}
   window.invalidatePerformanceCacheV76=bump;
 })();
 </script>
-
-
-
 <!-- ===== V77: 필터박스 글꼴 일반체 ===== -->
 <style id="v77-filter-font-normal">
 /* 제품별 원가의 모든 필터박스 및 펼침 목록 글자를 일반체로 표시 */
@@ -14571,9 +14338,6 @@ header .tabs #tab-drawowner{order:130}
   setTimeout(setV77,7000);
 })();
 </script>
-
-
-
 <!-- ===== V78: 구글드라이브 도면 업로드 · 지정 계정 공유 ===== -->
 <style id="v79-drive-drawing-style">
 #view-draw .draw-analysis-tools .drive-tool-btn,
@@ -14669,8 +14433,6 @@ function init(){setVersion();installWraps();ensureToolbar();decorateAll();setTim
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(init,650)});setTimeout(setVersion,7000);
 })();
 </script>
-
-
 <!-- ===== V81: 도면 업로드 후 도면 있음 즉시 반영 ===== -->
 <script id="v81-drawing-status-sync-fix">
 (function(){
@@ -14691,9 +14453,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   };
 })();
 </script>
-
-
-
 <!-- ===== V82: Dwg share 폴더 표시 · 도면상태 즉시변경 · 행위치 고정 ===== -->
 <script id="v82-drawing-stable-row-fix">
 (function(){
@@ -14728,9 +14487,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(init,500)});
 })();
 </script>
-
-
-
 <!-- ===== V83: 즉시 팝업 · 제목줄 도면담당자 · 상태 즉시반영 · 페이지 지연렌더 최적화 ===== -->
 <style id="v83-final-performance-style">
 /* 로딩 중에는 무거운 팝업 본문을 레이아웃에서 제외하여 제목창을 먼저 즉시 표시 */
@@ -14875,8 +14631,6 @@ setTimeout(install,1600);setTimeout(install,7200);setTimeout(setVersion,9000);
 window.invalidatePerformanceCacheV83=bump;
 })();
 </script>
-
-
 <!-- ===== V84: 팝업 무깜빡임 · 제목줄 도면상태/담당자 완전연동 ===== -->
 <style id="v84-modal-stable-header-style">
 /* 기존 2단계 로딩 화면을 사용하지 않고, 상세 내용이 완성된 뒤 한 번에 표시 */
@@ -14978,8 +14732,6 @@ install();if(document.readyState==='loading')document.addEventListener('DOMConte
 window.refreshCostModalHeaderV84=function(){if(activeIdx>=0)refreshHeader(activeIdx)};
 })();
 </script>
-
-
 <!-- ===== V85: 품번 단위 도면상태 · 공유계정 이름/목록 · 동기화 경량화 ===== -->
 <style id="v85-drawing-account-style">
 .v85-account-overlay{position:fixed;inset:0;z-index:10050;background:rgba(9,20,39,.58);display:flex;align-items:center;justify-content:center;padding:22px}
@@ -15059,9 +14811,6 @@ function init(){bind();setTimeout(bind,350)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(bind,700)});setTimeout(bind,1800);setTimeout(bind,8000);setTimeout(setVersion,11000);
 })();
 </script>
-
-
-
 <!-- ===== V86: 품목군 폴더 업로드 · 원가페이지 버튼 고정 · 팝업 원프레임 표시 ===== -->
 <style id="v86-stable-performance-style">
 /* 제품별 원가 관리 버튼은 첫 렌더부터 같은 폭을 차지하여 수정·숨김·삭제 버튼이 움직이지 않음 */
@@ -15148,8 +14897,6 @@ setTimeout(setVersion,12500);
 window.stabilizeCostActionsV86=stabilizeActionButtons;
 })();
 </script>
-
-
 <!-- ===== V87: 공정수정 즉시반영 · 원프레임 팝업 · 중복 재계산 제거 ===== -->
 <style id="v87-process-save-modal-style">
 /* 팝업은 제목/공정/원가정보가 모두 준비된 한 화면만 노출 */
@@ -15271,14 +15018,10 @@ function installModalFix(){
   fixed.__v84Raw=base;fixed.__v83Raw=base;fixed.__v76Raw=base;window.openDetail=fixed;
 }
 function install(){setVersion();installSaveFix();installModalFix()}
-install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,60)});
-[500,2200,7800,12500,14000].forEach(function(ms){setTimeout(install,ms)});setTimeout(setVersion,14500);
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
 window.updateCostProcessRowV87=updateCostRow;
 })();
 </script>
-
-
-
 <!-- ===== V88: Drive 삭제 완전정리 · 품목군 집계/막대 즉시연동 ===== -->
 <style id="v88-drawing-delete-group-style">
 #drawGroupBody .draw-mini-fill,#drawOverallBars .draw-barfill{transition:width .12s ease-out!important}
@@ -15314,13 +15057,10 @@ async function deleteDrawing(pn,button){pn=clean(pn);if(!pn||deleting[pn])return
 function captureDelete(e){var b=e.target&&e.target.closest?e.target.closest('[data-drive-delete]'):null;if(!b)return;e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();deleteDrawing(b.getAttribute('data-drive-delete'),b)}
 function install(){setVersion();wrapStatus();clearTimeout(installTimer);installTimer=setTimeout(function(){wrapStatus();setVersion()},80)}
 window.addEventListener('click',captureDelete,true);
-install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,120)});[700,2600,8500,15500,18000].forEach(function(ms){setTimeout(install,ms)});setTimeout(setVersion,19000);
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
 window.refreshDrawingAggregatesV88=refreshAggregates;
 })();
 </script>
-
-
-
 <!-- ===== V89: 간편산정 공정표 통일 · 레이저 결과식 · 설비 필드 그룹색상 ===== -->
 <style id="v89-quick-process-equipment-colors-style">
 /* 원가 간편산정 공정표를 제품별 원가 팝업 공정표와 동일 구조로 표시 */
@@ -15439,9 +15179,6 @@ window.refreshDrawingAggregatesV88=refreshAggregates;
   install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,250)});setTimeout(setVersion,1500);
 })();
 </script>
-
-
-
 <!-- ===== V90: 도면 삭제 영구반영 · 서버/동기화 재생성 차단 · 도면분석 비고 제거 ===== -->
 <style id="v90-drawing-delete-final-style">
 #view-draw .draw-inline-table .draw-drive-head,
@@ -15484,13 +15221,10 @@ function wrapRender(name){var fn=window[name];if(typeof fn!=='function'||fn.__v9
 function wrapStatus(){var fn=window.applyDrawingStatusInPlaceV82;if(typeof fn!=='function'||fn.__v90Tombstone)return;var w=function(pn,has){pn=clean(pn);if(has){var map=read(DRAW_KEY,{}),r=map[pn]||{};if(clean(r.fileId)&&r.fileDeletedAt){delete r.fileDeletedAt;map[pn]=r;write(DRAW_KEY,map)}}var out=fn.apply(this,arguments);updateCell(pn);scheduleStrip();return out};w.__v90Tombstone=true;w.__v90Raw=fn;window.applyDrawingStatusInPlaceV82=w}
 function install(){setVersion();wrapRender('renderDrawingAnalysis');wrapRender('renderOwnerAnalysis');wrapStatus();window.refreshDrawingFilesV79=refreshFiles;window.refreshDrawingFilesV85=refreshFiles;var b=id('driveDrawingRefreshBtn');if(b)b.onclick=function(){refreshFiles(true)};scheduleStrip()}
 if(!window.__v90DeleteCapture){window.__v90DeleteCapture=true;window.addEventListener('click',capture,true)}
-install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,120)});[800,2800,9000,16000].forEach(function(ms){setTimeout(install,ms)});setTimeout(setVersion,17000);
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
 window.refreshDrawingFilesV90=refreshFiles;
 })();
 </script>
-
-
-
 <!-- ===== V91: 도면 버튼 3열 고정 · 미등록 교체/삭제 비활성 · 업로드 후 즉시 활성 ===== -->
 <style id="v91-drawing-action-layout-style">
 #view-draw .draw-inline-table .draw-drive-head,
@@ -15636,9 +15370,6 @@ install();if(document.readyState==='loading')document.addEventListener('DOMConte
 window.refreshDrawingActionLayoutV91=function(){try{if(typeof window.decorateDrawingButtonsNowV96==='function')window.decorateDrawingButtonsNowV96()}catch(e){}};
 })();
 </script>
-
-
-
 <!-- ===== V92: 원가 간편산정 공정표 가로스크롤 제거 · 열폭 압축 ===== -->
 <style id="v92-quick-table-compact-style">
 /* ② 공정비 산정 표를 한 화면에 맞춤 */
@@ -15735,9 +15466,6 @@ window.refreshDrawingActionLayoutV91=function(){try{if(typeof window.decorateDra
   setTimeout(setV,1800);
 })();
 </script>
-
-
-
 <!-- ===== V93: 도면 삭제 재생성 완전 차단 · 서버 삭제원장 연동 ===== -->
 <style id="v93-drawing-delete-guard-style">
 .draw-drive-actions button[data-v93-busy="1"]{opacity:.55!important;pointer-events:none!important}
@@ -15831,10 +15559,9 @@ function installTabRefresh(){
   window.refreshDrawingFilesV79=refreshServer;window.refreshDrawingFilesV85=refreshServer;window.refreshDrawingFilesV90=refreshServer;window.refreshDrawingFilesV93=refreshServer;
 }
 function install(){if(installing)return;installing=true;try{setVersion();installStorageGuard();sanitizeNow(true);installSyncShield();installTabRefresh()}finally{installing=false}}
-install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,150)});[800,2500,7000].forEach(function(ms){setTimeout(install,ms)});setTimeout(setVersion,9000);
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
 })();
 </script>
-
 <!-- ===== V98: 도면 담당자 표시 · DWG/PDF 이중 업로드 ===== -->
 <style id="v98-drawing-dual-file-style">
 #view-draw.v97-building #drawGroupBody,
@@ -15854,7 +15581,6 @@ install();if(document.readyState==='loading')document.addEventListener('DOMConte
 .v97-progress{position:fixed;z-index:21000;left:50%;top:50%;transform:translate(-50%,-50%);background:#16284a;color:#fff;border-radius:10px;padding:14px 20px;box-shadow:0 18px 55px rgba(0,0,0,.3);font-size:13px;font-weight:800;min-width:260px;text-align:center}
 #view-draw .draw-analysis-tools:before{content:'담당자';font-size:11px;font-weight:800;color:#5b6b82;margin-right:-4px}
 </style>
-
 <style id="v98-menu-stability-style">
 header .tabs button{pointer-events:auto!important}
 .v98-owner-select{width:100%!important;height:28px!important;border:1px solid #c9d3e0!important;border-radius:6px!important;background:#fff!important;color:#24354d!important;font-size:11px!important;padding:3px 6px!important}
@@ -15915,13 +15641,10 @@ async function deleteFile(pn,kind){var map=readMap(),m=typedMeta(map[pn]||{},kin
 function installEvents(){if(document.__v98DrawingEvents)return;document.__v98DrawingEvents=true;document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-v98-upload],[data-v98-download],[data-v98-delete]');if(!b||b.disabled)return;var stack=b.closest('.v98-file-stack'),pn=clean(stack&&stack.getAttribute('data-v98-pn')),kind=clean(b.getAttribute('data-v98-upload')||b.getAttribute('data-v98-download')||b.getAttribute('data-v98-delete')).toUpperCase();if(!pn||!kind)return;e.preventDefault();e.stopPropagation();if(b.hasAttribute('data-v98-upload'))chooseFile(pn,kind);else if(b.hasAttribute('data-v98-download'))downloadFile(pn,kind);else deleteFile(pn,kind)},false);document.addEventListener('click',function(e){var tab=e.target.closest&&e.target.closest('#tab-draw,#tab-drawowner');if(!tab)return;setTimeout(function(){scheduleDecorateVisible();if(Date.now()-lastRefresh>60000)refreshFiles(false)},120)},false)}
 function wrapAfter(name,viewId,markers){var cur=window[name];if(typeof cur!=='function'||cur.__v98Dual)return;var w=function(){var out=cur.apply(this,arguments);decorateView(viewId);return out};w.__v98Dual=true;w.__v98Raw=cur;(markers||[]).forEach(function(m){w[m]=true});window[name]=w}
 function bindRefresh(){var b=id('driveDrawingRefreshBtn');if(b&&!b.__v98Bound){b.__v98Bound=true;b.onclick=function(){refreshFiles(true)}}}
-function install(){if(installed)return;installed=true;setVersion();installEvents();wrapAfter('renderDrawingAnalysis','view-draw',['__v96Stable','__v95StableRender','__v94FastDraw','__v91Buttons','__v90NoteStrip','__v79Drive']);wrapAfter('renderOwnerAnalysis','view-drawowner',['__v96Stable','__v94FastDraw','__v91Buttons','__v90NoteStrip','__v79Drive']);wrapAfter('openDrawGroup','view-draw',['__v96Stable','__v95StableGroup']);wrapAfter('closeDrawGroup','view-draw',['__v96Stable','__v95StableGroup']);wrapAfter('closeOwnerGroup','view-drawowner',['__v96Stable','__v95StableGroup']);bindRefresh();window.refreshDrawingFilesV79=refreshFiles;window.refreshDrawingFilesV85=refreshFiles;window.refreshDrawingFilesV90=refreshFiles;window.refreshDrawingFilesV93=refreshFiles;window.refreshDrawingFilesV97=refreshFiles;window.refreshDrawingFilesV98=refreshFiles;window.refreshDrawingActionLayoutV91=scheduleDecorateVisible;window.decorateDrawingButtonsNowV94=scheduleDecorateVisible;window.decorateDrawingButtonsNowV95=scheduleDecorateVisible;window.decorateDrawingButtonsNowV96=scheduleDecorateVisible;window.decorateDrawingButtonsNowV97=scheduleDecorateVisible;window.decorateDrawingButtonsNowV98=scheduleDecorateVisible;scheduleDecorateVisible();var idle=function(){if(syncState().url&&syncState().key)refreshFiles(false)};if(window.requestIdleCallback)requestIdleCallback(idle,{timeout:2500});else setTimeout(idle,1200)}
+function install(){if(installed)return;installed=true;setVersion();installEvents();wrapAfter('renderDrawingAnalysis','view-draw',['__v96Stable','__v95StableRender','__v94FastDraw','__v91Buttons','__v90NoteStrip','__v79Drive']);wrapAfter('renderOwnerAnalysis','view-drawowner',['__v96Stable','__v94FastDraw','__v91Buttons','__v90NoteStrip','__v79Drive']);wrapAfter('openDrawGroup','view-draw',['__v96Stable','__v95StableGroup']);wrapAfter('closeDrawGroup','view-draw',['__v96Stable','__v95StableGroup']);wrapAfter('closeOwnerGroup','view-drawowner',['__v96Stable','__v95StableGroup']);bindRefresh();window.refreshDrawingFilesV79=refreshFiles;window.refreshDrawingFilesV85=refreshFiles;window.refreshDrawingFilesV90=refreshFiles;window.refreshDrawingFilesV93=refreshFiles;window.refreshDrawingFilesV97=refreshFiles;window.refreshDrawingFilesV98=refreshFiles;window.refreshDrawingActionLayoutV91=scheduleDecorateVisible;window.decorateDrawingButtonsNowV94=scheduleDecorateVisible;window.decorateDrawingButtonsNowV95=scheduleDecorateVisible;window.decorateDrawingButtonsNowV96=scheduleDecorateVisible;window.decorateDrawingButtonsNowV97=scheduleDecorateVisible;window.decorateDrawingButtonsNowV98=scheduleDecorateVisible;scheduleDecorateVisible();/* 서버 도면 조회는 도면분석 메뉴 또는 새로고침 버튼에서만 실행 */}
 install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});window.addEventListener('load',function(){bindRefresh();scheduleDecorateVisible()},{once:true});
 })();
 </script>
-
-
-
 <script id="v99-version-display-finalizer">
 (function(){
 'use strict';
@@ -15942,9 +15665,6 @@ setTimeout(apply,250);
 setTimeout(apply,1500);
 })();
 </script>
-
-
-
 <!-- ===== V100: 제품별 원가 전체 필터 정상화 · 도면번호 제거 · 특정업체 안내색 보정 ===== -->
 <style id="v100-filter-drawing-cleanup-style">
 /* 도면분석에서 도면번호 열을 완전히 숨김 */
@@ -16074,26 +15794,14 @@ function setVersion(){
   var v=id('bomAppVer');if(v){
     var suffix='',m=String(v.textContent||'').match(/(\s*·\s*.+)$/);if(m)suffix=m[1];
     var target='버전 '+VER+suffix;if(v.textContent!==target)v.textContent=target;
-    if(!v.__v100VersionObserver){
-      v.__v100VersionObserver=true;
-      new MutationObserver(function(){
-        var mm=String(v.textContent||'').match(/(\s*·\s*.+)$/),ss=mm?mm[1]:'';
-        var tt='버전 '+VER+ss;if(v.textContent!==tt)v.textContent=tt;
-      }).observe(v,{childList:true,characterData:true,subtree:true});
-    }
   }
-  document.title='제품별 제조원가 프로그램 v102 | (주)동방파스텍';
+  document.title='제품별 제조원가 프로그램 v106 | (주)동방파스텍';
 }
 function install(){installCostFilterRender();installDrawingCleanup();setVersion()}
 install();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
-window.addEventListener('load',function(){install();cleanupDrawingAnalysis();setVersion()},{once:true});
-setTimeout(function(){install();cleanupDrawingAnalysis();setVersion()},300);
 })();
 </script>
-
-
-
 <!-- ===== V102: 품목/규격 보기 멈춤 방지 · 검색필드 우측 정렬 ===== -->
 <style id="v102-drawing-item-fast-search-layout">
 #view-draw .draw-analysis-tools{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:nowrap!important;width:100%!important}
@@ -16125,15 +15833,204 @@ function setVersion(){
     var target='버전 v102'+s;
     if(v.textContent!==target)v.textContent=target;
   }
-  document.title='제품별 제조원가 프로그램 v102 | (주)동방파스텍';
+  document.title='제품별 제조원가 프로그램 v106 | (주)동방파스텍';
 }
 function init(){placeSearch();setVersion();}
-init();
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
-window.addEventListener('load',init,{once:true});
-setTimeout(init,200);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
+<!-- ===== V103: 하위 BOM 원자재 검색선택 · 도면상태 업로드 자동전용 ===== -->
+<style id="v103-bom-raw-search-drawing-auto-style">
+/* 하위 BOM 원자재 검색형 선택기 */
+#view-cost .bom-entry-grid .be-raw-combo{position:relative;min-width:180px;width:100%}
+#view-cost .bom-entry-grid .be-raw-search{width:100%!important;height:32px!important;padding:7px 30px 7px 9px!important;border:1px solid var(--line)!important;border-radius:7px!important;background:#fff!important;color:var(--txt)!important;font-family:inherit!important;font-size:12px!important;box-sizing:border-box!important}
+#view-cost .bom-entry-grid .be-raw-search:focus{outline:none!important;border-color:var(--blue)!important;box-shadow:0 0 0 2px rgba(47,111,176,.10)!important}
+#view-cost .bom-entry-grid .be-raw-combo::after{content:'⌄';position:absolute;right:9px;top:5px;color:#7890aa;font-size:15px;pointer-events:none}
+#view-cost .be-raw-menu{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:10050;max-height:280px;overflow:auto;border:1px solid #bfcddd;border-radius:8px;background:#fff;box-shadow:0 10px 28px rgba(25,50,80,.18);padding:4px}
+#view-cost .be-raw-menu[hidden]{display:none!important}
+#view-cost .be-raw-option{display:grid!important;grid-template-columns:minmax(90px,125px) minmax(120px,1fr);gap:2px 8px;width:100%;padding:7px 8px!important;border:0!important;border-radius:6px!important;background:#fff!important;color:#26384f!important;text-align:left!important;cursor:pointer!important;font-size:11.5px!important;font-weight:600!important}
+#view-cost .be-raw-option:hover,#view-cost .be-raw-option.active{background:#edf5ff!important;color:#174f86!important}
+#view-cost .be-raw-option .raw-code{font-weight:900;color:#2867a3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#view-cost .be-raw-option .raw-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#view-cost .be-raw-option .raw-spec{grid-column:1/-1;color:#6e7e91;font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#view-cost .be-raw-option .raw-kind{display:inline-block;margin-left:5px;padding:1px 5px;border-radius:8px;background:#eef3f0;color:#53705e;font-size:9.5px;font-weight:900}
+#view-cost .be-raw-empty{padding:12px 9px;color:#8794a5;font-size:11.5px;text-align:center}
 
-</body>
+/* 도면 있음/없음은 실제 DWG/PDF 등록 결과만 표시 */
+.draw-toggle.draw-auto-only,.draw-toggle:disabled{opacity:1!important;cursor:default!important;pointer-events:none!important;filter:none!important;box-shadow:none}
+#m-title .m-draw-edit-v46 select.draw-auto-only,
+#m-title .m-draw-edit-v48 select.draw-auto-only,
+#m-title select[id^="m-draw-status"].draw-auto-only{appearance:none!important;-webkit-appearance:none!important;pointer-events:none!important;cursor:default!important;opacity:1!important;background:#f3f6f9!important;color:#526579!important;padding-right:6px!important}
+#m-title .m-draw-edit-v46 select.draw-auto-only:disabled,
+#m-title .m-draw-edit-v48 select.draw-auto-only:disabled,
+#m-title select[id^="m-draw-status"].draw-auto-only:disabled{-webkit-text-fill-color:#526579!important}
+</style>
+<script id="v103-bom-raw-search-drawing-auto-script">
+(function(){
+'use strict';
+var VER='v106',DRAW_KEY='dbfastec_cost_drawings_v1';
+var observer=null,queued=false,activeInput=null;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function norm(v){return clean(v).toLowerCase().replace(/\s+/g,' ')}
+function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function hasActualFile(r){r=r&&typeof r==='object'?r:{};return !!(clean(r.dwgFileId)||clean(r.pdfFileId)||clean(r.fileId))}
+function normalizeDrawingMap(map){
+  map=map&&typeof map==='object'?map:{};var changed=[];
+  Object.keys(map).forEach(function(pn){
+    var r=map[pn]&&typeof map[pn]==='object'?Object.assign({},map[pn]):{},actual=hasActualFile(r),before=JSON.stringify(r);
+    r.has=actual;
+    if(actual){if(!clean(r.status)||clean(r.status)==='미등록')r.status='보유';if(!clean(r.date))r.date=new Date().toISOString().slice(0,10)}
+    else if(!clean(r.status)||clean(r.status)==='보유')r.status='미등록';
+    map[pn]=r;if(before!==JSON.stringify(r))changed.push(pn);
+  });
+  return {map:map,changed:changed};
+}
+function rawList(){try{return typeof window.rawMaterialsList==='function'?(window.rawMaterialsList()||[]):[]}catch(e){return []}}
+function rawLabel(r){return [clean(r&&r.code),clean(r&&r.name),clean(r&&r.spec)].filter(Boolean).join(' | ')}
+function rawHay(r){return norm([r&&r.code,r&&r.name,r&&r.spec,r&&r.kind,r&&r.unit].join(' '))}
+function matchRaw(r,q){var toks=norm(q).split(' ').filter(Boolean),hay=rawHay(r);return !toks.length||toks.every(function(t){return hay.indexOf(t)>=0})}
+function comboMarkup(){return '<div class="be-raw-combo"><input type="search" class="be-raw-search" placeholder="원자재 품번·품명·규격 검색·선택" autocomplete="off" aria-label="원자재 검색 및 선택"><div class="be-raw-menu" hidden></div></div>'}
+function bomForm(root,pn,compact){
+  var key=clean(root||pn||'');
+  return '<div class="bom-entry" data-root="'+esc(key)+'"><div class="bom-entry-title">＋ 하위 BOM 직접 입력 '+(compact?'<span class="muted">(추가 입력)</span>':'')+'</div><div class="bom-entry-grid">'+
+    '<select class="be-kind"><option>반제품</option><option>부자재</option><option>제품</option><option>원자재</option><option>스크랩</option></select>'+comboMarkup()+
+    '<input class="be-code" placeholder="품번/자재코드"><input class="be-name" placeholder="품명"><input class="be-spec" placeholder="규격">'+
+    '<input class="be-qty" placeholder="소요량" inputmode="decimal"><input class="be-unit" placeholder="단위" value="EA"><button onclick="addUserBomRow(this)">저장</button></div></div>';
+}
+function installBomFormOverride(){
+  if(window.bomInputForm&&window.bomInputForm.__v103RawSearch)return;
+  var fn=function(root,pn,compact){return bomForm(root,pn,!!compact)};fn.__v103RawSearch=true;window.bomInputForm=fn;
+}
+function upgradeEntry(box){
+  if(!box||box.querySelector('.be-raw-search'))return;
+  var old=box.querySelector('select.be-raw');if(!old)return;
+  var holder=document.createElement('div');holder.innerHTML=comboMarkup();old.replaceWith(holder.firstElementChild);
+}
+function upgradeEntries(root){(root||document).querySelectorAll&&root.querySelectorAll('.bom-entry').forEach(upgradeEntry)}
+function menuFor(input){return input&&input.closest('.be-raw-combo')&&input.closest('.be-raw-combo').querySelector('.be-raw-menu')}
+function closeMenu(input){var m=menuFor(input);if(m)m.hidden=true;if(input)input.removeAttribute('aria-expanded');if(activeInput===input)activeInput=null}
+function closeAll(except){document.querySelectorAll('.be-raw-menu:not([hidden])').forEach(function(m){var inp=m.parentNode&&m.parentNode.querySelector('.be-raw-search');if(inp!==except)closeMenu(inp)})}
+function renderMenu(input){
+  var menu=menuFor(input);if(!menu)return;var all=rawList(),q=input.value||'',found=[];
+  for(var i=0;i<all.length&&found.length<80;i++)if(matchRaw(all[i],q))found.push({r:all[i],i:i});
+  if(!found.length)menu.innerHTML='<div class="be-raw-empty">검색 조건에 맞는 원자재가 없습니다.</div>';
+  else menu.innerHTML=found.map(function(x,n){var r=x.r;return '<button type="button" class="be-raw-option'+(n===0?' active':'')+'" data-raw-index="'+x.i+'"><span class="raw-code">'+esc(r.code||'-')+'</span><span class="raw-name">'+esc(r.name||'-')+'<span class="raw-kind">'+esc(r.kind||'원자재')+'</span></span><span class="raw-spec">'+esc(r.spec||'-')+' · '+esc(r.unit||'EA')+'</span></button>'}).join('');
+  menu.hidden=false;input.setAttribute('aria-expanded','true');activeInput=input;
+}
+function applyRaw(input,index){
+  var r=rawList()[Number(index)],box=input&&input.closest('.bom-entry');if(!r||!box)return;
+  var set=function(sel,val){var e=box.querySelector(sel);if(e)e.value=val==null?'':val};
+  set('.be-kind',r.kind||'원자재');set('.be-code',r.code||'');set('.be-name',r.name||'');set('.be-spec',r.spec||'');set('.be-unit',r.unit||'KG');
+  var qty=box.querySelector('.be-qty');if(qty&&!clean(qty.value))qty.value='1';input.value=rawLabel(r);closeMenu(input);input.blur();
+  try{if(typeof window.toast==='function')window.toast('원자재가 선택되었습니다.')}catch(e){}
+}
+function moveActive(input,delta){
+  var menu=menuFor(input),opts=menu?Array.prototype.slice.call(menu.querySelectorAll('.be-raw-option')):[];if(!opts.length)return;
+  var cur=opts.findIndex(function(o){return o.classList.contains('active')}),next=Math.max(0,Math.min(opts.length-1,(cur<0?0:cur)+delta));
+  opts.forEach(function(o,i){o.classList.toggle('active',i===next)});opts[next].scrollIntoView({block:'nearest'});
+}
+function bindComboEvents(){
+  if(document.__v103RawComboEvents)return;document.__v103RawComboEvents=true;
+  document.addEventListener('focusin',function(e){var input=e.target.closest&&e.target.closest('.be-raw-search');if(!input)return;closeAll(input);renderMenu(input)},true);
+  document.addEventListener('input',function(e){var input=e.target.closest&&e.target.closest('.be-raw-search');if(input)renderMenu(input)},true);
+  document.addEventListener('keydown',function(e){var input=e.target.closest&&e.target.closest('.be-raw-search');if(!input)return;if(e.key==='ArrowDown'){e.preventDefault();if(menuFor(input).hidden)renderMenu(input);else moveActive(input,1)}else if(e.key==='ArrowUp'){e.preventDefault();moveActive(input,-1)}else if(e.key==='Enter'){var a=menuFor(input).querySelector('.be-raw-option.active');if(a){e.preventDefault();applyRaw(input,a.getAttribute('data-raw-index'))}}else if(e.key==='Escape'){e.preventDefault();closeMenu(input)}},true);
+  document.addEventListener('mousedown',function(e){var opt=e.target.closest&&e.target.closest('.be-raw-option');if(opt){e.preventDefault();var input=opt.closest('.be-raw-combo').querySelector('.be-raw-search');applyRaw(input,opt.getAttribute('data-raw-index'));return}if(!e.target.closest||!e.target.closest('.be-raw-combo'))closeAll(null)},true);
+}
+function blockedToggle(ev){if(ev){ev.preventDefault();ev.stopPropagation()}try{if(typeof window.toast==='function')window.toast('도면 상태는 DWG/PDF 업로드·삭제 시 자동으로 변경됩니다.')}catch(e){}return false}
+function lockToggleFunctions(){
+  ['toggleDrawing','toggleUsageDrawingV43'].forEach(function(name){try{Object.defineProperty(window,name,{configurable:true,enumerable:true,get:function(){return blockedToggle},set:function(){}})}catch(e){window[name]=blockedToggle}});
+}
+function isDrawBinarySelect(sel){
+  if(!sel||sel.id==='f-draw')return false;var label=sel.closest('label'),txt=clean(label&&label.textContent);if(txt.indexOf('도면')<0&&String(sel.id||'').indexOf('m-draw-status')<0)return false;
+  var vals=Array.prototype.map.call(sel.options||[],function(o){return clean(o.textContent)});return vals.indexOf('있음')>=0&&vals.indexOf('없음')>=0;
+}
+function lockStatusUi(root){
+  var scope=root&&root.querySelectorAll?root:document;
+  scope.querySelectorAll('.draw-toggle').forEach(function(b){b.classList.add('draw-auto-only');b.disabled=true;b.setAttribute('aria-disabled','true');b.removeAttribute('onclick');b.title='DWG 또는 PDF 도면 등록 시 자동으로 변경됩니다.'});
+  scope.querySelectorAll('select').forEach(function(sel){if(!isDrawBinarySelect(sel))return;sel.classList.add('draw-auto-only');sel.disabled=true;sel.setAttribute('aria-disabled','true');sel.removeAttribute('onchange');sel.title='DWG 또는 PDF 도면 등록 시 자동으로 변경됩니다.'});
+}
+function installStorageRule(){
+  if(Storage.prototype.__v103DrawingFileOnly)return;Storage.prototype.__v103DrawingFileOnly=true;var prev=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(k,v){
+    if(this===localStorage&&String(k)===DRAW_KEY){try{var parsed=JSON.parse(String(v)||'{}'),z=normalizeDrawingMap(parsed);v=JSON.stringify(z.map)}catch(e){}}
+    return prev.call(this,k,v);
+  };
+}
+function sanitizeStored(){
+  var map=read(DRAW_KEY,{}),z=normalizeDrawingMap(map);if(z.changed.length){localStorage.setItem(DRAW_KEY,JSON.stringify(z.map));z.changed.forEach(function(pn){try{if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(pn,!!z.map[pn].has)}catch(e){}})}return z.map;
+}
+function scheduleDecorate(root){
+  if(root&&root.nodeType===1){upgradeEntries(root);lockStatusUi(root)}
+  if(queued)return;queued=true;(window.requestAnimationFrame||setTimeout)(function(){queued=false;installBomFormOverride();upgradeEntries(document);lockStatusUi(document)},0);
+}
+function installObserver(){if(observer)return;observer=new MutationObserver(function(ms){for(var i=0;i<ms.length;i++)for(var j=0;j<ms[i].addedNodes.length;j++){var n=ms[i].addedNodes[j];if(n&&n.nodeType===1)scheduleDecorate(n)}});observer.observe(document.body,{childList:true,subtree:true})}
+function setVersion(){
+  var v=id('bomAppVer');if(v){var m=String(v.textContent||'').match(/(\s*·\s*.+)$/),s=m?m[1]:'';var t='버전 '+VER+s;if(v.textContent!==t)v.textContent=t}
+  var title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';if(document.title!==title)document.title=title;
+}
+function keepVersion(){setVersion()}
+function bindDynamicDecorate(){
+  if(document.__v106DynamicDecorate)return;document.__v106DynamicDecorate=true;
+  document.addEventListener('click',function(e){
+    var t=e.target&&e.target.closest?e.target.closest('.bom-toggle,.bom-mini'):null;if(!t)return;
+    setTimeout(function(){try{installBomFormOverride();upgradeEntries(document);lockStatusUi(document)}catch(err){console.error(err)}},0);
+  },true);
+}
+function init(){installStorageRule();sanitizeStored();lockToggleFunctions();installBomFormOverride();bindComboEvents();upgradeEntries(document);lockStatusUi(document);bindDynamicDecorate();keepVersion()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+<style id="cost-item-usage-inline-v106-style">
+html,body{visibility:visible!important}
+#view-cost table.cost-table{table-layout:fixed!important;width:100%!important}
+#view-cost table.cost-table col:nth-child(1){width:5.3%!important}
+#view-cost table.cost-table col:nth-child(2){width:6.8%!important}
+#view-cost table.cost-table col:nth-child(3){width:14.8%!important}
+#view-cost table.cost-table col:nth-child(4){width:12%!important}
+#view-cost table.cost-table col:nth-child(5){width:3.8%!important}
+#view-cost table.cost-table col:nth-child(6){width:20%!important}
+#view-cost table.cost-table col:nth-child(7){width:4.7%!important}
+#view-cost table.cost-table col:nth-child(8){width:4.7%!important}
+#view-cost table.cost-table col:nth-child(9){width:4.7%!important}
+#view-cost table.cost-table col:nth-child(10){width:4.9%!important}
+#view-cost table.cost-table col:nth-child(11){width:5%!important}
+#view-cost table.cost-table col:nth-child(12){width:6%!important}
+#view-cost table.cost-table col:nth-child(13){width:7.3%!important}
+#view-cost table.cost-table td.itemcell{overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important;word-break:keep-all!important}
+#view-cost table.cost-table td.itemcell>.usage-chip{display:inline-flex!important;vertical-align:middle!important;white-space:nowrap!important;margin-left:5px!important}
+#view-cost table.cost-table td.itemcell>.usage-customer{display:block!important;margin-top:2px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-weight:500!important}
+#view-cost #fcount.safe-starting{color:#64748b;font-weight:700}
+</style><script id="dbfastec-safe-start-v106">
+(function(){
+'use strict';
+var started=false;
+function setVer(){
+  var v=document.getElementById('bomAppVer');if(v){var m=String(v.textContent||'').match(/(\s*·\s*.+)$/),s=m?m[1]:'';v.textContent='버전 v106'+s}
+  document.title='제품별 제조원가 프로그램 v106 | (주)동방파스텍';
+}
+function start(){
+  if(started)return;started=true;setVer();
+  var fc=document.getElementById('fcount');if(fc){fc.classList.add('safe-starting');fc.textContent='제품 목록 준비 중…'}
+  window.__DBF_SAFE_BOOT_PENDING=false;
+  requestAnimationFrame(function(){setTimeout(function(){
+    try{
+      if(typeof load==='function')load();
+      if(typeof buildFilters==='function')buildFilters();
+      try{if(typeof VIEW_LIMIT!=='undefined')VIEW_LIMIT=60}catch(e){}
+      if(typeof renderCost==='function')renderCost(false);
+      if(typeof initStepSort==='function')initStepSort();
+      if(typeof syncStick==='function')syncStick();
+      if(fc)fc.classList.remove('safe-starting');
+    }catch(e){
+      console.error(e);
+      if(fc){fc.classList.remove('safe-starting');fc.textContent='화면 준비 중 오류가 발생했습니다. 필터 초기화를 눌러 다시 시도하세요.'}
+    }
+  },80)});
+}
+window.__dbfastecSafeStartV106=start;
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(start,120)},{once:true});else setTimeout(start,120);
+})();
+</script></body>
 </html>
