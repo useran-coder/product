@@ -2132,7 +2132,7 @@ function renderCost(resetLimit=true){
       <td class="num ovhcell">${won(c.ovh)}</td>
       <td class="num cost costcell">${won(c.withDef)}</td>
       <td class="num sale salecell">${won(c.sale)}</td>
-      <td class="act actioncell" onclick="event.stopPropagation()"><button onclick="openDetail(${idx})">수정</button><button class="del" onclick="delProduct(${idx})">삭제</button></td></tr>`;
+      <td class="act actioncell" onclick="event.stopPropagation()"><button onclick="openDetail(${idx})">수정</button><button class="hide-product-btn" onclick="hideProductByPn(decodeURIComponent('${encodeURIComponent(p.pn)}'))">숨김</button><button class="del" onclick="delProduct(${idx})">삭제</button></td></tr>`;
   }).join('');
   const more=$('moreRows');
   if(more){
@@ -14630,7 +14630,7 @@ function showProgress(msg){var e=id('v79UploadProgress');if(!e){e=document.creat
 function hideProgress(){var e=id('v79UploadProgress');if(e)e.style.display='none'}
 function chooseFile(pn){activePn=pn;var f=id('v79DrawingFile');if(!f){f=document.createElement('input');f.id='v79DrawingFile';f.type='file';f.accept='.pdf,.dwg,.dxf,.step,.stp,.igs,.iges,.zip,.jpg,.jpeg,.png';f.style.display='none';f.addEventListener('change',onFile);document.body.appendChild(f)}f.value='';f.click()}
 function readBase64(file){return new Promise(function(resolve,reject){var rd=new FileReader();rd.onload=function(){var s=String(rd.result||''),i=s.indexOf(',');resolve(i>=0?s.slice(i+1):s)};rd.onerror=function(){reject(new Error('파일을 읽지 못했습니다.'))};rd.readAsDataURL(file)})}
-async function onFile(e){var file=e.target.files&&e.target.files[0],pn=activePn;if(!file||!pn)return;if(!ALLOWED_EXT.test(file.name)){toast2('지원 형식: PDF, DWG, DXF, STEP, IGS, ZIP, JPG, PNG');return}if(file.size>MAX_FILE){toast2('파일은 8MB 이하만 업로드할 수 있습니다.');return}if(busy)return;busy=true;showProgress('도면 파일을 준비하는 중…');try{var base64=await readBase64(file),p=productByPn(pn);showProgress('구글드라이브에 업로드하는 중…');var d=await apiPost('drawing_upload',{pn:pn,item:p.item||'',spec:p.spec||'',fileName:file.name,mimeType:file.type||'application/octet-stream',size:file.size,base64:base64,uploadedBy:state().user||''},120000);saveFileMeta(pn,d.file||{});refreshViews(pn,true);scheduleSync();toast2('도면 업로드 완료 · 지정 계정만 다운로드할 수 있습니다.')}catch(err){handleDriveError(err,'도면 업로드 실패')}finally{busy=false;hideProgress();e.target.value=''}}
+async function onFile(e){var file=e.target.files&&e.target.files[0],pn=activePn;if(!file||!pn)return;if(!ALLOWED_EXT.test(file.name)){toast2('지원 형식: PDF, DWG, DXF, STEP, IGS, ZIP, JPG, PNG');return}if(file.size>MAX_FILE){toast2('파일은 8MB 이하만 업로드할 수 있습니다.');return}if(busy)return;busy=true;showProgress('도면 파일을 준비하는 중…');try{var base64=await readBase64(file),p=productByPn(pn);showProgress('구글드라이브에 업로드하는 중…');var d=await apiPost('drawing_upload',{pn:pn,item:p.item||'',groupName:p.item||'(품목 미지정)',spec:p.spec||'',fileName:file.name,mimeType:file.type||'application/octet-stream',size:file.size,base64:base64,uploadedBy:state().user||''},120000);saveFileMeta(pn,d.file||{});refreshViews(pn,true);scheduleSync();toast2('도면 업로드 완료 · 지정 계정만 다운로드할 수 있습니다.')}catch(err){handleDriveError(err,'도면 업로드 실패')}finally{busy=false;hideProgress();e.target.value=''}}
 function handleDriveError(err,title){if(err&&(err.setupRequired||err.code==='DRIVE_AUTH_REQUIRED')){openAccountModal().then(function(){setModalStatus('구글드라이브 권한 승인이 필요합니다. 아래 순서대로 승인한 뒤 다시 시도하세요.','warn')});return}alert((title||'처리 실패')+'\\n\\n'+(err&&err.message?err.message:String(err)))}
 function downloadFile(pn){var r=rec(pn),u=r.downloadUrl||r.fileUrl;if(!u){toast2('연결된 구글드라이브 파일이 없습니다.');return}window.open(u,'_blank','noopener,noreferrer')}
 async function deleteFile(pn){var r=rec(pn);if(!r.fileId)return;if(!confirm('현재 도면 파일을 구글드라이브 휴지통으로 이동하고 도면 없음으로 변경할까요?'))return;if(busy)return;busy=true;showProgress('도면 파일을 삭제하는 중…');try{await apiPost('drawing_delete',{pn:pn,fileId:r.fileId,deletedBy:state().user||''},60000);clearFileMeta(pn);refreshViews(pn,false);scheduleSync();toast2('도면 파일을 삭제했습니다.')}catch(e){handleDriveError(e,'도면 삭제 실패')}finally{busy=false;hideProgress()}}
@@ -15040,6 +15040,95 @@ window.openDrawingShareAccountsV79=openAccount;window.openDrawingShareAccountsV8
 function bind(){var b=id('driveDrawingRefreshBtn');if(b)b.onclick=function(){refreshFiles(true)};var c=id('driveDrawingAccountsBtn');if(c)c.onclick=openAccount;syncVisibleButtons();setVersion()}
 function init(){bind();setTimeout(bind,350)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(bind,700)});setTimeout(bind,1800);setTimeout(bind,8000);setTimeout(setVersion,11000);
+})();
+</script>
+
+
+
+<!-- ===== V86: 품목군 폴더 업로드 · 원가페이지 버튼 고정 · 팝업 원프레임 표시 ===== -->
+<style id="v86-stable-performance-style">
+/* 제품별 원가 관리 버튼은 첫 렌더부터 같은 폭을 차지하여 수정·숨김·삭제 버튼이 움직이지 않음 */
+#view-cost table.cost-table col:last-child{width:174px!important}
+#view-cost table.cost-table td.actioncell{
+  width:174px!important;min-width:174px!important;max-width:174px!important;
+  white-space:nowrap!important;overflow:visible!important;padding-left:6px!important;padding-right:6px!important;
+}
+#view-cost table.cost-table td.actioncell button{
+  min-width:44px;height:30px;margin:0 2px!important;padding:0 8px!important;
+  box-sizing:border-box;vertical-align:middle;transition:none!important;transform:none!important;
+}
+#view-cost table.cost-table td.actioncell .hide-product-btn{
+  background:#fff4df!important;border:1px solid #edc472!important;color:#8a5a00!important;
+}
+/* 팝업은 모든 내용이 채워진 한 프레임만 표시 */
+#overlay,#overlay .modal,#overlay .mhead,#overlay .mbody,#overlay .mfoot{
+  animation:none!important;transition:none!important;
+}
+#overlay.v86-atomic-open{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+#overlay:not(.hidden):not(.v86-atomic-open){visibility:visible!important;opacity:1!important}
+</style>
+<script id="v86-stable-performance-script">
+(function(){
+'use strict';
+var VER='v86',installCount=0;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function escAttr(v){return String(v==null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+
+/* 이미 렌더된 구버전 행도 첫 화면 프레임 안에서 버튼을 완성 */
+function stabilizeActionButtons(){
+  document.querySelectorAll('#tbody tr.prod-row[data-pn]').forEach(function(tr){
+    var cell=tr.querySelector('td.actioncell');if(!cell)return;
+    cell.style.width='174px';cell.style.minWidth='174px';cell.style.maxWidth='174px';
+    if(!cell.querySelector('.hide-product-btn')){
+      var pn=clean(tr.getAttribute('data-pn'));
+      var b=document.createElement('button');b.type='button';b.className='hide-product-btn';b.textContent='숨김';b.title='이 제품을 전체 목록에서 숨깁니다.';
+      b.onclick=function(e){e.preventDefault();e.stopPropagation();if(typeof window.hideProductByPn==='function')window.hideProductByPn(pn)};
+      var del=cell.querySelector('.del');cell.insertBefore(b,del||null);
+    }
+  });
+}
+function installRender(){
+  var cur=window.renderCost;if(typeof cur!=='function'||cur.__v86StableRows)return;
+  var fn=function(){var r=cur.apply(this,arguments);stabilizeActionButtons();return r};
+  fn.__v86StableRows=true;fn.__v86Raw=cur;window.renderCost=fn;
+}
+
+/* 기존 두 단계/지연 표시 래퍼를 우회하고, DOM 작성이 끝난 뒤 한 번만 표시 */
+function installAtomicModal(){
+  var cur=window.openDetail;if(typeof cur!=='function'||cur.__v86Atomic)return;
+  var base=cur;
+  if(cur.__v84Raw)base=cur.__v84Raw;
+  else if(cur.__v83Raw)base=cur.__v83Raw;
+  else if(cur.__v76Raw)base=cur.__v76Raw;
+  var fn=function(idx){
+    var ov=id('overlay');if(!ov)return base.apply(this,arguments);
+    ov.classList.add('v86-atomic-open');
+    ov.classList.remove('v83-modal-loading','v76-modal-loading','v84-preparing');
+    var result;
+    try{
+      result=base.call(this,Number(idx));
+      try{if(typeof window.refreshCostModalHeaderV84==='function')window.refreshCostModalHeaderV84()}catch(e){}
+      /* 레이아웃을 완료한 뒤 같은 JS 프레임에서 공개하므로 중간 화면이 보이지 않음 */
+      void ov.offsetWidth;
+    }finally{
+      ov.classList.remove('v86-atomic-open','v83-modal-loading','v76-modal-loading','v84-preparing');
+    }
+    return result;
+  };
+  fn.__v86Atomic=true;fn.__v84NoFlicker=true;fn.__v84Raw=base;fn.__v83Instant=true;fn.__v83Raw=base;
+  window.openDetail=fn;
+}
+function install(){
+  installCount++;setVersion();installRender();installAtomicModal();stabilizeActionButtons();
+}
+install();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);
+window.addEventListener('load',function(){setTimeout(install,80)});
+[450,1800,7600,9800,12100].forEach(function(ms){setTimeout(install,ms)});
+setTimeout(setVersion,12500);
+window.stabilizeCostActionsV86=stabilizeActionButtons;
 })();
 </script>
 
