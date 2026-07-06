@@ -4574,12 +4574,13 @@ body{
     var colSpan=costTable?Math.max(1,costTable.querySelectorAll('thead>tr>th').length):13;
     var inner='<div class="inline-bom"><div class="inline-bom-title">📦 BOM 전개 <span>'+title+'</span><span class="muted">'+h((p&&p.spec)||'')+'</span></div>';
     if(!kids.length){
-      inner+='<div class="inline-bom-empty">등록된 하위 BOM이 없습니다. 아래 입력란에서 직접 추가할 수 있습니다.</div>'+window.bomInputForm(root,p&&p.pn)+'</div>';
+      inner+=window.bomInputForm(root,p&&p.pn)+'<div class="inline-bom-empty">등록된 하위 BOM이 없습니다. 위 입력란에서 직접 추가할 수 있습니다.</div></div>';
       return '<tr class="bom-expanded"><td colspan="'+colSpan+'">'+inner+'</td></tr>';
     }
-    inner+='<table class="inline-bom-table">'+colgroup()+'<tbody>'+header();
+    /* BOM 원자재 검색·규격 입력창을 리스트 위에 먼저 표시 */
+    inner+=window.bomInputForm(root,p&&p.pn,true)+'<table class="inline-bom-table">'+colgroup()+'<tbody>'+header();
     inner+=kids.map(function(ch){return window.bomInlineRow(ch,0,root);}).join('');
-    inner+='</tbody></table>'+window.bomInputForm(root,p&&p.pn,true)+'</div>';
+    inner+='</tbody></table></div>';
     return '<tr class="bom-expanded"><td colspan="'+colSpan+'">'+inner+'</td></tr>';
   };
 
@@ -16354,7 +16355,7 @@ window.addEventListener('click',capture,true);document.addEventListener('keydown
 <script id="v115-cost-modal-title-line-script">
 (function(){
 'use strict';
-var VER='v115';
+var VER='v116';
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -16418,6 +16419,18 @@ window.addEventListener('load',function(){setTimeout(install,120)},{once:true});
 window.refreshCostModalTitleV115=renderTitle;
 })();
 </script>
+
+<!-- ===== V116: BOM 원자재 입력창을 BOM 리스트 위로 이동 ===== -->
+<style id="v116-bom-entry-above-list-style">
+#view-cost .inline-bom > .bom-entry{
+  margin-top:0!important;
+  margin-bottom:10px!important;
+}
+#view-cost .inline-bom > .bom-entry + .inline-bom-table,
+#view-cost .inline-bom > .bom-entry + .inline-bom-empty{
+  margin-top:0!important;
+}
+</style>
 
 </body>
 </html>
