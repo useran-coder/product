@@ -4,9 +4,9 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>제품별 제조원가 프로그램 v107 | (주)동방파스텍</title>
+<title>제품별 제조원가 프로그램 v113 | (주)동방파스텍</title>
 <script id="v99-static-browser-title-init">
-window.__legacyDocumentTitleV99='제품별 제조원가 프로그램 v107 | (주)동방파스텍';
+window.__legacyDocumentTitleV99='제품별 제조원가 프로그램 v113 | (주)동방파스텍';
 window.__DBF_SAFE_BOOT_PENDING=true;
 (function(){
   if(window.__DBF_SAFE_OBSERVER_INSTALLED)return;
@@ -3596,7 +3596,7 @@ if(document.readyState!=='loading') setTimeout(initApp,0); else document.addEven
   function drawFilterList(all){var ow=byId('drawOwnerFilter'),st=byId('drawStatusFilter'),us=byId('drawUsageFilter'),si=byId('drawGroupSearch');var ov=ow?ow.value:'',sv=st?st.value:'',uv=us?us.value:'',q=si?String(si.value||'').replace(/\s+/g,' ').trim().toLowerCase():'';[ow,st,us,si].forEach(function(e){if(e)e.classList.toggle('filter-active',!!String(e.value||'').trim());});return all.filter(function(p){if(ov&&ownerOf(p)!==ov)return false;if(sv&&statusOf(p)!==sv)return false;if(uv&&usageOf(p)!==uv)return false;if(q){var hay=[p.item,p.pn,p.spec,p.name,p.productName,p.customer,p.vendor,p.remark,ownerOf(p),usageOf(p)].map(function(v){return String(v==null?'':v);}).join(' ').toLowerCase();if(hay.indexOf(q)<0)return false;}return true;});}
   window.toggleDrawViewMode=function(){drawViewMode=(drawViewMode==='group'?'item':'group');selectedDrawGroup='';drawItemPage=1;var b=byId('drawViewToggle');if(b)b.disabled=true;requestAnimationFrame(function(){renderDrawingAnalysis();requestAnimationFrame(function(){if(b)b.disabled=false;});});};window.changeDrawItemPage=function(delta){drawItemPage=Math.max(1,drawItemPage+(Number(delta)||0));selectedDrawGroup='';requestAnimationFrame(function(){renderDrawingAnalysis();});};
   window.resetDrawAnalysisFilters=function(){['drawOwnerFilter','drawStatusFilter','drawUsageFilter','drawGroupSearch'].forEach(function(id){var e=byId(id);if(e)e.value='';});clearTimeout(drawSearchTimer);renderDrawingAnalysis();};
-  window.renderDrawingAnalysis=function(){ensureDom();var all=products();fillDrawAnalysisFilters(all);var list=drawFilterList(all),st=statDraw(list),dk=byId('drawKpis');if(dk)dk.innerHTML=[['검색 제품',st.total.toLocaleString(),'개'],['도면 보유율',st.rate.toFixed(1),'%'],['도면 있음',st.has.toLocaleString(),'개'],['도면 없음',st.none.toLocaleString(),'개']].map(function(a){return `<div class="kpi"><div class="k">${a[0]}</div><div class="v">${a[1]} <small>${a[2]}</small></div></div>`;}).join('');var bars=byId('drawOverallBars');if(bars)bars.innerHTML=`<div class="draw-barrow"><div>도면 있음</div><div class="draw-bartrack"><div class="draw-barfill" style="width:${Math.max(st.rate,1)}%"></div></div><div class="num">${st.has.toLocaleString()}개 / ${st.rate.toFixed(1)}%</div></div><div class="draw-barrow"><div>도면 없음</div><div class="draw-bartrack"><div class="draw-barfill none" style="width:${Math.max(100-st.rate,1)}%"></div></div><div class="num">${st.none.toLocaleString()}개 / ${(100-st.rate).toFixed(1)}%</div></div>`;var firstTh=byId('drawGroupFirstTh');if(firstTh)firstTh.textContent=(drawViewMode==='group'?'품목군':'품목/규격');var toggle=byId('drawViewToggle');if(toggle)toggle.textContent=(drawViewMode==='group'?'품목/규격으로 보기':'품목군으로 보기');var body=byId('drawGroupBody');if(!body)return;if(drawViewMode==='item'){var items=list.slice().sort(function(a,b){return String((a.item||'')+(a.spec||'')+(a.pn||'')).localeCompare(String((b.item||'')+(b.spec||'')+(b.pn||'')),'ko');});var totalPages=Math.max(1,Math.ceil(items.length/DRAW_ITEM_PAGE_SIZE));if(drawItemPage>totalPages)drawItemPage=totalPages;if(drawItemPage<1)drawItemPage=1;var itemStart=(drawItemPage-1)*DRAW_ITEM_PAGE_SIZE,pageItems=items.slice(itemStart,itemStart+DRAW_ITEM_PAGE_SIZE),meta=byId('drawGroupMeta');if(meta)meta.innerHTML='품목/규격 '+items.length.toLocaleString()+'건 <span class="draw-item-pager"><button type="button" onclick="event.stopPropagation();changeDrawItemPage(-1)" '+(drawItemPage<=1?'disabled':'')+'>이전</button><b>'+drawItemPage.toLocaleString()+' / '+totalPages.toLocaleString()+'</b><button type="button" onclick="event.stopPropagation();changeDrawItemPage(1)" '+(drawItemPage>=totalPages?'disabled':'')+'>다음</button></span>';body.innerHTML=pageItems.map(function(p){var h=hasDrawing(p),rate=h?100:0,key='ITEMSPEC:'+keyOf(p);var row=`<tr class="draw-group-row ${selectedDrawGroup===key?'on':''}" onclick="openDrawGroup(decodeURIComponent('${encodeURIComponent(key)}'))"><td><b>${escH(p.item||'(품목 미지정)')}</b><span class="group-sub">${escH(p.spec||'-')}</span><span class="group-sub">품번 ${escH(p.pn||'-')}</span></td><td class="num strong">1</td><td class="num">${(h?1:0).toLocaleString()}</td><td class="num">${(h?0:1).toLocaleString()}</td><td class="num strong">${rate.toFixed(1)}%</td><td><div class="draw-mini-track"><div class="draw-mini-fill" style="width:${Math.max(rate,1)}%"></div></div></td></tr>`;if(selectedDrawGroup===key){row+=`<tr class="draw-inline-detail"><td colspan="6"><div class="draw-inline-box"><div class="draw-inline-head">📌 품목/규격 상세 <span class="muted">1건</span><button type="button" onclick="closeDrawGroup()">접기</button></div>${productManageTable([p],'draw')}</div></td></tr>`;}return row;}).join('');return;}var map={};list.forEach(function(p){var k=p.item||'(품목 미지정)';if(!map[k])map[k]={item:k,total:0,has:0,none:0};map[k].total++;if(hasDrawing(p))map[k].has++;else map[k].none++;});var rows=Object.values(map).sort(function(a,b){return a.item.localeCompare(b.item,'ko');});if(byId('drawGroupMeta'))byId('drawGroupMeta').textContent='품목군 '+rows.length.toLocaleString()+'개 · 제품 '+list.length.toLocaleString()+'건';body.innerHTML=rows.map(function(g){var rate=g.total?g.has/g.total*100:0;var row=`<tr class="draw-group-row ${selectedDrawGroup===g.item?'on':''}" onclick="openDrawGroup(decodeURIComponent('${encodeURIComponent(g.item)}'))"><td><b>${escH(g.item)}</b></td><td class="num strong">${g.total.toLocaleString()}</td><td class="num">${g.has.toLocaleString()}</td><td class="num">${g.none.toLocaleString()}</td><td class="num strong">${rate.toFixed(1)}%</td><td><div class="draw-mini-track"><div class="draw-mini-fill" style="width:${Math.max(rate,1)}%"></div></div></td></tr>`;if(selectedDrawGroup===g.item){var gl=list.filter(function(p){return (p.item||'(품목 미지정)')===g.item;}).sort(function(a,b){if(hasDrawing(a)!==hasDrawing(b))return hasDrawing(a)?1:-1;return String(a.spec).localeCompare(String(b.spec),'ko');});row+=`<tr class="draw-inline-detail"><td colspan="6"><div class="draw-inline-box"><div class="draw-inline-head">📌 ${escH(g.item)} 제품 리스트 <span class="muted">${gl.length.toLocaleString()}건</span><button type="button" onclick="closeDrawGroup()">접기</button></div>${productManageTable(gl,'draw')}</div></td></tr>`;}return row;}).join('');};
+  window.renderDrawingAnalysis=function(){ensureDom();var all=products();fillDrawAnalysisFilters(all);var list=drawFilterList(all),st=statDraw(list),dk=byId('drawKpis');if(dk)dk.innerHTML=[['검색 제품',st.total.toLocaleString(),'개'],['도면 보유율',st.rate.toFixed(1),'%'],['도면 있음',st.has.toLocaleString(),'개'],['도면 없음',st.none.toLocaleString(),'개']].map(function(a){return `<div class="kpi"><div class="k">${a[0]}</div><div class="v">${a[1]} <small>${a[2]}</small></div></div>`;}).join('');var bars=byId('drawOverallBars');if(bars)bars.innerHTML=`<div class="draw-barrow"><div>도면 있음</div><div class="draw-bartrack"><div class="draw-barfill" style="width:${Math.max(st.rate,1)}%"></div></div><div class="num">${st.has.toLocaleString()}개 / ${st.rate.toFixed(1)}%</div></div><div class="draw-barrow"><div>도면 없음</div><div class="draw-bartrack"><div class="draw-barfill none" style="width:${Math.max(100-st.rate,1)}%"></div></div><div class="num">${st.none.toLocaleString()}개 / ${(100-st.rate).toFixed(1)}%</div></div>`;var firstTh=byId('drawGroupFirstTh');if(firstTh)firstTh.textContent=(drawViewMode==='group'?'품목군':'품목/규격');var toggle=byId('drawViewToggle');if(toggle)toggle.textContent=(drawViewMode==='group'?'품목/규격으로 보기':'품목군으로 보기');var body=byId('drawGroupBody');if(!body)return;if(drawViewMode==='item'){var items=list.slice().sort(function(a,b){return String((a.item||'')+(a.spec||'')+(a.pn||'')).localeCompare(String((b.item||'')+(b.spec||'')+(b.pn||'')),'ko');});var totalPages=Math.max(1,Math.ceil(items.length/DRAW_ITEM_PAGE_SIZE));if(drawItemPage>totalPages)drawItemPage=totalPages;if(drawItemPage<1)drawItemPage=1;var itemStart=(drawItemPage-1)*DRAW_ITEM_PAGE_SIZE,pageItems=items.slice(itemStart,itemStart+DRAW_ITEM_PAGE_SIZE),meta=byId('drawGroupMeta');if(meta)meta.innerHTML='품목/규격 '+items.length.toLocaleString()+'건 <span class="draw-item-pager"><button type="button" onclick="event.stopPropagation();changeDrawItemPage(-1)" '+(drawItemPage<=1?'disabled':'')+'>이전</button><b>'+drawItemPage.toLocaleString()+' / '+totalPages.toLocaleString()+'</b><button type="button" onclick="event.stopPropagation();changeDrawItemPage(1)" '+(drawItemPage>=totalPages?'disabled':'')+'>다음</button></span>';body.innerHTML=pageItems.map(function(p){var h=hasDrawing(p),rate=h?100:0,key='ITEMSPEC:'+keyOf(p);var row=`<tr class="draw-group-row ${selectedDrawGroup===key?'on':''}" onclick="openDrawGroup(decodeURIComponent('${encodeURIComponent(key)}'))"><td><b>${escH(p.item||'(품목 미지정)')}</b><span class="group-sub">${escH(p.spec||'-')}</span><span class="group-sub">품번 ${escH(p.pn||'-')}</span></td><td class="num strong">1</td><td class="num">${(h?1:0).toLocaleString()}</td><td class="num">${(h?0:1).toLocaleString()}</td><td class="num strong">${rate.toFixed(1)}%</td><td><div class="draw-mini-track"><div class="draw-mini-fill" style="width:${Math.max(rate,1)}%"></div></div></td></tr>`;if(selectedDrawGroup===key){row+=`<tr class="draw-inline-detail"><td colspan="6"><div class="draw-inline-box"><div class="draw-inline-head">📌 품목/규격 상세 <span class="muted">1건</span><button type="button" onclick="closeDrawGroup()">접기</button></div>${productManageTable([p],'draw')}</div></td></tr>`;}return row;}).join('');return;}var map={};list.forEach(function(p){var k=p.item||'(품목 미지정)';if(!map[k])map[k]={item:k,total:0,has:0,none:0};map[k].total++;if(hasDrawing(p))map[k].has++;else map[k].none++;});var rows=Object.values(map).sort(function(a,b){return a.item.localeCompare(b.item,'ko');});if(byId('drawGroupMeta'))byId('drawGroupMeta').textContent='품목군 '+rows.length.toLocaleString()+'개 · 제품 '+list.length.toLocaleString()+'건';body.innerHTML=rows.map(function(g){var rate=g.total?g.has/g.total*100:0;var row=`<tr class="draw-group-row ${selectedDrawGroup===g.item?'on':''}" onclick="openDrawGroup(decodeURIComponent('${encodeURIComponent(g.item)}'))"><td><b>${escH(g.item)}</b></td><td class="num strong">${g.total.toLocaleString()}</td><td class="num">${g.has.toLocaleString()}</td><td class="num">${g.none.toLocaleString()}</td><td class="num strong">${rate.toFixed(1)}%</td><td><div class="draw-mini-track"><div class="draw-mini-fill" style="width:${Math.max(rate,1)}%"></div></div></td></tr>`;if(selectedDrawGroup===g.item){var gl=list.filter(function(p){return (p.item||'(품목 미지정)')===g.item;}).sort(function(a,b){return String(a.spec||'').localeCompare(String(b.spec||''),'ko')||String(a.pn||'').localeCompare(String(b.pn||''),'ko');});row+=`<tr class="draw-inline-detail"><td colspan="6"><div class="draw-inline-box"><div class="draw-inline-head">📌 ${escH(g.item)} 제품 리스트 <span class="muted">${gl.length.toLocaleString()}건</span><button type="button" onclick="closeDrawGroup()">접기</button></div>${productManageTable(gl,'draw')}</div></td></tr>`;}return row;}).join('');};
   window.closeOwnerGroup=function(){selectedOwner='';renderOwnerAnalysis();};
   window.renderOwnerAnalysis=function(owner){ensureDom();if(arguments.length)selectedOwner=(selectedOwner===owner)?'':owner;var q=(byId('ownerSearch')?byId('ownerSearch').value:'').trim().toLowerCase(),fd=byId('ownerDrawFilter')?byId('ownerDrawFilter').value:'';var list=products().filter(function(p){var r=rec(p),txt=[p.pn,p.item,p.spec,r.docNo,r.rev,r.owner,r.status,r.customer,r.note].join(' ').toLowerCase();if(q&&!smartSearchMatch(txt,q))return false;if(fd==='has'&&!r.has)return false;if(fd==='none'&&r.has)return false;return true;});var st=statDraw(list),rows=ownerRows(),ok=byId('ownerKpis');if(ok)ok.innerHTML=[['검색 제품',list.length.toLocaleString(),'개'],['도면 보유율',st.rate.toFixed(1),'%'],['담당자 수',rows.filter(function(r){return r.owner!=='담당자 미지정'}).length.toLocaleString(),'명'],['담당 미지정',rows.filter(function(r){return r.owner==='담당자 미지정'}).reduce(function(s,r){return s+r.total},0).toLocaleString(),'개']].map(function(a){return '<div class="kpi"><div class="k">'+a[0]+'</div><div class="v">'+a[1]+' <small>'+a[2]+'</small></div></div>';}).join('');if(byId('ownerSummary'))byId('ownerSummary').innerHTML=[['도면 있음',st.has,'개'],['도면 없음',st.none,'개'],['개정필요',list.filter(function(p){return statusOf(p)==='개정필요'}).length,'개']].map(function(a){return '<div class="summary-box"><div class="k">'+a[0]+'</div><div class="v">'+a[1].toLocaleString()+' <small>'+a[2]+'</small></div></div>';}).join('');if(byId('ownerMeta'))byId('ownerMeta').textContent='담당자 '+rows.length.toLocaleString()+'개 그룹';var body=byId('ownerBody');if(body)body.innerHTML=rows.map(function(o){var ol=list.filter(function(p){return ownerOf(p)===o.owner;});if(!ol.length)return '';var s=statDraw(ol),rate=s.rate;var row='<tr class="owner-row '+(selectedOwner===o.owner?'on':'')+'" onclick="renderOwnerAnalysis(decodeURIComponent(\''+encodeURIComponent(o.owner)+'\'))"><td><b>'+escH(o.owner)+'</b></td><td class="num strong">'+s.total.toLocaleString()+'</td><td class="num">'+s.has.toLocaleString()+'</td><td class="num">'+s.none.toLocaleString()+'</td><td class="num strong">'+rate.toFixed(1)+'%</td><td><div class="draw-mini-track"><div class="draw-mini-fill" style="width:'+Math.max(rate,1)+'%"></div></div></td></tr>';if(selectedOwner===o.owner){ol.sort(function(a,b){return String(a.item+a.spec).localeCompare(String(b.item+b.spec),'ko');});row+='<tr class="owner-detail"><td colspan="6"><div class="draw-inline-box"><div class="draw-inline-head">👤 '+escH(o.owner)+' 담당 제품 <span class="muted">'+ol.length.toLocaleString()+'건</span><button type="button" onclick="closeOwnerGroup()">접기</button></div>'+productManageTable(ol,'owner')+'</div></td></tr>';}return row;}).join('');};
   window.closeUsageGroup=function(){selectedUsageGroup='';renderUsageAnalysis();};
@@ -15625,8 +15625,8 @@ function ensureOwnerColumn(table){if(!table||!table.tHead||!table.tBodies||!tabl
 function decorateOwner(table,map){var idx=ensureOwnerColumn(table);if(idx<0)return;var owners=ownerList(map),body=table.tBodies[0];if(!body)return;Array.prototype.forEach.call(body.rows,function(tr){if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;var pn=rowPn(tr);if(!pn)return;while(tr.cells.length<=idx)tr.appendChild(document.createElement('td'));var td=tr.cells[idx];td.classList.add('draw-owner-cell');var current=clean(map[pn]&&map[pn].owner),sel=td.querySelector('.v98-owner-select');if(!sel){sel=document.createElement('select');sel.className='v98-owner-select v97-owner-select';td.replaceChildren(sel);sel.addEventListener('change',function(){var m=readMap(),r=m[pn]||{};r.owner=this.value;m[pn]=r;saveMap(m);try{if(typeof window.updateDrawingMetaLite==='function')window.updateDrawingMetaLite(pn,'owner',this.value,false)}catch(e){}try{if(typeof window.registerOwnerFromField==='function'&&this.value)window.registerOwnerFromField(this.value)}catch(e){}scheduleSync()})}var opts=[''].concat(owners);if(current&&opts.indexOf(current)<0)opts.push(current);var html=opts.map(function(n){return '<option value="'+esc(n)+'">'+(n?esc(n):'담당자 미지정')+'</option>'}).join('');if(sel.innerHTML!==html)sel.innerHTML=html;sel.value=current})}
 function ensureFileColumn(table){if(!table||!table.tHead||!table.tBodies||!table.tBodies.length)return -1;var hr=table.tHead.rows&&table.tHead.rows[0],idx=-1;if(!hr)return -1;Array.prototype.some.call(hr.cells,function(c,i){var t=clean(c.textContent);if(c.classList.contains('draw-drive-head')||t==='구글드라이브 도면'||t.indexOf('구글드라이브 도면')===0){idx=i;c.classList.add('draw-drive-head');c.textContent='구글드라이브 도면 (DWG / PDF)';return true}return false});if(idx<0){var th=document.createElement('th');th.className='draw-drive-head';th.textContent='구글드라이브 도면 (DWG / PDF)';hr.appendChild(th);idx=hr.cells.length-1;var cg0=table.querySelector('colgroup');if(cg0)cg0.appendChild(document.createElement('col'))}var cg=table.querySelector('colgroup');if(cg&&cg.children[idx]){cg.children[idx].style.width='405px';cg.children[idx].style.minWidth='405px';cg.children[idx].style.maxWidth='405px'}return idx}
 function clearButton(b){['data-v98-upload','data-v98-download','data-v98-delete'].forEach(function(a){b.removeAttribute(a)});b.disabled=false;b.removeAttribute('aria-disabled');b.className=''}
-function ensureFileRow(stack,kind){var row=stack.querySelector('[data-v98-kind="'+kind+'"]');if(row)return row;row=document.createElement('div');row.className='v97-file-row';row.setAttribute('data-v98-kind',kind);var badge=document.createElement('span');badge.className='v97-kind '+kind.toLowerCase();badge.textContent=kind;row.appendChild(badge);for(var i=0;i<3;i++){var b=document.createElement('button');b.type='button';b.setAttribute('data-v98-slot',String(i));row.appendChild(b)}var name=document.createElement('span');name.className='v97-file-name';name.setAttribute('data-v98-name','1');row.appendChild(name);stack.appendChild(row);return row}
-function updateFileRow(row,pn,kind,m){var btn=row.querySelectorAll('button'),has=!!clean(m.fileId);if(btn.length!==3)return;btn.forEach(clearButton);if(has){btn[0].textContent='다운로드';btn[0].className='download';btn[0].setAttribute('data-v98-download',kind);btn[1].textContent='교체';btn[1].setAttribute('data-v98-upload',kind);btn[2].textContent='삭제';btn[2].className='danger';btn[2].setAttribute('data-v98-delete',kind)}else{btn[0].textContent='업로드';btn[0].className='primary';btn[0].setAttribute('data-v98-upload',kind);btn[1].textContent='교체';btn[1].disabled=true;btn[1].setAttribute('aria-disabled','true');btn[2].textContent='삭제';btn[2].className='danger';btn[2].disabled=true;btn[2].setAttribute('aria-disabled','true')}var n=row.querySelector('[data-v98-name="1"]');if(n){n.textContent=m.fileName||'미등록';n.title=m.fileName||''}}
+function ensureFileRow(stack,kind){var row=stack.querySelector('[data-v98-kind="'+kind+'"]');if(row){var existing=row.querySelectorAll(':scope > button');if(existing.length===3){var extra=document.createElement('button');extra.type='button';extra.setAttribute('data-v98-slot','2');existing[2].setAttribute('data-v98-slot','3');row.insertBefore(extra,existing[2])}return row}row=document.createElement('div');row.className='v97-file-row';row.setAttribute('data-v98-kind',kind);var badge=document.createElement('span');badge.className='v97-kind '+kind.toLowerCase();badge.textContent=kind;row.appendChild(badge);for(var i=0;i<4;i++){var b=document.createElement('button');b.type='button';b.setAttribute('data-v98-slot',String(i));row.appendChild(b)}var name=document.createElement('span');name.className='v97-file-name';name.setAttribute('data-v98-name','1');row.appendChild(name);stack.appendChild(row);return row}
+function updateFileRow(row,pn,kind,m){var btn=row.querySelectorAll(':scope > button'),has=!!clean(m.fileId);if(btn.length!==4)return;btn.forEach(clearButton);btn[0].className='primary v113-drive-btn v113-drive-up';btn[0].innerHTML='<span class="v113-action-icon" aria-hidden="true">↑</span><span>UP</span>';btn[0].title=kind+' 도면 업로드';btn[0].setAttribute('aria-label',kind+' 도면 업로드');if(has){btn[0].disabled=true;btn[0].setAttribute('aria-disabled','true')}else btn[0].setAttribute('data-v98-upload',kind);btn[1].className='download v113-drive-btn v113-drive-dn';btn[1].innerHTML='<span class="v113-action-icon" aria-hidden="true">↓</span><span>DN</span>';btn[1].title=kind+' 도면 다운로드';btn[1].setAttribute('aria-label',kind+' 도면 다운로드');if(has)btn[1].setAttribute('data-v98-download',kind);else{btn[1].disabled=true;btn[1].setAttribute('aria-disabled','true')}btn[2].className='v113-drive-btn v113-drive-replace';btn[2].innerHTML='<span class="v113-action-icon" aria-hidden="true">↻</span><span>교체</span>';btn[2].title=kind+' 도면 교체';btn[2].setAttribute('aria-label',kind+' 도면 교체');btn[2].setAttribute('data-v113-replace',kind);if(has)btn[2].setAttribute('data-v98-upload',kind);else{btn[2].disabled=true;btn[2].setAttribute('aria-disabled','true')}btn[3].className='danger v113-drive-btn v113-drive-delete';btn[3].textContent='삭제';btn[3].title=kind+' 도면 삭제';btn[3].setAttribute('aria-label',kind+' 도면 삭제');if(has)btn[3].setAttribute('data-v98-delete',kind);else{btn[3].disabled=true;btn[3].setAttribute('aria-disabled','true')}var n=row.querySelector('[data-v98-name="1"]');if(n){n.textContent=m.fileName||'미등록';n.title=m.fileName||''}}
 function renderCell(td,pn,r){var stack=td.querySelector('.v98-file-stack');if(!stack){td.replaceChildren();stack=document.createElement('div');stack.className='v97-file-stack v98-file-stack';stack.setAttribute('data-v98-pn',pn);td.appendChild(stack)}else stack.setAttribute('data-v98-pn',pn);updateFileRow(ensureFileRow(stack,'DWG'),pn,'DWG',typedMeta(r,'DWG'));updateFileRow(ensureFileRow(stack,'PDF'),pn,'PDF',typedMeta(r,'PDF'))}
 function decorateTable(table,map){if(!table||!table.tBodies||!table.tBodies.length)return;decorateOwner(table,map);var idx=ensureFileColumn(table);if(idx<0)return;Array.prototype.forEach.call(table.tBodies[0].rows,function(tr){if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;var pn=rowPn(tr);if(!pn)return;while(tr.cells.length<=idx)tr.appendChild(document.createElement('td'));var td=tr.cells[idx];td.className='draw-drive-cell';renderCell(td,pn,map[pn]||{})})}
 function decorateView(viewId){var view=id(viewId);if(!view)return;var map=readMap();view.querySelectorAll('.draw-inline-table').forEach(function(t){decorateTable(t,map)});setVersion()}
@@ -15635,7 +15635,7 @@ function scheduleDecorateVisible(){['view-draw','view-drawowner'].forEach(functi
 function applyFiles(list){var map=readMap(),latest={},pns={},changed=[];(list||[]).forEach(function(m){var pn=clean(m&&m.pn),kind=kindOf(m);if(!pn||!kind)return;var key=pn+'|'+kind;if(!latest[key]||clean(m.uploadedAt)>clean(latest[key].uploadedAt))latest[key]=m;pns[pn]=true});Object.keys(map).forEach(function(pn){pns[pn]=true});Object.keys(pns).forEach(function(pn){var before=JSON.stringify(migrateRecord(map[pn]||{})),r=migrateRecord(map[pn]||{});['DWG','PDF'].forEach(function(kind){var m=latest[pn+'|'+kind];if(m)setTyped(r,kind,m);else clearTyped(r,kind)});r=recompute(r);map[pn]=r;if(before!==JSON.stringify(r))changed.push(pn)});saveMap(map);finishChanges(changed,map);return map}
 async function refreshFiles(manual){if(refreshing)return false;refreshing=true;try{if(manual)showProgress('DWG · PDF 도면 목록을 확인하는 중…');var d=await apiGet('drawing_list',{});applyFiles(Array.isArray(d.files)?d.files:[]);lastRefresh=Date.now();if(manual&&typeof window.toast==='function')window.toast('도면파일 '+Number(d.count||0).toLocaleString()+'건 확인 완료');return true}catch(e){if(manual)alert('도면파일 새로고침 실패\n\n'+e.message);return false}finally{refreshing=false;hideProgress()}}
 function fileToBase64(file){return new Promise(function(resolve,reject){var rd=new FileReader();rd.onload=function(){resolve(String(rd.result||'').split(',').pop()||'')};rd.onerror=function(){reject(new Error('파일을 읽지 못했습니다.'))};rd.readAsDataURL(file)})}
-function chooseFile(pn,kind){var input=document.createElement('input');input.type='file';input.accept=kind==='PDF'?'.pdf,application/pdf':'.dwg';input.hidden=true;document.body.appendChild(input);input.onchange=async function(){var file=input.files&&input.files[0];input.remove();if(!file)return;if(file.size>MAX_FILE){alert('파일은 8MB 이하만 업로드할 수 있습니다.');return}if(kind==='PDF'&&!/\.pdf$/i.test(file.name)){alert('PDF 파일을 선택해 주세요.');return}if(kind==='DWG'&&!/\.dwg$/i.test(file.name)){alert('DWG 파일을 선택해 주세요.');return}var key=pn+'|'+kind;if(uploading[key])return;uploading[key]=true;try{showProgress(kind+' 도면을 업로드하는 중…');var p=productByPn(pn),base64=await fileToBase64(file),s=syncState(),d=await apiPost('drawing_upload',{pn:pn,item:p.item||'',spec:p.spec||'',groupName:p.item||'품목 미지정',fileName:file.name,mimeType:file.type||'application/octet-stream',base64:base64,uploadedBy:s.user||'',fileKind:kind});var map=readMap(),r=migrateRecord(map[pn]||{});setTyped(r,kind,d.file||{});map[pn]=recompute(r);saveMap(map);finishChanges([pn],map);if(typeof window.toast==='function')window.toast(kind+' 도면 업로드 완료')}catch(e){alert(kind+' 도면 업로드 실패\n\n'+e.message)}finally{uploading[key]=false;hideProgress()}};input.click()}
+function chooseFile(pn,kind){var input=document.createElement('input');input.type='file';input.accept=kind==='PDF'?'.pdf,application/pdf':'.dwg';input.hidden=true;document.body.appendChild(input);input.onchange=async function(){var file=input.files&&input.files[0];input.remove();if(!file)return;if(file.size>MAX_FILE){alert('파일은 8MB 이하만 업로드할 수 있습니다.');return}if(kind==='PDF'&&!/\.pdf$/i.test(file.name)){alert('PDF 파일을 선택해 주세요.');return}if(kind==='DWG'&&!/\.dwg$/i.test(file.name)){alert('DWG 파일을 선택해 주세요.');return}var key=pn+'|'+kind;if(uploading[key])return;uploading[key]=true;try{showProgress(kind+' 도면을 업로드하는 중…');var p=productByPn(pn),base64=await fileToBase64(file),s=syncState(),d=await apiPost('drawing_upload',{pn:pn,item:p.item||'',spec:p.spec||'',groupName:p.item||'품목 미지정',fileName:file.name,mimeType:file.type||'application/octet-stream',base64:base64,uploadedBy:s.user||'',fileKind:kind});var map=readMap(),r=migrateRecord(map[pn]||{});setTyped(r,kind,d.file||{});map[pn]=recompute(r);saveMap(map);finishChanges([pn],map);if(typeof window.toast==='function')window.toast(kind+' 도면 '+actionLabel+' 완료')}catch(e){alert(kind+' 도면 업로드 실패\n\n'+e.message)}finally{uploading[key]=false;hideProgress()}};input.click()}
 function downloadFile(pn,kind){var map=readMap(),m=typedMeta(map[pn]||{},kind),url=m.downloadUrl||m.viewUrl;if(!url){alert(kind+' 도면 파일이 없습니다.');return}window.open(url,'_blank','noopener')}
 async function deleteFile(pn,kind){var map=readMap(),m=typedMeta(map[pn]||{},kind),key=pn+'|'+kind;if(!m.fileId||deleting[key])return;if(!confirm(kind+' 도면을 구글드라이브에서 삭제할까요?'))return;deleting[key]=true;try{showProgress(kind+' 도면을 삭제하는 중…');var s=syncState(),d=await apiPost('drawing_delete',{pn:pn,fileId:m.fileId,fileName:m.fileName,mimeType:m.mimeType,fileKind:kind,deletedBy:s.user||''});if(Number(d.remainingActive||0)>0)throw new Error(kind+' 활성 파일 기록이 서버에 남아 있습니다. Apps Script v13 배포 여부를 확인하세요.');map=readMap();var r=migrateRecord(map[pn]||{});clearTyped(r,kind);map[pn]=recompute(r);saveMap(map);finishChanges([pn],map);if(typeof window.toast==='function')window.toast(kind+' 도면 삭제 완료')}catch(e){alert(kind+' 도면 삭제 실패\n\n'+e.message)}finally{deleting[key]=false;hideProgress()}}
 function installEvents(){if(document.__v98DrawingEvents)return;document.__v98DrawingEvents=true;document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-v98-upload],[data-v98-download],[data-v98-delete]');if(!b||b.disabled)return;var stack=b.closest('.v98-file-stack'),pn=clean(stack&&stack.getAttribute('data-v98-pn')),kind=clean(b.getAttribute('data-v98-upload')||b.getAttribute('data-v98-download')||b.getAttribute('data-v98-delete')).toUpperCase();if(!pn||!kind)return;e.preventDefault();e.stopPropagation();if(b.hasAttribute('data-v98-upload'))chooseFile(pn,kind);else if(b.hasAttribute('data-v98-download'))downloadFile(pn,kind);else deleteFile(pn,kind)},false);document.addEventListener('click',function(e){var tab=e.target.closest&&e.target.closest('#tab-draw,#tab-drawowner');if(!tab)return;setTimeout(function(){scheduleDecorateVisible();if(Date.now()-lastRefresh>60000)refreshFiles(false)},120)},false)}
@@ -16112,119 +16112,15 @@ window.__dbfastecSafeStartV108=start;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(start,120)},{once:true});else setTimeout(start,120);
 })();
 </script>
-<!-- ===== V109: 도면분석 품목별 구글드라이브 도면 일괄 다운로드 ===== -->
-<style id="v109-drawing-product-download-style">
-#view-draw .draw-drive-cell,
-#view-drawowner .draw-drive-cell{vertical-align:middle!important}
-#view-draw .v109-product-download-bar,
-#view-drawowner .v109-product-download-bar{
-  display:flex!important;align-items:center!important;gap:7px!important;
-  min-height:30px!important;margin:0 0 5px 0!important;padding:4px 5px!important;
-  border:1px solid #d8e3f0!important;border-radius:7px!important;
-  background:#f7faff!important;box-sizing:border-box!important;
-}
-#view-draw .v109-product-download-btn,
-#view-drawowner .v109-product-download-btn{
-  flex:0 0 116px!important;height:26px!important;margin:0!important;padding:0 8px!important;
-  border:1px solid #8fb9e7!important;border-radius:6px!important;
-  background:#e8f3ff!important;color:#174f86!important;
-  font-family:inherit!important;font-size:10.5px!important;font-weight:900!important;
-  white-space:nowrap!important;cursor:pointer!important;box-shadow:none!important;
-}
-#view-draw .v109-product-download-btn:hover,
-#view-drawowner .v109-product-download-btn:hover{background:#d9ebff!important;border-color:#6fa6df!important}
-#view-draw .v109-product-download-btn:disabled,
-#view-drawowner .v109-product-download-btn:disabled{
-  background:#f1f3f6!important;border-color:#d8dde5!important;color:#9aa4b2!important;cursor:not-allowed!important;
-}
-#view-draw .v109-product-download-info,
-#view-drawowner .v109-product-download-info{
-  min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
-  color:#5b6b82!important;font-size:9.8px!important;font-weight:700!important;
-}
-#view-draw .v109-product-download-info b,
-#view-drawowner .v109-product-download-info b{color:#1f3a63!important;font-weight:900!important}
-</style>
-<script id="v109-drawing-product-download-script">
-(function(){
-'use strict';
-var VER='v109',DRAW_KEY='dbfastec_cost_drawings_v1',queued=false,observers=[];
-function id(x){return document.getElementById(x)}
-function clean(v){return String(v==null?'':v).trim()}
-function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function readMap(){try{var x=JSON.parse(localStorage.getItem(DRAW_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch(e){return {}}}
-function rowPn(tr){if(!tr)return '';var p=clean(tr.getAttribute('data-pn'));if(p)return p;var el=tr.querySelector('.pn');return el?clean(el.textContent):''}
-function legacyKind(r){var n=clean(r&&r.fileName).toLowerCase(),m=clean(r&&r.fileMime).toLowerCase();if(/\.pdf$/i.test(n)||m.indexOf('pdf')>=0)return 'PDF';if(/\.dwg$/i.test(n)||m.indexOf('dwg')>=0||m.indexOf('acad')>=0)return 'DWG';return ''}
-function directUrl(fileId,url){
-  fileId=clean(fileId);url=clean(url);
-  if(fileId)return 'https://drive.google.com/uc?export=download&id='+encodeURIComponent(fileId);
-  if(!/^https?:\/\//i.test(url))return '';
-  var m=url.match(/\/file\/d\/([^/?#]+)/i)||url.match(/[?&]id=([^&#]+)/i);
-  if(m&&m[1])return 'https://drive.google.com/uc?export=download&id='+encodeURIComponent(decodeURIComponent(m[1]));
-  return url;
-}
-function meta(r,kind){
-  r=r||{};var p=kind==='PDF'?'pdf':'dwg',fid=clean(r[p+'FileId']),name=clean(r[p+'FileName']),url=clean(r[p+'DownloadUrl']||r[p+'FileUrl']);
-  if(!fid&&clean(r.fileId)&&legacyKind(r)===kind){fid=clean(r.fileId);name=name||clean(r.fileName);url=url||clean(r.downloadUrl||r.fileUrl)}
-  return {kind:kind,fileId:fid,fileName:name,url:directUrl(fid,url),has:!!(fid||url)};
-}
-function filesFor(pn){var r=readMap()[pn]||{},out=[],seen={};['DWG','PDF'].forEach(function(k){var m=meta(r,k);if(!m.has||!m.url||seen[m.url])return;seen[m.url]=1;out.push(m)});return out}
-function summary(files){if(!files.length)return '구글드라이브 도면 미등록';var kinds=files.map(function(x){return x.kind}).join(' · ');return '<b>'+esc(kinds)+'</b> 등록 · '+files.length+'개 파일'}
-function decorateCell(td,pn,map){
-  if(!td||!pn)return;var r=map[pn]||{},d=meta(r,'DWG'),p=meta(r,'PDF'),files=[d,p].filter(function(x){return x.has&&x.url});
-  var sig=[pn,d.fileId,d.url,d.fileName,p.fileId,p.url,p.fileName].join('|'),bar=td.querySelector('.v109-product-download-bar');
-  /* 도면이 없을 때는 '도면 미등록 / 구글드라이브 도면 미등록' 중복 안내를 표시하지 않음 */
-  if(!files.length){if(bar)bar.remove();return}
-  if(!bar){bar=document.createElement('div');bar.className='v109-product-download-bar';var stack=td.querySelector('.v98-file-stack,.v97-file-stack');if(stack)td.insertBefore(bar,stack);else td.insertBefore(bar,td.firstChild)}
-  if(bar.getAttribute('data-v109-sig')===sig)return;
-  bar.setAttribute('data-v109-sig',sig);
-  bar.innerHTML='<button type="button" class="v109-product-download-btn" data-v109-product-download="'+esc(pn)+'">품목별 다운로드</button><span class="v109-product-download-info" title="'+esc(files.map(function(x){return x.fileName||x.kind}).join(' / '))+'">'+summary(files)+'</span>';
-}
-function decorateAll(){
-  queued=false;var map=readMap();
-  document.querySelectorAll('#view-draw .draw-inline-table tbody tr,#view-drawowner .draw-inline-table tbody tr').forEach(function(tr){
-    if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;
-    var pn=rowPn(tr),td=tr.querySelector('.draw-drive-cell');if(pn&&td)decorateCell(td,pn,map);
-  });
-  setVersion();
-}
-function schedule(){if(queued)return;queued=true;(window.requestAnimationFrame||function(f){setTimeout(f,0)})(decorateAll)}
-function startDownload(url,delay){setTimeout(function(){var f=document.createElement('iframe');f.style.display='none';f.setAttribute('aria-hidden','true');f.src=url;document.body.appendChild(f);setTimeout(function(){try{f.remove()}catch(e){}},45000)},delay||0)}
-function downloadProduct(pn){
-  var files=filesFor(pn);if(!files.length){alert('이 품목에 등록된 구글드라이브 도면이 없습니다.');return}
-  files.forEach(function(f,i){startDownload(f.url,i*650)});
-  try{if(typeof window.toast==='function')window.toast('품목별 도면 '+files.length+'개 다운로드를 시작했습니다.')}catch(e){}
-}
-function bindEvents(){
-  if(document.__v109ProductDownloadBound)return;document.__v109ProductDownloadBound=true;
-  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-v109-product-download]');if(!b||b.disabled)return;e.preventDefault();e.stopPropagation();downloadProduct(clean(b.getAttribute('data-v109-product-download')))},true);
-  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#tab-draw,#tab-drawowner'))setTimeout(schedule,120)},true);
-  window.addEventListener('storage',function(e){if(e.key===DRAW_KEY)schedule()});
-}
-function observe(){
-  ['view-draw','view-drawowner'].forEach(function(v){var root=id(v);if(!root||root.__v109Observed)return;root.__v109Observed=true;try{var ob=new MutationObserver(function(){schedule()});ob.observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['data-v98-download','data-v98-upload','disabled']});observers.push(ob)}catch(e){}});
-}
-function setVersion(){
-  var v=id('bomAppVer');if(v){var m=String(v.textContent||'').match(/(\s*·\s*.+)$/),s=m?m[1]:'';v.textContent='버전 '+VER+s}
-  document.title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';
-}
-function init(){bindEvents();observe();schedule();setVersion()}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-window.addEventListener('load',function(){observe();schedule();setVersion()},{once:true});
-[260,700,1600].forEach(function(ms){setTimeout(function(){observe();schedule();setVersion()},ms)});
-window.downloadProductDrawingsV109=downloadProduct;
-})();
-</script>
-
-<!-- ===== V111: 구글드라이브 도면 UP · DN 아이콘 버튼 + 미등록 중복 안내 제거 ===== -->
-<style id="v110-drawing-up-dn-style">
+<!-- ===== V113: 도면 UP · DN · 교체 · 삭제 버튼 ===== -->
+<style id="v113-drawing-action-style">
 #view-draw .v97-file-row,
 #view-drawowner .v97-file-row{
-  grid-template-columns:37px 42px 42px 48px minmax(0,1fr)!important;
+  grid-template-columns:37px 42px 42px 52px 48px minmax(0,1fr)!important;
   gap:4px!important;
 }
-#view-draw .v110-drive-icon-btn,
-#view-drawowner .v110-drive-icon-btn{
+#view-draw .v113-drive-btn,
+#view-drawowner .v113-drive-btn{
   display:inline-flex!important;
   align-items:center!important;
   justify-content:center!important;
@@ -16234,6 +16130,7 @@ window.downloadProductDrawingsV109=downloadProduct;
   height:27px!important;
   margin:0!important;
   padding:0 3px!important;
+  border:1px solid #cbd5e1!important;
   border-radius:5px!important;
   font-family:inherit!important;
   font-size:9.5px!important;
@@ -16243,88 +16140,59 @@ window.downloadProductDrawingsV109=downloadProduct;
   white-space:nowrap!important;
   box-shadow:none!important;
 }
-#view-draw .v110-drive-icon-btn .v110-arrow,
-#view-drawowner .v110-drive-icon-btn .v110-arrow{
+#view-draw .v113-drive-btn .v113-action-icon,
+#view-drawowner .v113-drive-btn .v113-action-icon{
   display:inline-block!important;
   font-size:12px!important;
   font-weight:900!important;
   line-height:1!important;
-  transform:translateY(-.5px)!important;
 }
-#view-draw .v110-drive-up,
-#view-drawowner .v110-drive-up{
+#view-draw .v113-drive-up,
+#view-drawowner .v113-drive-up{
   background:#e8f7ef!important;
   border-color:#a7ddbd!important;
   color:#0b6b3b!important;
 }
-#view-draw .v110-drive-up:hover,
-#view-drawowner .v110-drive-up:hover{background:#d8f1e3!important;border-color:#82cca1!important}
-#view-draw .v110-drive-dn,
-#view-drawowner .v110-drive-dn{
+#view-draw .v113-drive-up:hover:not(:disabled),
+#view-drawowner .v113-drive-up:hover:not(:disabled){background:#d8f1e3!important;border-color:#82cca1!important}
+#view-draw .v113-drive-dn,
+#view-drawowner .v113-drive-dn{
   background:#eaf4ff!important;
   border-color:#a9c9ee!important;
   color:#174f86!important;
 }
-#view-draw .v110-drive-dn:hover:not(:disabled),
-#view-drawowner .v110-drive-dn:hover:not(:disabled){background:#d9ebff!important;border-color:#82b5e8!important}
-#view-draw .v110-drive-dn:disabled,
-#view-drawowner .v110-drive-dn:disabled{
+#view-draw .v113-drive-dn:hover:not(:disabled),
+#view-drawowner .v113-drive-dn:hover:not(:disabled){background:#d9ebff!important;border-color:#82b5e8!important}
+#view-draw .v113-drive-replace,
+#view-drawowner .v113-drive-replace{
+  background:#fff7e6!important;
+  border-color:#e8c775!important;
+  color:#8a5b00!important;
+}
+#view-draw .v113-drive-replace:hover:not(:disabled),
+#view-drawowner .v113-drive-replace:hover:not(:disabled){background:#ffefc7!important;border-color:#d9ad45!important}
+#view-draw .v113-drive-delete,
+#view-drawowner .v113-drive-delete{
+  background:#fff1f2!important;
+  border-color:#fecdd3!important;
+  color:#be123c!important;
+}
+#view-draw .v113-drive-delete:hover:not(:disabled),
+#view-drawowner .v113-drive-delete:hover:not(:disabled){background:#ffe1e5!important;border-color:#f8aeb9!important}
+#view-draw .v113-drive-btn:disabled,
+#view-drawowner .v113-drive-btn:disabled{
   background:#f3f5f8!important;
   border-color:#d9dee7!important;
   color:#a3acb9!important;
   cursor:not-allowed!important;
 }
+/* 이전 품목별 다운로드 막대가 저장된 화면에 남아 있어도 표시하지 않음 */
+#view-draw .v109-product-download-bar,
+#view-drawowner .v109-product-download-bar{display:none!important}
 </style>
-<script id="v110-drawing-up-dn-script">
-(function(){
-'use strict';
-var VER='v111',DRAW_KEY='dbfastec_cost_drawings_v1',queued=false,observers=[];
-function clean(v){return String(v==null?'':v).trim()}
-function readMap(){try{var x=JSON.parse(localStorage.getItem(DRAW_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch(e){return {}}}
-function rowPn(row){var stack=row&&row.closest&&row.closest('.v98-file-stack');if(stack){var p=clean(stack.getAttribute('data-v98-pn'));if(p)return p}var tr=row&&row.closest&&row.closest('tr');if(!tr)return '';var p2=clean(tr.getAttribute('data-pn'));if(p2)return p2;var el=tr.querySelector('.pn');return el?clean(el.textContent):''}
-function hasFile(record,kind){record=record||{};var p=kind==='PDF'?'pdf':'dwg';if(clean(record[p+'FileId'])||clean(record[p+'DownloadUrl'])||clean(record[p+'FileUrl']))return true;var n=clean(record.fileName).toLowerCase(),m=clean(record.fileMime).toLowerCase(),legacy=kind==='PDF'?(/\.pdf$/i.test(n)||m.indexOf('pdf')>=0):(/\.dwg$/i.test(n)||m.indexOf('dwg')>=0||m.indexOf('acad')>=0);return legacy&&!!(clean(record.fileId)||clean(record.downloadUrl)||clean(record.fileUrl))}
-function clearActionAttrs(btn){['data-v98-upload','data-v98-download','data-v98-delete'].forEach(function(a){btn.removeAttribute(a)});btn.disabled=false;btn.removeAttribute('aria-disabled')}
-function decorateRow(row,map){
-  if(!row)return;var kind=clean(row.getAttribute('data-v98-kind')).toUpperCase();if(kind!=='DWG'&&kind!=='PDF')return;
-  var pn=rowPn(row),buttons=row.querySelectorAll(':scope > button');if(!pn||buttons.length<3)return;
-  var has=hasFile(map[pn],kind),up=buttons[0],dn=buttons[1];
-  clearActionAttrs(up);clearActionAttrs(dn);
-  up.className='primary v110-drive-icon-btn v110-drive-up';
-  up.innerHTML='<span class="v110-arrow" aria-hidden="true">↑</span><span>UP</span>';
-  up.setAttribute('data-v98-upload',kind);
-  up.setAttribute('title',kind+(has?' 도면 교체 업로드':' 도면 업로드'));
-  up.setAttribute('aria-label',kind+(has?' 도면 교체 업로드':' 도면 업로드'));
-  dn.className='download v110-drive-icon-btn v110-drive-dn';
-  dn.innerHTML='<span class="v110-arrow" aria-hidden="true">↓</span><span>DN</span>';
-  dn.setAttribute('title',kind+' 도면 다운로드');
-  dn.setAttribute('aria-label',kind+' 도면 다운로드');
-  if(has){dn.setAttribute('data-v98-download',kind)}else{dn.disabled=true;dn.setAttribute('aria-disabled','true')}
-}
-function decorateAll(){
-  queued=false;var map=readMap();
-  document.querySelectorAll('#view-draw .v97-file-row[data-v98-kind],#view-drawowner .v97-file-row[data-v98-kind]').forEach(function(row){decorateRow(row,map)});
-  setVersion();
-}
-function schedule(){if(queued)return;queued=true;(window.requestAnimationFrame||function(f){setTimeout(f,0)})(decorateAll)}
-function observe(){
-  ['view-draw','view-drawowner'].forEach(function(id){var root=document.getElementById(id);if(!root||root.__v110UpDnObserved)return;root.__v110UpDnObserved=true;try{var ob=new MutationObserver(function(){schedule()});ob.observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['data-v98-upload','data-v98-download','disabled','class']});observers.push(ob)}catch(e){}})
-}
-function setVersion(){
-  var v=document.getElementById('bomAppVer');if(v){var m=String(v.textContent||'').match(/(\s*·\s*.+)$/),suffix=m?m[1]:'';v.textContent='버전 '+VER+suffix}
-  document.title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';
-  try{window.__legacyDocumentTitleV99='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍'}catch(e){}
-}
-function init(){observe();schedule();setVersion();window.addEventListener('storage',function(e){if(e.key===DRAW_KEY)schedule()});document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#tab-draw,#tab-drawowner'))setTimeout(schedule,120)},true)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-window.addEventListener('load',function(){observe();schedule();setVersion()},{once:true});
-[250,700,1500,3000].forEach(function(ms){setTimeout(function(){observe();schedule();setVersion()},ms)});
-window.decorateDrawingUpDnV111=schedule;
-})();
-</script>
 
-
-<!-- ===== V112: 도면 업로드 창/서버호환/다운로드 안정화 ===== -->
-<style id="v112-drawing-upload-modal-style">
+<!-- ===== V113: 도면 업로드/교체 창 · 행 위치 유지 ===== -->
+<style id="v113-drawing-upload-modal-style">
 .v112-upload-overlay{position:fixed;inset:0;z-index:30000;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:18px}
 .v112-upload-modal{width:min(560px,calc(100vw - 28px));background:#fff;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.36);overflow:hidden;color:#1f2937}
 .v112-upload-head{display:flex;align-items:center;gap:10px;background:#16284a;color:#fff;padding:15px 18px}
@@ -16345,10 +16213,10 @@ window.decorateDrawingUpDnV111=schedule;
 .v112-upload-foot button{border:0;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:900}.v112-cancel{background:#e7ebf2;color:#5e6b7e}.v112-submit{background:#1e9e5a;color:#fff}.v112-submit:disabled{background:#b8c2cf;color:#eef2f6;cursor:not-allowed}
 @media(max-width:600px){.v112-upload-body{padding:14px}.v112-upload-product{grid-template-columns:62px 1fr}.v112-drop{padding:20px 10px}}
 </style>
-<script id="v112-drawing-upload-modal-script">
+<script id="v113-drawing-upload-modal-script">
 (function(){
 'use strict';
-var VER='v112',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',MAX_FILE=8*1024*1024,activeModal=null,uploadBusy=false;
+var VER='v113',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',MAX_FILE=8*1024*1024,activeModal=null,uploadBusy=false;
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
@@ -16358,19 +16226,21 @@ function formatSize(n){n=Number(n)||0;if(n<1024)return n+' B';if(n<1048576)retur
 function rowInfo(btn){var stack=btn.closest('.v98-file-stack'),pn=clean(stack&&stack.getAttribute('data-v98-pn')),tr=btn.closest('tr'),p={pn:pn,item:'',spec:''};try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)){for(var i=0;i<PRODUCTS.length;i++){if(clean(PRODUCTS[i].pn)===pn){p.item=clean(PRODUCTS[i].item);p.spec=clean(PRODUCTS[i].spec);break}}}}catch(e){}if(tr){var cells=tr.cells||[];if(!p.item&&cells[1])p.item=clean(cells[1].textContent);if(!p.spec&&cells[2])p.spec=clean(cells[2].textContent)}return p}
 function fileToBase64(file){return new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(){resolve(String(r.result||'').split(',').pop()||'')};r.onerror=function(){reject(new Error('파일을 읽지 못했습니다.'))};r.readAsDataURL(file)})}
 function fields(kind){var p=kind==='PDF'?'pdf':'dwg';return {id:p+'FileId',name:p+'FileName',mime:p+'FileMime',size:p+'FileSize',url:p+'FileUrl',download:p+'DownloadUrl',at:p+'FileUploadedAt',by:p+'FileUploadedBy',folder:p+'FileFolderId'}}
-function setFileMeta(pn,kind,m){var map=read(DRAW_KEY,{}),r=map[pn]&&typeof map[pn]==='object'?map[pn]:{},f=fields(kind);r[f.id]=m.fileId||'';r[f.name]=m.fileName||'';r[f.mime]=m.mimeType||'';r[f.size]=Number(m.size)||0;r[f.url]=m.viewUrl||'';r[f.download]=m.downloadUrl||'';r[f.at]=m.uploadedAt||new Date().toISOString();r[f.by]=m.uploadedBy||syncState().user||'';r[f.folder]=m.folderId||'';r.has=!!(clean(r.dwgFileId)||clean(r.pdfFileId));r.status=r.has?'보유':'미등록';if(r.has&&!r.date)r.date=new Date().toISOString().slice(0,10);var primary=clean(r.dwgFileId)?{id:r.dwgFileId,name:r.dwgFileName,mime:r.dwgFileMime,size:r.dwgFileSize,url:r.dwgFileUrl,download:r.dwgDownloadUrl,at:r.dwgFileUploadedAt,by:r.dwgFileUploadedBy,folder:r.dwgFileFolderId}:{id:r.pdfFileId,name:r.pdfFileName,mime:r.pdfFileMime,size:r.pdfFileSize,url:r.pdfFileUrl,download:r.pdfDownloadUrl,at:r.pdfFileUploadedAt,by:r.pdfFileUploadedBy,folder:r.pdfFileFolderId};r.fileId=primary.id||'';r.fileName=primary.name||'';r.fileMime=primary.mime||'';r.fileSize=Number(primary.size)||0;r.fileUrl=primary.url||'';r.downloadUrl=primary.download||'';r.fileUploadedAt=primary.at||'';r.fileUploadedBy=primary.by||'';r.fileFolderId=primary.folder||'';map[pn]=r;write(DRAW_KEY,map);try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}try{if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(pn,true)}catch(e){}try{if(typeof window.refreshDrawingAggregatesV88==='function')window.refreshDrawingAggregatesV88(pn)}catch(e){}try{if(typeof window.decorateDrawingButtonsNowV98==='function')window.decorateDrawingButtonsNowV98()}catch(e){}try{if(typeof window.decorateDrawingUpDnV111==='function')window.decorateDrawingUpDnV111()}catch(e){}try{if(typeof window.bomSyncSave==='function')setTimeout(function(){window.bomSyncSave(true)},300)}catch(e){}}
+function setFileMeta(pn,kind,m){var map=read(DRAW_KEY,{}),r=map[pn]&&typeof map[pn]==='object'?map[pn]:{},f=fields(kind);r[f.id]=m.fileId||'';r[f.name]=m.fileName||'';r[f.mime]=m.mimeType||'';r[f.size]=Number(m.size)||0;r[f.url]=m.viewUrl||'';r[f.download]=m.downloadUrl||'';r[f.at]=m.uploadedAt||new Date().toISOString();r[f.by]=m.uploadedBy||syncState().user||'';r[f.folder]=m.folderId||'';r.has=!!(clean(r.dwgFileId)||clean(r.pdfFileId));r.status=r.has?'보유':'미등록';if(r.has&&!r.date)r.date=new Date().toISOString().slice(0,10);var primary=clean(r.dwgFileId)?{id:r.dwgFileId,name:r.dwgFileName,mime:r.dwgFileMime,size:r.dwgFileSize,url:r.dwgFileUrl,download:r.dwgDownloadUrl,at:r.dwgFileUploadedAt,by:r.dwgFileUploadedBy,folder:r.dwgFileFolderId}:{id:r.pdfFileId,name:r.pdfFileName,mime:r.pdfFileMime,size:r.pdfFileSize,url:r.pdfFileUrl,download:r.pdfDownloadUrl,at:r.pdfFileUploadedAt,by:r.pdfFileUploadedBy,folder:r.pdfFileFolderId};r.fileId=primary.id||'';r.fileName=primary.name||'';r.fileMime=primary.mime||'';r.fileSize=Number(primary.size)||0;r.fileUrl=primary.url||'';r.downloadUrl=primary.download||'';r.fileUploadedAt=primary.at||'';r.fileUploadedBy=primary.by||'';r.fileFolderId=primary.folder||'';map[pn]=r;write(DRAW_KEY,map);try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}try{if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(pn,true)}catch(e){}try{if(typeof window.refreshDrawingAggregatesV88==='function')window.refreshDrawingAggregatesV88(pn)}catch(e){}try{if(typeof window.decorateDrawingButtonsNowV98==='function')window.decorateDrawingButtonsNowV98()}catch(e){}try{if(typeof window.bomSyncSave==='function')setTimeout(function(){window.bomSyncSave(true)},300)}catch(e){}}
 async function postUpload(payload){var s=syncState();if(!clean(s.url)||!clean(s.key))throw new Error('데이터 관리에서 구글시트 동기화 URL과 비밀키를 먼저 입력하세요.');var ctl=typeof AbortController!=='undefined'?new AbortController():null,t=ctl?setTimeout(function(){ctl.abort()},120000):null;try{var res=await fetch(clean(s.url),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:'drawing_upload',key:s.key},payload)),signal:ctl?ctl.signal:undefined}),text=await res.text(),d;try{d=JSON.parse(text)}catch(e){throw new Error('Apps Script 응답이 JSON 형식이 아닙니다. 새 배포 URL인지 확인하세요.')}if(!d.ok){var er=new Error(d.error||'도면 업로드 서버 오류');er.serverData=d;throw er}if(!d.file||!clean(d.file.fileId))throw new Error('업로드 응답에 파일 정보가 없습니다. Apps Script 서버 코드를 확인하세요.');return d}catch(e){if(e&&e.name==='AbortError')throw new Error('업로드 시간이 초과되었습니다. 파일 크기와 인터넷 연결을 확인하세요.');throw e}finally{if(t)clearTimeout(t)}}
 function isUnsupported(msg){msg=clean(msg);return /지원하지 않는 action|unsupported action|drawing_upload/i.test(msg)}
 function closeModal(){if(uploadBusy)return;if(activeModal){activeModal.remove();activeModal=null}}
 function validFile(file,kind){if(!file)return '파일을 선택하세요.';if(file.size>MAX_FILE)return '파일은 8MB 이하만 업로드할 수 있습니다.';if(kind==='PDF'&&!/\.pdf$/i.test(file.name))return 'PDF 파일을 선택해 주세요.';if(kind==='DWG'&&!/\.dwg$/i.test(file.name))return 'DWG 파일을 선택해 주세요.';return ''}
-function openUpload(btn,kind){if(activeModal)activeModal.remove();var p=rowInfo(btn),ov=document.createElement('div');ov.className='v112-upload-overlay';ov.innerHTML='<div class="v112-upload-modal" role="dialog" aria-modal="true" aria-label="'+kind+' 도면 업로드"><div class="v112-upload-head"><h3>'+kind+' 도면 업로드</h3><span class="sub">구글드라이브</span><button type="button" class="v112-upload-close" aria-label="닫기">×</button></div><div class="v112-upload-body"><div class="v112-upload-product"><b>품번</b><span>'+esc(p.pn||'-')+'</span><b>품목</b><span>'+esc(p.item||'-')+'</span><b>규격</b><span>'+esc(p.spec||'-')+'</span></div><div class="v112-drop"><div class="ico">☁️</div><div class="main">'+kind+' 파일을 끌어놓거나 선택하세요</div><div class="hint">'+kind+' 형식 · 최대 8MB</div><button type="button" class="v112-file-pick">파일 선택</button><input class="v112-file-input" type="file" accept="'+(kind==='PDF'?'.pdf,application/pdf':'.dwg')+'"></div><div class="v112-selected"><span class="name"></span><span class="size"></span></div><div class="v112-upload-status"></div><div class="v112-server-help"><b>Apps Script 서버 업데이트가 필요합니다.</b>구글시트에서 <b style="display:inline">확장 프로그램 → Apps Script</b>를 열고, 함께 제공한 v13 코드로 교체한 뒤 <b style="display:inline">새 배포</b>를 만들어 현재 동기화 URL에 적용하세요.</div></div><div class="v112-upload-foot"><button type="button" class="v112-cancel">취소</button><button type="button" class="v112-submit" disabled>업로드</button></div></div>';document.body.appendChild(ov);activeModal=ov;var input=ov.querySelector('.v112-file-input'),drop=ov.querySelector('.v112-drop'),selected=ov.querySelector('.v112-selected'),name=selected.querySelector('.name'),size=selected.querySelector('.size'),status=ov.querySelector('.v112-upload-status'),help=ov.querySelector('.v112-server-help'),submit=ov.querySelector('.v112-submit'),file=null;
+function captureRowPosition(btn,pn){var tr=btn&&btn.closest&&btn.closest('tr'),view=btn&&btn.closest&&btn.closest('#view-draw,#view-drawowner'),tbody=tr&&tr.parentElement,rows=tbody?Array.prototype.filter.call(tbody.children,function(r){return !!r.querySelector('.v98-file-stack')}):[];return {pn:pn,viewId:view&&view.id||'',index:rows.indexOf(tr),scrollX:window.scrollX||0,scrollY:window.scrollY||0}}
+function restoreRowPosition(pos){if(!pos||!pos.pn)return;var root=pos.viewId?document.getElementById(pos.viewId):document,stack=null;if(root&&root.querySelectorAll){Array.prototype.some.call(root.querySelectorAll('.v98-file-stack'),function(x){if(clean(x.getAttribute('data-v98-pn'))===pos.pn){stack=x;return true}return false})}var tr=stack&&stack.closest('tr'),tbody=tr&&tr.parentElement;if(tr&&tbody&&pos.index>=0){var rows=Array.prototype.filter.call(tbody.children,function(r){return !!r.querySelector('.v98-file-stack')});var current=rows.indexOf(tr);if(current!==pos.index){var target=rows[pos.index];if(target&&target!==tr)tbody.insertBefore(tr,target);else if(pos.index>=rows.length-1)tbody.appendChild(tr)}}try{window.scrollTo(pos.scrollX,pos.scrollY)}catch(e){}}
+function openUpload(btn,kind){if(activeModal)activeModal.remove();var p=rowInfo(btn),replaceMode=btn.hasAttribute('data-v113-replace'),actionLabel=replaceMode?'교체':'업로드',rowPos=captureRowPosition(btn,p.pn),ov=document.createElement('div');ov.className='v112-upload-overlay';ov.innerHTML='<div class="v112-upload-modal" role="dialog" aria-modal="true" aria-label="'+kind+' 도면 '+actionLabel+'"><div class="v112-upload-head"><h3>'+kind+' 도면 '+actionLabel+'</h3><span class="sub">구글드라이브</span><button type="button" class="v112-upload-close" aria-label="닫기">×</button></div><div class="v112-upload-body"><div class="v112-upload-product"><b>품번</b><span>'+esc(p.pn||'-')+'</span><b>품목</b><span>'+esc(p.item||'-')+'</span><b>규격</b><span>'+esc(p.spec||'-')+'</span></div><div class="v112-drop"><div class="ico">☁️</div><div class="main">'+kind+' 파일을 끌어놓거나 선택하세요</div><div class="hint">'+kind+' 형식 · 최대 8MB</div><button type="button" class="v112-file-pick">파일 선택</button><input class="v112-file-input" type="file" accept="'+(kind==='PDF'?'.pdf,application/pdf':'.dwg')+'"></div><div class="v112-selected"><span class="name"></span><span class="size"></span></div><div class="v112-upload-status"></div><div class="v112-server-help"><b>Apps Script 서버 업데이트가 필요합니다.</b>구글시트에서 <b style="display:inline">확장 프로그램 → Apps Script</b>를 열고, 함께 제공한 v13 코드로 교체한 뒤 <b style="display:inline">새 배포</b>를 만들어 현재 동기화 URL에 적용하세요.</div></div><div class="v112-upload-foot"><button type="button" class="v112-cancel">취소</button><button type="button" class="v112-submit" disabled>'+actionLabel+'</button></div></div>';document.body.appendChild(ov);activeModal=ov;var input=ov.querySelector('.v112-file-input'),drop=ov.querySelector('.v112-drop'),selected=ov.querySelector('.v112-selected'),name=selected.querySelector('.name'),size=selected.querySelector('.size'),status=ov.querySelector('.v112-upload-status'),help=ov.querySelector('.v112-server-help'),submit=ov.querySelector('.v112-submit'),file=null;
 function showStatus(msg,type){status.textContent=msg;status.className='v112-upload-status on '+type}
 function selectFile(f){var err=validFile(f,kind);if(err){file=null;selected.classList.remove('on');submit.disabled=true;showStatus(err,'bad');return}file=f;name.textContent=f.name;name.title=f.name;size.textContent=formatSize(f.size);selected.classList.add('on');status.className='v112-upload-status';help.classList.remove('on');submit.disabled=false}
-ov.querySelector('.v112-file-pick').onclick=function(){input.click()};input.onchange=function(){selectFile(input.files&&input.files[0])};['dragenter','dragover'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.add('drag')})});['dragleave','drop'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.remove('drag')})});drop.addEventListener('drop',function(e){selectFile(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0])});ov.querySelector('.v112-upload-close').onclick=closeModal;ov.querySelector('.v112-cancel').onclick=closeModal;ov.addEventListener('click',function(e){if(e.target===ov)closeModal()});submit.onclick=async function(){if(!file||uploadBusy)return;var err=validFile(file,kind);if(err){showStatus(err,'bad');return}uploadBusy=true;submit.disabled=true;ov.querySelector('.v112-cancel').disabled=true;showStatus(kind+' 도면을 구글드라이브에 업로드하는 중입니다…','work');try{var base64=await fileToBase64(file),s=syncState(),d=await postUpload({pn:p.pn,item:p.item||'',spec:p.spec||'',groupName:p.item||'품목 미지정',fileName:file.name,mimeType:file.type||'application/octet-stream',base64:base64,uploadedBy:s.user||'',fileKind:kind});setFileMeta(p.pn,kind,d.file);showStatus(kind+' 도면 업로드가 완료되었습니다.','ok');try{if(typeof window.toast==='function')window.toast(kind+' 도면 업로드 완료')}catch(e){}setTimeout(function(){uploadBusy=false;closeModal();try{if(typeof window.refreshDrawingFilesV98==='function')window.refreshDrawingFilesV98(false)}catch(e){}},650);return}catch(e){var msg=e&&e.message?e.message:String(e);showStatus(msg,'bad');if(isUnsupported(msg))help.classList.add('on')}uploadBusy=false;submit.disabled=false;ov.querySelector('.v112-cancel').disabled=false};try{input.click()}catch(e){}setTimeout(function(){try{ov.querySelector('.v112-file-pick').focus()}catch(e){}},20)}
+ov.querySelector('.v112-file-pick').onclick=function(){input.click()};input.onchange=function(){selectFile(input.files&&input.files[0])};['dragenter','dragover'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.add('drag')})});['dragleave','drop'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.remove('drag')})});drop.addEventListener('drop',function(e){selectFile(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0])});ov.querySelector('.v112-upload-close').onclick=closeModal;ov.querySelector('.v112-cancel').onclick=closeModal;ov.addEventListener('click',function(e){if(e.target===ov)closeModal()});submit.onclick=async function(){if(!file||uploadBusy)return;var err=validFile(file,kind);if(err){showStatus(err,'bad');return}uploadBusy=true;submit.disabled=true;ov.querySelector('.v112-cancel').disabled=true;showStatus(kind+' 도면을 구글드라이브에 '+actionLabel+'하는 중입니다…','work');try{var base64=await fileToBase64(file),s=syncState(),d=await postUpload({pn:p.pn,item:p.item||'',spec:p.spec||'',groupName:p.item||'품목 미지정',fileName:file.name,mimeType:file.type||'application/octet-stream',base64:base64,uploadedBy:s.user||'',fileKind:kind});setFileMeta(p.pn,kind,d.file);showStatus(kind+' 도면 '+actionLabel+'가 완료되었습니다.','ok');try{if(typeof window.toast==='function')window.toast(kind+' 도면 '+actionLabel+' 완료')}catch(e){}setTimeout(function(){uploadBusy=false;closeModal();try{if(typeof window.decorateDrawingButtonsNowV98==='function')window.decorateDrawingButtonsNowV98()}catch(e){}[0,80,260].forEach(function(ms){setTimeout(function(){restoreRowPosition(rowPos)},ms)});},650);return}catch(e){var msg=e&&e.message?e.message:String(e);showStatus(msg,'bad');if(isUnsupported(msg))help.classList.add('on')}uploadBusy=false;submit.disabled=false;ov.querySelector('.v112-cancel').disabled=false};try{input.click()}catch(e){}setTimeout(function(){try{ov.querySelector('.v112-file-pick').focus()}catch(e){}},20)}
 function download(btn,kind){var p=rowInfo(btn),map=read(DRAW_KEY,{}),r=map[p.pn]||{},f=fields(kind),url=clean(r[f.download]||r[f.url]);if(!url){try{if(typeof window.toast==='function')window.toast(kind+' 도면 파일이 없습니다.');else alert(kind+' 도면 파일이 없습니다.')}catch(e){}return}var a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.style.display='none';document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},1000)}
 function capture(e){var up=e.target.closest&&e.target.closest('#view-draw [data-v98-upload],#view-drawowner [data-v98-upload]');if(up&&!up.disabled){e.preventDefault();e.stopImmediatePropagation();var kind=clean(up.getAttribute('data-v98-upload')).toUpperCase();if(kind==='DWG'||kind==='PDF')openUpload(up,kind);return}var dn=e.target.closest&&e.target.closest('#view-draw [data-v98-download],#view-drawowner [data-v98-download]');if(dn&&!dn.disabled){e.preventDefault();e.stopImmediatePropagation();var k=clean(dn.getAttribute('data-v98-download')).toUpperCase();if(k==='DWG'||k==='PDF')download(dn,k)}}
 function setVersion(){var v=document.getElementById('bomAppVer');if(v){var m=String(v.textContent||'').match(/(\s*·\s*.+)$/),suffix=m?m[1]:'';v.textContent='버전 '+VER+suffix}document.title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';try{window.__legacyDocumentTitleV99=document.title}catch(e){}}
-window.addEventListener('click',capture,true);document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()});setVersion();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion,{once:true});window.addEventListener('load',setVersion,{once:true});[250,800,1800,3500].forEach(function(ms){setTimeout(setVersion,ms)});window.openDrawingUploadV112=function(pn,kind){var b=document.querySelector('.v98-file-stack[data-v98-pn="'+CSS.escape(clean(pn))+'"] [data-v98-upload="'+clean(kind).toUpperCase()+'"]');if(b)openUpload(b,clean(kind).toUpperCase())};
+window.addEventListener('click',capture,true);document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()});setVersion();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion,{once:true});window.addEventListener('load',setVersion,{once:true});[250,800,1800,3500].forEach(function(ms){setTimeout(setVersion,ms)});window.openDrawingUploadV113=window.openDrawingUploadV112=function(pn,kind){var b=document.querySelector('.v98-file-stack[data-v98-pn="'+CSS.escape(clean(pn))+'"] [data-v98-upload="'+clean(kind).toUpperCase()+'"]');if(b)openUpload(b,clean(kind).toUpperCase())};
 })();
 </script>
 
