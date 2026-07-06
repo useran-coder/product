@@ -15423,5 +15423,54 @@ window.refreshDrawingAggregatesV88=refreshAggregates;
 })();
 </script>
 
+
+
+<!-- ===== V90: 도면 삭제 영구반영 · 서버/동기화 재생성 차단 · 도면분석 비고 제거 ===== -->
+<style id="v90-drawing-delete-final-style">
+#view-draw .draw-inline-table .draw-drive-head,
+#view-draw .draw-inline-table .draw-drive-cell,
+#view-drawowner .draw-inline-table .draw-drive-head,
+#view-drawowner .draw-inline-table .draw-drive-cell{
+  width:245px!important;min-width:245px!important;max-width:245px!important;
+}
+#view-draw .draw-drive-cell .draw-drive-name,
+#view-drawowner .draw-drive-cell .draw-drive-name{max-width:238px!important}
+.draw-drive-actions button[data-v90-busy="1"]{opacity:.55!important;pointer-events:none!important}
+</style>
+<script id="v90-drawing-delete-final-script">
+(function(){
+'use strict';
+var VER='v90',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1';
+var deleting=Object.create(null),refreshing=false,syncTimer=0,installed=false;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function syncState(){return read(SYNC_KEY,{url:'',key:'',user:''})}
+function requireConfig(){var s=syncState();if(!s.url||!s.key)throw new Error('데이터 관리에서 구글시트 동기화 URL과 비밀키를 먼저 입력하세요.');return s}
+function parseTime(v){var t=Date.parse(v||'');return isFinite(t)?t:0}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+async function api(action,data,method){var s=requireConfig(),url=String(s.url).trim();if(method==='GET'){var q=Object.assign({action:action,key:s.key,_t:Date.now()},data||{});url+=(url.indexOf('?')>=0?'&':'?')+Object.keys(q).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(q[k]==null?'':q[k])}).join('&')}var ctl=typeof AbortController!=='undefined'?new AbortController():null,t=ctl?setTimeout(function(){ctl.abort()},90000):null;try{var r=await fetch(url,method==='GET'?{cache:'no-store',signal:ctl?ctl.signal:void 0}:{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:action,key:s.key},data||{})),signal:ctl?ctl.signal:void 0}),tx=await r.text(),d;try{d=JSON.parse(tx)}catch(e){throw new Error('Apps Script 응답이 올바르지 않습니다. Apps Script v11을 새 버전으로 배포했는지 확인하세요.')}if(!d.ok)throw new Error(d.error||'서버 처리 오류');return d}finally{if(t)clearTimeout(t)}}
+function blankFileFields(r){['fileId','fileName','fileMime','fileSize','fileUrl','downloadUrl','fileUploadedAt','fileUploadedBy','fileFolderId','fileFolderName','groupName','rootFolderId'].forEach(function(k){r[k]=k==='fileSize'?0:''});return r}
+function tombstone(pn,deletedAt){var map=read(DRAW_KEY,{}),r=Object.assign({},map[pn]||{});blankFileFields(r);r.has=false;r.status='미등록';r.fileDeletedAt=deletedAt||new Date().toISOString();map[pn]=r;write(DRAW_KEY,map);return map}
+function revive(pn,m){var map=read(DRAW_KEY,{}),old=map[pn]||{},r=Object.assign({},old,{has:true,status:'보유',date:old.date||new Date().toISOString().slice(0,10),fileId:m.fileId||'',fileName:m.fileName||'',fileMime:m.mimeType||'',fileSize:Number(m.size)||0,fileUrl:m.viewUrl||'',downloadUrl:m.downloadUrl||'',fileUploadedAt:m.uploadedAt||'',fileUploadedBy:m.uploadedBy||'',fileFolderId:m.folderId||'',fileFolderName:m.folderName||'',groupName:m.groupName||''});delete r.fileDeletedAt;map[pn]=r;write(DRAW_KEY,map);return map}
+function updateCell(pn,map){var r=(map||read(DRAW_KEY,{}))[pn]||{},has=!!clean(r.fileId),name=clean(r.fileName);document.querySelectorAll('.draw-drive-actions[data-pn]').forEach(function(box){if(clean(box.getAttribute('data-pn'))!==pn)return;var td=box.closest('td');if(!td)return;td.innerHTML='<div class="draw-drive-actions" data-pn="'+esc(pn)+'">'+(has?'<button type="button" class="download" data-drive-download="'+esc(pn)+'">다운로드</button><button type="button" data-drive-upload="'+esc(pn)+'">교체</button><button type="button" class="danger" data-drive-delete="'+esc(pn)+'">삭제</button>':'<button type="button" class="primary" data-drive-upload="'+esc(pn)+'">도면 업로드</button>')+'</div>'+(name?'<span class="draw-drive-name" title="'+esc(name)+'">'+esc(name)+'</span>':'')})}
+function applyStatus(pn,has){try{if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(pn,!!has)}catch(e){}try{if(typeof window.refreshDrawingAggregatesV88==='function')window.refreshDrawingAggregatesV88(pn)}catch(e){}try{if(typeof window.refreshCostModalHeaderV84==='function')window.refreshCostModalHeaderV84()}catch(e){}}
+function syncNow(){clearTimeout(syncTimer);var save=function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}};save();syncTimer=setTimeout(save,700)}
+function stripNoteColumns(root){(root||document).querySelectorAll('#view-draw .draw-inline-table,#view-drawowner .draw-inline-table').forEach(function(t){var hr=t.tHead&&t.tHead.rows&&t.tHead.rows[0];if(!hr)return;var idx=-1;Array.prototype.some.call(hr.cells,function(c,i){if(clean(c.textContent)==='비고'){idx=i;return true}return false});if(idx<0)return;Array.prototype.forEach.call(t.rows,function(r){if(r.cells&&r.cells[idx])r.deleteCell(idx)});var cg=t.querySelector('colgroup');if(cg&&cg.children[idx])cg.removeChild(cg.children[idx]);t.setAttribute('data-v90-note-removed','1')})}
+function scheduleStrip(){requestAnimationFrame(function(){stripNoteColumns(document);setTimeout(function(){stripNoteColumns(document)},0)})}
+async function removeDrawing(pn,btn){pn=clean(pn);if(!pn||deleting[pn])return;var map=read(DRAW_KEY,{}),r=map[pn]||{},fileId=clean(r.fileId);if(!confirm('현재 품번의 구글드라이브 도면을 삭제하고 도면 없음으로 변경할까요?'))return;deleting[pn]=true;var old=btn?btn.textContent:'';if(btn){btn.setAttribute('data-v90-busy','1');btn.textContent='삭제 중'}try{var s=syncState(),d=await api('drawing_delete',{pn:pn,fileId:fileId,deletedBy:s.user||''},'POST');if(Number(d.remainingActive||0)>0)throw new Error('서버에 활성 도면 기록이 '+d.remainingActive+'건 남아 있습니다. Apps Script v11 배포 여부를 확인하세요.');var m=tombstone(pn,new Date().toISOString());updateCell(pn,m);applyStatus(pn,false);syncNow();scheduleStrip();if(typeof window.toast==='function')window.toast('도면을 삭제하고 도면 없음으로 변경했습니다.');setTimeout(function(){refreshFiles(false)},900)}catch(e){if(btn){btn.removeAttribute('data-v90-busy');btn.textContent=old||'삭제'}alert('도면 삭제 실패\n\n'+(e&&e.message?e.message:e))}finally{delete deleting[pn]}}
+async function refreshFiles(manual){if(refreshing)return false;refreshing=true;try{var d=await api('drawing_list',{},'GET'),list=Array.isArray(d.files)?d.files:[],map=read(DRAW_KEY,{}),active=Object.create(null),changed=[];list.forEach(function(m){var pn=clean(m&&m.pn);if(!pn)return;active[pn]=m;var local=map[pn]||{},deletedAt=parseTime(local.fileDeletedAt),uploadedAt=parseTime(m.uploadedAt);if(deletedAt&&(!uploadedAt||uploadedAt<=deletedAt))return;var before=JSON.stringify(local);map=revive(pn,m);local=map[pn];if(JSON.stringify(local)!==before)changed.push(pn)});map=read(DRAW_KEY,{});Object.keys(map).forEach(function(pn){var r=map[pn]||{};if(clean(r.fileId)&&!active[pn]){map=tombstone(pn,r.fileDeletedAt||new Date().toISOString());changed.push(pn)}});map=read(DRAW_KEY,{});Array.from(new Set(changed)).forEach(function(pn){updateCell(pn,map);applyStatus(pn,!!(map[pn]&&map[pn].has))});if(changed.length)syncNow();scheduleStrip();if(manual&&typeof window.toast==='function')window.toast('도면파일 '+list.length.toLocaleString()+'건 확인 완료'+(changed.length?' · '+Array.from(new Set(changed)).length+'건 반영':''));return true}catch(e){if(manual)alert('도면파일 새로고침 실패\n\n'+(e&&e.message?e.message:e));return false}finally{refreshing=false}}
+function capture(e){var b=e.target&&e.target.closest?e.target.closest('[data-drive-delete]'):null;if(!b)return;e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();removeDrawing(b.getAttribute('data-drive-delete'),b)}
+function wrapRender(name){var fn=window[name];if(typeof fn!=='function'||fn.__v90NoteStrip)return;var w=function(){var r=fn.apply(this,arguments);scheduleStrip();return r};w.__v90NoteStrip=true;w.__v90Raw=fn;window[name]=w}
+function wrapStatus(){var fn=window.applyDrawingStatusInPlaceV82;if(typeof fn!=='function'||fn.__v90Tombstone)return;var w=function(pn,has){pn=clean(pn);if(has){var map=read(DRAW_KEY,{}),r=map[pn]||{};if(clean(r.fileId)&&r.fileDeletedAt){delete r.fileDeletedAt;map[pn]=r;write(DRAW_KEY,map)}}var out=fn.apply(this,arguments);updateCell(pn);scheduleStrip();return out};w.__v90Tombstone=true;w.__v90Raw=fn;window.applyDrawingStatusInPlaceV82=w}
+function install(){setVersion();wrapRender('renderDrawingAnalysis');wrapRender('renderOwnerAnalysis');wrapStatus();window.refreshDrawingFilesV79=refreshFiles;window.refreshDrawingFilesV85=refreshFiles;var b=id('driveDrawingRefreshBtn');if(b)b.onclick=function(){refreshFiles(true)};scheduleStrip()}
+if(!window.__v90DeleteCapture){window.__v90DeleteCapture=true;window.addEventListener('click',capture,true)}
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,120)});[800,2800,9000,16000].forEach(function(ms){setTimeout(install,ms)});setTimeout(setVersion,17000);
+window.refreshDrawingFilesV90=refreshFiles;
+})();
+</script>
+
 </body>
 </html>
