@@ -15977,10 +15977,180 @@ function install(){
 install();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else schedulePrewarm();
 window.addEventListener('load',function(){setTimeout(install,80)});
-[500,1800,6500,12000,22000].forEach(function(ms){setTimeout(function(){setVersion();wrapRender();wrapSwitch();if(!prepared)prewarm()},ms)});
-var v94Ticks=0,v94Timer=setInterval(function(){setVersion();if(++v94Ticks>=35)clearInterval(v94Timer)},1000);
+[500,1800,6500,12000,22000].forEach(function(ms){setTimeout(function(){setVersion();wrapRender();wrapSwitch()},ms)});
 var ver=id('bomAppVer');if(ver&&!ver.__v94Watch){ver.__v94Watch=true;new MutationObserver(function(){setVersion()}).observe(ver,{childList:true,subtree:true})}
 window.decorateDrawingButtonsNowV94=decorateNow;
+})();
+</script>
+
+
+<!-- ===== V95: 도면분석 무점멸 렌더 · 버튼 최초동시표시 · 탭/품목군 즉시열기 ===== -->
+<style id="v95-drawing-no-flicker-style">
+#view-draw,#view-drawowner,
+#view-draw #drawGroupBody,
+#view-draw .draw-inline-box,
+#view-draw .draw-inline-table,
+#view-draw .draw-drive-cell,
+#view-draw .draw-drive-actions,
+#view-drawowner .draw-inline-box,
+#view-drawowner .draw-inline-table,
+#view-drawowner .draw-drive-cell,
+#view-drawowner .draw-drive-actions{
+  animation:none!important;
+  transition:none!important;
+}
+#view-draw .draw-inline-box,#view-drawowner .draw-inline-box{
+  contain:layout style!important;
+}
+#view-draw .draw-drive-cell,#view-drawowner .draw-drive-cell{
+  width:254px!important;min-width:254px!important;max-width:254px!important;
+  min-height:38px!important;box-sizing:border-box!important;
+}
+#view-draw .draw-drive-actions,#view-drawowner .draw-drive-actions{
+  display:grid!important;
+  grid-template-columns:minmax(84px,1.28fr) minmax(52px,.82fr) minmax(52px,.82fr)!important;
+  gap:4px!important;width:100%!important;visibility:visible!important;opacity:1!important;
+}
+#view-draw .draw-drive-actions button,#view-drawowner .draw-drive-actions button{
+  width:100%!important;height:29px!important;min-width:0!important;margin:0!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+}
+/* 렌더 도중의 중간 모양은 화면에 그리지 않고 완성된 한 프레임만 표시 */
+#view-draw.v95-building #drawGroupBody,
+#view-drawowner.v95-building .owner-body{visibility:hidden!important}
+</style>
+<script id="v95-drawing-no-flicker-script">
+(function(){
+'use strict';
+var VER='v95',DRAW_KEY='dbfastec_cost_drawings_v1';
+var stableRender=null,rawRender=null,stableSwitch=null,rawSwitch=null;
+var prepared=false,lastSnapshot='',prewarming=false,observerInstalled=false;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function readMap(){try{return JSON.parse(localStorage.getItem(DRAW_KEY)||'{}')||{}}catch(e){return {}}}
+function snapshot(){try{return localStorage.getItem(DRAW_KEY)||''}catch(e){return ''}}
+function setVersion(){
+  var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
+  if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER;
+}
+function rowPn(tr){if(!tr)return '';var x=clean(tr.getAttribute&&tr.getAttribute('data-pn'));if(x)return x;var p=tr.querySelector&&tr.querySelector('.pn');return p?clean(p.textContent):''}
+function stateOf(r){r=r||{};var has=!!clean(r.fileId)&&r.has!==false&&!clean(r.fileDeletedAt);return (has?'has|':'none|')+clean(r.fileId)+'|'+clean(r.fileName)}
+function cellHtml(pn,r){
+  r=r||{};var has=!!clean(r.fileId)&&r.has!==false&&!clean(r.fileDeletedAt),name=clean(r.fileName),buttons='';
+  if(has){
+    buttons='<button type="button" class="download" data-drive-download="'+esc(pn)+'">다운로드</button>'+ 
+      '<button type="button" data-drive-upload="'+esc(pn)+'">교체</button>'+ 
+      '<button type="button" class="danger" data-drive-delete="'+esc(pn)+'">삭제</button>';
+  }else{
+    buttons='<button type="button" class="primary" data-drive-upload="'+esc(pn)+'">도면 업로드</button>'+ 
+      '<button type="button" class="v91-disabled" disabled aria-disabled="true">교체</button>'+ 
+      '<button type="button" class="danger v91-disabled" disabled aria-disabled="true">삭제</button>';
+  }
+  return '<div class="draw-drive-actions" data-pn="'+esc(pn)+'">'+buttons+'</div>'+ 
+    (name?'<span class="draw-drive-name" title="'+esc(name)+'">'+esc(name)+'</span>':'');
+}
+function stripNote(table){
+  var hr=table&&table.tHead&&table.tHead.rows&&table.tHead.rows[0];if(!hr)return;
+  var idx=-1;Array.prototype.some.call(hr.cells,function(c,i){if(clean(c.textContent)==='비고'){idx=i;return true}return false});
+  if(idx<0)return;
+  Array.prototype.forEach.call(table.rows,function(r){if(r.cells&&r.cells[idx])r.deleteCell(idx)});
+  var cg=table.querySelector('colgroup');if(cg&&cg.children[idx])cg.removeChild(cg.children[idx]);
+  table.setAttribute('data-v90-note-removed','1');
+}
+function decorateTable(table,map){
+  if(!table||!table.tHead||!table.tBodies||!table.tBodies.length)return;
+  stripNote(table);
+  var hr=table.tHead.rows&&table.tHead.rows[0],idx=-1;if(!hr)return;
+  Array.prototype.some.call(hr.cells,function(c,i){if(c.classList.contains('draw-drive-head')||clean(c.textContent)==='구글드라이브 도면'){idx=i;c.classList.add('draw-drive-head');return true}return false});
+  if(idx<0){var th=document.createElement('th');th.className='draw-drive-head';th.textContent='구글드라이브 도면';hr.appendChild(th);idx=hr.cells.length-1;var cg0=table.querySelector('colgroup');if(cg0){var col0=document.createElement('col');cg0.appendChild(col0)}}
+  var cg=table.querySelector('colgroup');if(cg&&cg.children[idx]){var col=cg.children[idx];col.style.width='254px';col.style.minWidth='254px';col.style.maxWidth='254px'}
+  Array.prototype.forEach.call(table.tBodies[0].rows,function(tr){
+    if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;
+    var pn=rowPn(tr);if(!pn)return;
+    var td=tr.querySelector('.draw-drive-cell');
+    if(!td){td=document.createElement('td');td.className='draw-drive-cell';tr.appendChild(td)}
+    var r=map[pn]||{},state=stateOf(r),has=state.indexOf('has|')===0;
+    var valid=has?!!td.querySelector('[data-drive-download]'):(!!td.querySelector('[data-drive-upload]')&&td.querySelectorAll('button.v91-disabled[disabled]').length===2);
+    if(td.getAttribute('data-v95-state')!==state||!valid)td.innerHTML=cellHtml(pn,r);
+    td.setAttribute('data-v95-state',state);td.setAttribute('data-v94-state',state);td.setAttribute('data-v91-state',state);
+  });
+}
+function decorateNow(){
+  var map=readMap();
+  document.querySelectorAll('#view-draw .draw-inline-table,#view-drawowner .draw-inline-table').forEach(function(t){decorateTable(t,map)});
+  lastSnapshot=snapshot();setVersion();
+}
+function unwrapRender(fn){
+  var seen=[];while(typeof fn==='function'&&seen.indexOf(fn)<0){seen.push(fn);var n=fn.__v94Raw||fn.__v91Raw||fn.__v90Raw||fn.__raw;if(typeof n!=='function'||n===fn)break;fn=n}return fn;
+}
+function suppressLegacyTimers(run){
+  var nativeSetTimeout=window.setTimeout;
+  window.setTimeout=function(cb,delay){
+    var src='';try{src=typeof cb==='function'?Function.prototype.toString.call(cb):''}catch(e){}
+    if(Number(delay||0)===0&&(src.indexOf('decorateAll')>=0||src.indexOf('sanitizeNow(true)')>=0||src.indexOf('refreshDrawingActionLayoutV91')>=0))return 0;
+    return nativeSetTimeout.apply(window,arguments);
+  };
+  try{return run()}finally{window.setTimeout=nativeSetTimeout}
+}
+function installRender(){
+  var current=window.renderDrawingAnalysis;if(typeof current!=='function')return false;
+  if(current.__v95StableRender){stableRender=current;return true}
+  rawRender=unwrapRender(current);
+  stableRender=function(){
+    var args=arguments,self=this,view=id('view-draw');if(view)view.classList.add('v95-building');
+    var out;
+    try{out=suppressLegacyTimers(function(){return rawRender.apply(self,args)});decorateNow();prepared=!!(id('drawGroupBody')&&id('drawGroupBody').children.length);lastSnapshot=snapshot();return out}
+    finally{if(view)view.classList.remove('v95-building')}
+  };
+  stableRender.__v95StableRender=true;stableRender.__v79Drive=true;stableRender.__v90NoteStrip=true;stableRender.__v91Buttons=true;stableRender.__v94FastDraw=true;
+  stableRender.__v95Raw=rawRender;window.renderDrawingAnalysis=stableRender;return true;
+}
+function showDrawFast(){
+  document.querySelectorAll('[id^="view-"]').forEach(function(v){if(v.id==='view-draw')v.classList.remove('hidden');else if(!v.closest||!v.closest('.v79-drive-overlay'))v.classList.add('hidden')});
+  document.querySelectorAll('[id^="tab-"]').forEach(function(b){b.classList.toggle('on',b.id==='tab-draw')});
+  try{window.scrollTo(0,0)}catch(e){}
+}
+function installSwitch(){
+  var current=window.switchTab;if(typeof current!=='function')return false;
+  if(current.__v95StableSwitch){stableSwitch=current;return true}
+  rawSwitch=current.__v94Raw||current;
+  stableSwitch=function(t){
+    if(t==='draw'){
+      var body=id('drawGroupBody'),same=snapshot()===lastSnapshot;
+      if(prepared&&body&&body.children.length&&same){showDrawFast();decorateNow();scheduleBackgroundRefresh();return}
+      var args=arguments,self=this,out=suppressLegacyTimers(function(){return rawSwitch.apply(self,args)});decorateNow();prepared=!!(body&&body.children.length);lastSnapshot=snapshot();scheduleBackgroundRefresh();return out;
+    }
+    return rawSwitch.apply(this,arguments);
+  };
+  stableSwitch.__v95StableSwitch=true;stableSwitch.__v94FastDraw=true;stableSwitch.__v95Raw=rawSwitch;window.switchTab=stableSwitch;return true;
+}
+function installGroupOpen(){
+  var fn=window.openDrawGroup;if(typeof fn==='function'&&!fn.__v95StableGroup){var w=function(){var args=arguments,self=this,v=id('view-draw');if(v)v.classList.add('v95-building');try{return suppressLegacyTimers(function(){return fn.apply(self,args)})}finally{decorateNow();if(v)v.classList.remove('v95-building')}};w.__v95StableGroup=true;w.__v95Raw=fn;window.openDrawGroup=w}
+  var cl=window.closeDrawGroup;if(typeof cl==='function'&&!cl.__v95StableGroup){var cw=function(){var args=arguments,self=this,v=id('view-draw');if(v)v.classList.add('v95-building');try{return suppressLegacyTimers(function(){return cl.apply(self,args)})}finally{decorateNow();if(v)v.classList.remove('v95-building')}};cw.__v95StableGroup=true;cw.__v95Raw=cl;window.closeDrawGroup=cw}
+}
+function installObserver(){
+  if(observerInstalled)return;var roots=[id('view-draw'),id('view-drawowner')].filter(Boolean);if(!roots.length)return;observerInstalled=true;
+  var ob=new MutationObserver(function(ms){var hit=false;for(var i=0;i<ms.length;i++){var t=ms[i].target;if((t&&t.nodeType===1&&t.closest&&t.closest('.draw-inline-table'))||(ms[i].addedNodes&&ms[i].addedNodes.length)){hit=true;break}}if(hit)decorateNow()});
+  roots.forEach(function(r){ob.observe(r,{childList:true,subtree:true})});window.__v95DrawingObserver=ob;
+}
+function scheduleBackgroundRefresh(){
+  var run=function(){try{var f=window.refreshDrawingFilesV93||window.refreshDrawingFilesV90||window.refreshDrawingFilesV85||window.refreshDrawingFilesV79;if(typeof f==='function')Promise.resolve(f(false)).then(decorateNow).catch(function(){})}catch(e){}};
+  if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:2500});else setTimeout(run,1400);
+}
+function prewarm(){
+  if(prepared||prewarming)return;if(!installRender())return;var body=id('drawGroupBody');if(!body)return;prewarming=true;
+  try{stableRender();prepared=body.children.length>0;lastSnapshot=snapshot()}catch(e){}finally{prewarming=false}
+}
+function install(){
+  setVersion();installRender();installSwitch();installGroupOpen();installObserver();window.refreshDrawingActionLayoutV91=decorateNow;
+  var tab=id('tab-draw');if(tab&&!tab.__v95Warm){tab.__v95Warm=true;tab.addEventListener('pointerenter',function(){if(!prepared)prewarm()},{passive:true});tab.addEventListener('pointerdown',function(){if(!prepared)prewarm()},{capture:true,passive:true})}
+}
+install();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else setTimeout(install,0);
+window.addEventListener('load',function(){setTimeout(function(){install();prewarm()},40)});
+setTimeout(prewarm,120);[700,2200,7000,16000].forEach(function(ms){setTimeout(function(){install();setVersion()},ms)});
+window.decorateDrawingButtonsNowV95=decorateNow;
 })();
 </script>
 
