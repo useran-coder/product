@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>제품별 제조원가 프로그램 BOM 개선 | (주)동방파스텍</title>
+<title>제품별 제조원가 프로그램 v99 | (주)동방파스텍</title>
+<script id="v99-static-browser-title-init">
+window.__legacyDocumentTitleV99='제품별 제조원가 프로그램 v99 | (주)동방파스텍';
+</script>
 <style>
 :root{
   --navy:#16284a;--navy2:#1f3a63;--blue:#2f6fb0;
@@ -8060,7 +8063,7 @@ header .button-guide{display:none!important}
     var modified=document.lastModified||new Date();
     el.textContent='버전 '+APP_VER+' · '+fmtDateTime(modified);
     el.title='현재 파일 버전 및 수정 시각';
-    document.title='제품별 제조원가 프로그램 '+APP_VER+' | (주)동방파스텍';
+    window.__legacyDocumentTitleV99='제품별 제조원가 프로그램 '+APP_VER+' | (주)동방파스텍';
   }
   function setButtonLabel(btn,icon,label){
     if(!btn)return;
@@ -8274,7 +8277,7 @@ header .button-guide{display:none!important}
       var admin=document.getElementById('adminToolsWrap');if(admin)admin.style.display='none';
       var tab=document.getElementById('tab-base');if(tab)tab.textContent='🧮 단가산정 기준 및 관리';
       var ver=document.getElementById('bomAppVer');if(ver&&ver.textContent.indexOf('v31')<0)ver.textContent=ver.textContent.replace(/v\d+/,'v31');
-      if(document.title.indexOf('v31')<0)document.title=document.title.replace(/v\d+/,'v31');
+      if(window.__legacyDocumentTitleV99.indexOf('v31')<0)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v31');
     }finally{busy=false}
   }
   function init(){
@@ -8305,7 +8308,7 @@ header .button-guide{display:none!important}
   function updateVersion(){
     var v=document.getElementById('bomAppVer');
     if(v)v.textContent=v.textContent.replace(/v\d+/,'v32');
-    document.title=document.title.replace(/v\d+/,'v32');
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v32');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateVersion);else updateVersion();
 })();
@@ -8518,7 +8521,7 @@ header .button-guide{display:none!important}
     var filters=document.querySelector('#view-cost .filters');
     if(filters)new MutationObserver(function(){setTimeout(enforceLayout,20)}).observe(filters,{childList:true,subtree:true});
     var v=document.getElementById('bomAppVer');if(v)v.textContent=v.textContent.replace(/v\d+/,'v33');
-    document.title=document.title.replace(/v\d+/,'v33');
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v33');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -8662,7 +8665,7 @@ header .button-guide{display:none!important}
       mo.observe(view,{childList:true,subtree:true});
     }
     var v=document.getElementById('bomAppVer');if(v)v.textContent=v.textContent.replace(/v\d+/,'v34');
-    document.title=document.title.replace(/v\d+/,'v34');
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v34');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -8822,7 +8825,7 @@ header .button-guide{display:none!important}
     observe('view-draw');
     observe('view-usage');
     var v=document.getElementById('bomAppVer');if(v)v.textContent=v.textContent.replace(/v\d+/,'v35');
-    document.title=document.title.replace(/v\d+/,'v35');
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v35');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -8845,7 +8848,7 @@ header .button-guide{display:none!important}
   function setVersion(){
     var v=document.getElementById('bomAppVer');
     if(v)v.textContent=v.textContent.replace(/v\d+/,'v36');
-    document.title=document.title.replace(/v\d+/,'v36');
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v36');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion);else setVersion();
 })();
@@ -8942,7 +8945,7 @@ header .brand #bomAppVer{display:none!important}
     if(!t)t='버전 '+VER+' · 2026.07.05 12:21';
     v.textContent=t.replace(/v\d+/,VER);
     v.style.display='inline-flex';
-    document.title=document.title.replace(/v\d+/,VER);
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function switchToBase(){
     try{if(typeof window.switchTab==='function')window.switchTab('base')}catch(_){}
@@ -8965,7 +8968,7 @@ header .brand #bomAppVer{display:none!important}
   }
   function setVersion(){
     var v=document.getElementById('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER+' · 2026.07.05 12:21').replace(/v\d+/,VER);
-    document.title=document.title.replace(/v\d+/,VER);
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function renderInlineHistory(){
     var e=document.getElementById('bomSyncHistory');if(!e)return;var st=readState(),arr=st.history||[];
@@ -9068,7 +9071,7 @@ header .brand #bomAppVer{display:none!important}
   }
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);
-    document.title=document.title.replace(/v\d+/,VER);
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function setup(){
     installRenderHook();bindEquipFiltersV38();applyEquipFiltersV38();setVersion();
@@ -9342,7 +9345,7 @@ header .hbtns #bomSyncBtn{order:10!important}
     var wrap=id('bomUserVersionWrap');if(!wrap){wrap=document.createElement('span');wrap.id='bomUserVersionWrap';sync.insertAdjacentElement('afterend',wrap)}else if(wrap.previousElementSibling!==sync)sync.insertAdjacentElement('afterend',wrap);
     var user=wrap.querySelector('.bom-user-name');if(!user){user=document.createElement('span');user.className='bom-user-name';wrap.appendChild(user)}user.textContent='사용자 · '+userName();
     var ver=id('bomAppVer');if(!ver){ver=document.createElement('span');ver.id='bomAppVer';ver.className='bom-app-version'}if(ver.parentNode!==wrap)wrap.appendChild(ver);ver.textContent='버전 '+VER+' · '+fmtVersion(document.lastModified);ver.title='현재 파일 버전 및 수정 시각';
-    document.title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';renderHistoryButton();setButton(busy?'working':'idle',busy?'동기화 중…':null);
+    window.__legacyDocumentTitleV99='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';renderHistoryButton();setButton(busy?'working':'idle',busy?'동기화 중…':null);
   }
   function bindPanel(){
     ['bomGsUrl','bomGsKey','bomGsUser'].forEach(function(n){var e=id(n);if(e&&!e.__v39){e.__v39=true;e.addEventListener('change',readInputs);e.addEventListener('blur',readInputs);e.addEventListener('input',function(){if(n==='bomGsUser'){var s=getState();s.user=String(e.value||'').trim();setState(s);renderHeader()}})}});
@@ -9394,7 +9397,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="layout-performance-v40-script">
 (function(){
   var v=document.getElementById('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v41').replace(/v\d+/,'v41');
-  document.title=document.title.replace(/v\d+/,'v41');
+  window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v41');
 })();
 </script>
 
@@ -9426,7 +9429,7 @@ header .hbtns #bomSyncBtn{order:10!important}
     var dsel=id('drawUsageFilter');if(dsel&&dsel.options.length&&dsel.options[0])dsel.options[0].textContent='공용/전용/비규격 전체';
     document.querySelectorAll('#view-usage .dh').forEach(function(el){el.childNodes.forEach(function(n){if(n.nodeType===3)n.nodeValue=n.nodeValue.replace('공용품 / 전용품 비중','공용품 / 전용품 / 비규격 비중').replace('품목군별 공용/전용품 관리','품목군별 공용/전용품/비규격 관리')})});
     var ver=id('bomAppVer');if(ver)ver.textContent=(ver.textContent||'버전 '+VER).replace(/v\d+/,VER);
-    document.title=document.title.replace(/v\d+/,VER);
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function init(){repairLabels();setTimeout(repairLabels,0);setTimeout(repairLabels,300)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -9485,7 +9488,7 @@ header .hbtns #bomSyncBtn{order:10!important}
       Array.prototype.forEach.call(el.childNodes,function(n){if(n.nodeType===3)n.nodeValue=n.nodeValue.replace('품목군별 공용/전용품/비규격 관리','품목군별 공용품/전용품/비규격 관리').replace('품목군별 공용/전용품 관리','품목군별 공용품/전용품/비규격 관리')});
     });
     var ver=id('bomAppVer');if(ver)ver.textContent=(ver.textContent||'버전 '+VER).replace(/v\d+/,VER);
-    document.title=document.title.replace(/v\d+/,VER);
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function ensurePanel(){
     var k=id('usageKpis');if(!k)return null;
@@ -9600,7 +9603,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);
-    document.title=document.title.replace(/v\d+/,VER);
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
 
   /* 엑셀 라이브러리: 이전 실패 스크립트를 제거하고 여러 경로를 순차 재시도 */
@@ -9854,7 +9857,7 @@ header .hbtns #bomSyncBtn{order:10!important}
   'use strict';
   var VER='v44';
   function id(x){return document.getElementById(x)}
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);document.title=document.title.replace(/v\d+/,VER)}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER)}
   function usageCardCategory(card){var k=id('usageKpis');if(!k||!card)return null;var cards=[].slice.call(k.children),i=cards.indexOf(card);return i===0?'':i===1?'공용품':i===2?'전용품':i===3?'비규격':null}
   function openCostByUsage(cat){try{window.CURRENT_GROUP=''}catch(e){}var box=id('view-cost');if(box)box.querySelectorAll('.filters select').forEach(function(s){s.value=''});var q=id('q');if(q)q.value='';var f=id('f-usage');if(f)f.value=cat||'';if(typeof window.setUsageMultiFilter==='function')window.setUsageMultiFilter(cat?[cat]:[],false);try{if(typeof window.resetViewLimit==='function')window.resetViewLimit()}catch(e){}try{if(typeof window.switchTab==='function')window.switchTab('cost');else if(typeof switchTab==='function')switchTab('cost')}catch(e){}setTimeout(function(){var ff=id('f-usage');if(ff)ff.value=cat||'';if(typeof window.setUsageMultiFilter==='function')window.setUsageMultiFilter(cat?[cat]:[],false);try{if(typeof window.renderCost==='function')window.renderCost(false);else if(typeof renderCost==='function')renderCost(false)}catch(e){}},0)}
   /* 기존 카드 내부목록 이벤트보다 먼저 실행해 제품별 원가로 이동 */
@@ -9914,7 +9917,7 @@ header .hbtns #bomSyncBtn{order:10!important}
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function readJson(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
   function fmt(v){return Number(v||0).toLocaleString('ko-KR')}
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);document.title=document.title.replace(/v\d+/,VER)}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER)}
 
   function decorateProductTitle(idx){
     var title=id('m-title');if(!title)return;
@@ -10104,7 +10107,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 
   function forceVersion(){
     var v=id('bomAppVer');if(v&&v.textContent.indexOf(VER)<0)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);
-    if(document.title.indexOf(VER)<0)document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99.indexOf(VER)<0)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function watchVersion(){/* v75: 구버전 고정 감시 제거 */}
   function init(){
@@ -10287,7 +10290,7 @@ header .hbtns #bomSyncBtn{order:10!important}
   function init(){
     ensureUsageMulti();decorateTwoOptionFilters();
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v47').replace(/v\d+/,'v47');
-    document.title=document.title.replace(/v\d+/,'v47');
+    window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v47');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   [150,500,1200].forEach(function(ms){setTimeout(init,ms)});
@@ -10362,7 +10365,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);
-    if(document.title)document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
 
   function prepareBomFilter(){
@@ -10503,7 +10506,7 @@ header .hbtns #bomSyncBtn{order:10!important}
   function setVersion(){
     var v=id('bomAppVer');
     if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
-    if(document.title)document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function reorderEquipmentColumns(){
     var table=document.querySelector('#view-equipanalysis .equip-analysis-table');
@@ -10678,7 +10681,7 @@ button[class*="reset" i]:hover{
   function setVersion(){
     var v=id('bomAppVer');
     if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
-    if(document.title)document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function syncRawKindButtons(){
     var sel=id('rawKind'),box=id('rawKindFilterV50');
@@ -10811,7 +10814,7 @@ button[class*="reset" i]:hover{
   function setVersion(){
     var v=id('bomAppVer');
     if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
-    if(document.title)document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function readMaster(){
     try{return JSON.parse(localStorage.getItem('db_equipment_master_v21')||'{}')||{};}catch(_){return {};}
@@ -10934,7 +10937,7 @@ button[class*="reset" i]:hover{
   function setVersion(){
     var v=id('bomAppVer');
     if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
-    if(document.title)document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function readMaster(){
     try{return JSON.parse(localStorage.getItem('db_equipment_master_v21')||'{}')||{};}catch(_){return {};}
@@ -11088,7 +11091,7 @@ button[class*="reset" i]:hover{
   function setVersion(){
     var v=id('bomAppVer');
     if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
-    if(document.title)document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function clone(v){
     try{return JSON.parse(JSON.stringify(v));}catch(_){return v;}
@@ -11365,7 +11368,7 @@ button[class*="reset" i]:hover{
     if(stEl)stEl.value=fmt55(st,2);
     if(note)note.textContent='포밍 기준: 길이 '+Math.round(len).toLocaleString('ko-KR')+'mm 제품을 시간당 '+Math.round(qty).toLocaleString('ko-KR')+'개 생산 · 기준 S/T = 3,600 ÷ '+Math.round(qty).toLocaleString('ko-KR')+' = '+fmt55(st,2)+'초/개 · 참고단가(시간) = 임율 ÷ '+Math.round(qty).toLocaleString('ko-KR');
   };
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=document.title.replace(/v\d+/,VER);}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);}
   function init(){setVersion();window.updateFormingPreviewV55();if(typeof window.renderPrice==='function')window.renderPrice();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   [100,500,1500,3000].forEach(function(ms){setTimeout(function(){setVersion();window.updateFormingPreviewV55();},ms);});
@@ -11417,7 +11420,7 @@ button[class*="reset" i]:hover{
   function id(x){return document.getElementById(x);}
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
-    if(document.title)document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function textValue(cell){
     if(!cell)return '';
@@ -11630,7 +11633,7 @@ button[class*="reset" i]:hover{
     list.forEach(function(p){var seen={};(p.steps||[]).forEach(function(s){var proc=String(s.proc||'').trim();if(!proc)return;if(!map[proc])map[proc]={stepCount:0,productCount:0,st:0};map[proc].stepCount++;map[proc].st+=n(s.st);if(!seen[proc]){seen[proc]=1;map[proc].productCount++;}});});
     return map;
   }
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=document.title.replace(/v\d+/,VER);}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);}
   function updateHelp(){
     var note=document.querySelector('#view-price>.note');if(note)note.innerHTML='<b>공정별 단가 입력 (press_cost_estimator 기준)</b> — 수량기준 공정은 <b>산정수량 × 단위단가</b>, 그 외 공정은 <b>임율 × S/T ÷ 3,600</b>으로 계산합니다.<br>· 밴딩(프레스) : 밴딩 변수 × 100원/변 <b>(기본 2변 = 200원)</b><br>· 타공(프레스) : 타공 변수 × 100원/회 <b>(기본 1회 = 100원)</b><br>· 절곡(절곡기) : 절곡 변수 × 200원/변 <b>(기본 2변 = 400원)</b><br>· 탭핑 50원/홀 · 접시가공 100원/개소 · 스폿용접 100원/점 · 도금 400원/kg · 조립 80원/개 · 검사·포장 20원/개<br>· 포밍 생산성 기준은 기존 설정값인 길이 1,000mm · 시간당 250개 · 기준 S/T 14.4초/개를 유지합니다.';
   }
@@ -11780,7 +11783,7 @@ button[class*="reset" i]:hover{
     var note=document.querySelector('#view-price>.note');
     if(note)note.innerHTML='<b>공정별 단가 입력 (press_cost_estimator 기준)</b> — 수량기준 공정은 <b>산정수량 × 단위단가</b>, 나머지 공정은 <b>임율(원/시간) × S/T(초) ÷ 3,600</b>으로 계산합니다.<br>· <b>밴딩(프레스)</b> 2변 × 100원 = 200원 · <b>타공(프레스)</b> 1회 × 100원 = 100원 · <b>절곡(절곡기)</b> 2변 × 200원 = 400원<br>· 탭핑 2홀 × 50원 = 100원 · 접시가공 2개소 × 100원 = 200원 · 스폿용접 2점 × 100원 = 200원<br>· 도금 400원/kg · 조립 80원/개 · 검사·포장 20원/개 · 포밍은 길이 1,000mm, 시간당 250개 기준을 유지합니다.';
   }
-  function init(){refresh();var v=document.getElementById('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v60').replace(/v\d+/,'v59');document.title=document.title.replace(/v\d+/,'v59');}
+  function init(){refresh();var v=document.getElementById('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v60').replace(/v\d+/,'v59');window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v59');}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,80);});else setTimeout(init,80);
   [500,1800,3600].forEach(function(ms){setTimeout(function(){migrateName();if(typeof renderPrice==='function')renderPrice();var note=document.querySelector('#view-price>.note');if(note&&note.textContent.indexOf('press_cost_estimator')<0)refresh();},ms);});
 })();
@@ -11804,7 +11807,7 @@ button[class*="reset" i]:hover{
   function id(x){return document.getElementById(x);}
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
-    if(document.title)document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function enforceTabOrder(){
     if(busy)return false;
@@ -11913,7 +11916,7 @@ header .tabs #tab-drawowner{order:130}
   function id(x){return document.getElementById(x);}
   function num(v){var n=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(n)?n:0;}
   function money(v){return Math.round(num(v)).toLocaleString('ko-KR')+' 원';}
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=document.title.replace(/v\d+/,VER);}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);}
 
   function stabilizeTabs(){
     var tabs=document.querySelector('header .tabs');if(!tabs)return;
@@ -12003,7 +12006,7 @@ header .tabs #tab-drawowner{order:130}
   function n(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0;}
   function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
   function won0(v){return Math.round(n(v)).toLocaleString('ko-KR');}
-  function setVersion(){var v=byId('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=document.title.replace(/v\d+/,VER);}
+  function setVersion(){var v=byId('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);}
   function valueOf(id,old){var el=byId(id);return el? n(el.value):n(old);}
   function ensureObjects(){
     if(typeof BASE==='undefined')return false;
@@ -12279,7 +12282,7 @@ header .tabs #tab-drawowner{order:130}
     var groups={};list.forEach(function(x){var n=x.p.item||'(품목 미지정)';if(!groups[n])groups[n]=[];groups[n].push(x)});var names=Object.keys(groups).sort(function(a,b){return a.localeCompare(b,'ko')});if(body)body.innerHTML=names.map(function(name){var arr=groups[name],s=statRows(arr),autoRate=s.total?(s['레이저']+s['내부보강'])/s.total*100:0,row='<tr class="usage-group-row '+(selectedGroup===name?'on':'')+'" onclick="renderUsageAnalysis(decodeURIComponent(\''+encodeURIComponent(name)+'\'))"><td><b>'+esc(name)+'</b></td><td class="num strong">'+fmt(s.total)+'</td><td class="num">'+fmt(s['공용품'])+'</td><td class="num">'+fmt(s['전용품'])+'</td><td class="num">'+fmt(s['레이저'])+'</td><td class="num">'+fmt(s['내부보강'])+'</td><td class="num strong">'+autoRate.toFixed(1)+'%</td><td><div class="usage-stack-track" title="'+CATS.map(function(c){return c+' '+s[c+'Rate'].toFixed(1)+'%'}).join(' · ')+'"><span class="common" style="width:'+s['공용품Rate'].toFixed(2)+'%"></span><span class="dedicated" style="width:'+s['전용품Rate'].toFixed(2)+'%"></span><span class="laser" style="width:'+s['레이저Rate'].toFixed(2)+'%"></span><span class="internal" style="width:'+s['내부보강Rate'].toFixed(2)+'%"></span></div><div class="usage-ratio-labels"><span class="common">공용 '+s['공용품Rate'].toFixed(1)+'%</span><span class="dedicated">전용 '+s['전용품Rate'].toFixed(1)+'%</span><span class="laser">레이저 '+s['레이저Rate'].toFixed(1)+'%</span><span class="internal">내부 '+s['내부보강Rate'].toFixed(1)+'%</span></div></td></tr>';if(selectedGroup===name){arr.sort(function(a,b){return CATS.indexOf(a.category)-CATS.indexOf(b.category)||String(a.p.spec||'').localeCompare(String(b.p.spec||''),'ko')});row+='<tr class="usage-detail"><td colspan="8"><div class="draw-inline-box"><div class="draw-inline-head">🏷 '+esc(name)+' 공용/전용/레이저/내부보강 관리 <span class="muted">'+fmt(arr.length)+'건</span><button type="button" onclick="closeUsageGroup()">접기</button></div>'+detailTable(arr)+'</div></td></tr>'}return row}).join('')
   };
 
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);document.title=document.title.replace(/v\d+/,VER)}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER)}
   function lockUsageMenuName(){var tab=id('tab-usage');if(!tab)return;if(tab.textContent!=='🏷 제품 구분별 분석')tab.textContent='🏷 제품 구분별 분석';if(!tab.__v64NameObserver){tab.__v64NameObserver=true;new MutationObserver(function(){if(tab.textContent!=='🏷 제품 구분별 분석')tab.textContent='🏷 제품 구분별 분석'}).observe(tab,{childList:true,subtree:true,characterData:true})}}
   function init(){migrateOldCategories();setVersion();lockUsageMenuName();ensureCategoryFilter();ensureUsagePage();decoratePriceTable();if(id('view-usage')&&!id('view-usage').classList.contains('hidden'))window.renderUsageAnalysis();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -12342,7 +12345,7 @@ header .tabs #tab-drawowner{order:130}
   function n(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function fmt(v,d){return n(v).toLocaleString('ko-KR',{minimumFractionDigits:0,maximumFractionDigits:d==null?0:d})}
-  function setVersion(){var v=id('bomAppVer');if(v){var t=v.textContent||('버전 '+VER);v.textContent=/v\d+/.test(t)?t.replace(/v\d+/,VER):('버전 '+VER)}if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+  function setVersion(){var v=id('bomAppVer');if(v){var t=v.textContent||('버전 '+VER);v.textContent=/v\d+/.test(t)?t.replace(/v\d+/,VER):('버전 '+VER)}if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
   function products(){try{return (typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:[]}catch(e){return []}}
   function readDraw(){try{return JSON.parse(localStorage.getItem(DRAW_KEY)||'{}')||{}}catch(e){return {}}}
   function categoryOfV65(p,dm){
@@ -12577,7 +12580,7 @@ header .tabs #tab-drawowner{order:130}
   function readDraw(){try{return JSON.parse(localStorage.getItem('dbfastec_cost_drawings_v1')||'{}')||{}}catch(e){return {}}}
   function categoryOf(p,d){var r=(d||readDraw())[String((p&&p.pn)||'')]||{};if(r.usageManual===true&&CATS.indexOf(r.usage)>-1)return r.usage;if(/\(L\)/i.test(String((p&&p.item)||'')))return '레이저';if(/상하보강|이너프레임/i.test(String((p&&p.item)||'')))return '내부보강';return r.usage==='전용품'?'전용품':'공용품'}
   function catClass(c){return c==='전용품'?'dedicated':c==='레이저'?'laser':c==='내부보강'?'internal':'common'}
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=document.title.replace(/v\d+/,VER)}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER)}
 
   /* 1) 공정 단가표 적용단가: 입력 중 재렌더링/쉼표 개입을 막고 포커스 이탈 시 확정 */
   function savePriceMemory(inp){
@@ -12685,7 +12688,7 @@ header .tabs #tab-drawowner{order:130}
   function money(v){return Math.round(n(v)).toLocaleString('ko-KR')}
   function products(){try{return typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
   function price(proc){try{return typeof priceOf==='function'?priceOf(proc):((typeof PRICES!=='undefined'&&PRICES[proc])||{})}catch(e){return {}}}
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=document.title.replace(/v\d+/,VER)}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER)}
 
   /* 1) 제품구분 다중필터 위치를 필터 초기화 바로 왼쪽으로 고정 */
   function moveUsageMultiFilter(){
@@ -12823,7 +12826,7 @@ header .tabs #tab-drawowner{order:130}
   function fmt(v,d){return num(v).toLocaleString('ko-KR',{minimumFractionDigits:0,maximumFractionDigits:d==null?2:d})}
   function money(v){return Math.round(num(v)).toLocaleString('ko-KR')}
   function isLaser(proc){return /레이저|laser/i.test(String(proc||''))}
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 
   /* 1) 제품구분 다중필터를 실제 DOM과 시각 순서 모두 초기화 버튼 바로 왼쪽에 고정 */
   var moving=false;
@@ -13119,7 +13122,7 @@ header .tabs #tab-drawowner{order:130}
   function fmt(v,d){return num(v).toLocaleString('ko-KR',{minimumFractionDigits:0,maximumFractionDigits:d==null?2:d})}
   function money(v){return Math.round(num(v)).toLocaleString('ko-KR')}
   function isLaser(p){return /레이저|laser/i.test(String(p||''))}
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 
   /* 필터 DOM 순서와 폭을 최종 고정 */
   function placeUsageFilter(){
@@ -13595,7 +13598,7 @@ header .tabs #tab-drawowner{order:130}
       try{if(v.__v69Obs){v.__v69Obs.disconnect();v.__v69Obs=null}}catch(e){}
       v.textContent=(v.textContent||'버전 v72').replace(/v\d+/,'v72');
     }
-    if(document.title)document.title=document.title.replace(/v\d+/,'v72');
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v72');
   }
   function wrapAfter(name,after,before){
     var old=window[name];if(typeof old!=='function'||old.__v71Wrapped)return;
@@ -13784,7 +13787,7 @@ header .tabs #tab-drawowner{order:130}
   function setVersion(){
     var v=id('bomAppVer');
     if(v)v.textContent=(v.textContent||'버전 v73').replace(/v\d+/,'v73');
-    if(document.title)document.title=document.title.replace(/v\d+/,'v73');
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v73');
   }
   function init(){
     setVersion();arrangeSearchButtons();
@@ -14023,7 +14026,7 @@ header .tabs #tab-drawowner{order:130}
   function id(x){return document.getElementById(x)}
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v74').replace(/v\d+/,'v74');
-    if(document.title)document.title=document.title.replace(/v\d+/,'v74');
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v74');
   }
   function arrangeToolbar(){
     var filters=document.querySelector('#view-cost .filters'),q=id('q');
@@ -14255,7 +14258,7 @@ header .tabs #tab-drawowner{order:130}
   }
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);
-    if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99&&/v\d+/.test(window.__legacyDocumentTitleV99))window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function install(){
     installStorageInvalidation();installCalcCache();installRenderCache();installOpenHook();installSaveHook();
@@ -14330,7 +14333,7 @@ header .tabs #tab-drawowner{order:130}
   function clean(v){return String(v==null?'':v).trim()}
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
-    if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,VER);
+    if(window.__legacyDocumentTitleV99&&/v\d+/.test(window.__legacyDocumentTitleV99))window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
   }
   function bump(){revision++;lastRenderKey=''}
 
@@ -14546,7 +14549,7 @@ header .tabs #tab-drawowner{order:130}
   function setV77(){
     var v=document.getElementById('bomAppVer');
     if(v)v.textContent=(v.textContent||'버전 v77').replace(/v\d+/,'v77');
-    if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,'v77');
+    if(window.__legacyDocumentTitleV99&&/v\d+/.test(window.__legacyDocumentTitleV99))window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v77');
   }
   setV77();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setV77);
@@ -14604,7 +14607,7 @@ function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return 
 function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function state(){return read(SYNC_KEY,{url:'',key:'',user:''})}
 function config(){var s=state();if(!s.url||!s.key)throw new Error('데이터 관리에서 구글시트 동기화 URL과 비밀키를 먼저 입력하세요.');return s}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function toast2(m){if(typeof window.toast==='function')window.toast(m);else alert(m)}
 function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function fmtSize(n){n=Number(n)||0;if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(1)+' MB'}
@@ -14707,7 +14710,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   window.toggleDrawing=function(ev,idx){if(ev){ev.preventDefault();ev.stopPropagation()}var ps=Array.isArray(window.PRODUCTS)?window.PRODUCTS:[],p=ps[idx];if(!p)return;var pn=String(p.pn||''),r=readMap()[pn]||{},next=!r.has;saveManual(pn,next);if(typeof window.toast==='function')window.toast('도면 상태: '+(next?'있음':'없음'))};
   window.toggleUsageDrawingV43=function(ev,pn){if(ev){ev.preventDefault();ev.stopPropagation()}pn=decodeURIComponent(String(pn||''));var r=readMap()[pn]||{},next=!r.has;saveManual(pn,next);if(typeof window.toast==='function')window.toast('도면 상태: '+(next?'있음':'없음'))};
   function tagButtons(){document.querySelectorAll('tr').forEach(function(tr){var pn=rowPn(tr);if(!pn)return;tr.querySelectorAll('.draw-toggle').forEach(function(b){b.setAttribute('data-drawing-pn',pn)})})}
-  function init(){tagButtons();updateCounts();var v=document.getElementById('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v83').replace(/v\d+/,'v83');if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,'v83')}
+  function init(){tagButtons();updateCounts();var v=document.getElementById('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v83').replace(/v\d+/,'v83');if(window.__legacyDocumentTitleV99&&/v\d+/.test(window.__legacyDocumentTitleV99))window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,'v83')}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(init,500)});
 })();
 </script>
@@ -14750,7 +14753,7 @@ function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return 
 function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function products(){try{return (typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:(Array.isArray(window.PRODUCTS)?window.PRODUCTS:[])}catch(e){return []}}
 function product(idx){try{return products()[Number(idx)]||null}catch(e){return null}}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function bump(){rev++;pageStamp=Object.create(null)}
 
@@ -14899,7 +14902,7 @@ function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return 
 function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function products(){try{return (typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:(Array.isArray(window.PRODUCTS)?window.PRODUCTS:[])}catch(e){return []}}
 function product(idx){return products()[Number(idx)]||null}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function recordFor(idx){var p=product(idx);if(!p)return {};return (read(DRAW_KEY,{})[String(p.pn||'')]||{})}
 function ownerNames(current){
   var out=[];function add(v){v=clean(v);if(v&&out.indexOf(v)<0)out.push(v)}
@@ -15004,7 +15007,7 @@ function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return 
 function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function products(){try{return typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)?PRODUCTS:(Array.isArray(window.PRODUCTS)?window.PRODUCTS:[])}catch(e){return []}}
 function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function ownPn(tr){if(!tr)return '';var attr=clean(tr.getAttribute&&tr.getAttribute('data-pn'));if(attr)return attr;var p=tr.querySelector&&tr.querySelector('.pn');return p&&p.closest('tr')===tr?clean(p.textContent):''}
 function updateButton(b,has,pn){if(!b)return;b.classList.toggle('has',!!has);b.classList.toggle('none',!has);b.textContent=has?'있음':'없음';b.setAttribute('data-drawing-pn',pn);b.setAttribute('aria-label',has?'도면 있음':'도면 없음')}
 function updateRow(tr,pn,has){if(!tr||ownPn(tr)!==pn)return;tr.classList.toggle('draw-has',!!has);tr.classList.toggle('draw-none',!has);tr.querySelectorAll('.draw-toggle').forEach(function(b){if(b.closest('tr')===tr)updateButton(b,has,pn)});var sels=tr.querySelectorAll('select');for(var i=0;i<sels.length;i++){var vals=Array.prototype.map.call(sels[i].options,function(o){return o.value});if(vals.indexOf('보유')>=0&&vals.indexOf('미등록')>=0){sels[i].value=has?'보유':'미등록';break}}var dt=tr.querySelector('input[type="date"]');if(has&&dt&&!dt.value)dt.value=today()}
@@ -15073,7 +15076,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 var VER='v86',installCount=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function escAttr(v){return String(v==null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
 
 /* 이미 렌더된 구버전 행도 첫 화면 프레임 안에서 버튼을 완성 */
@@ -15151,7 +15154,7 @@ var VER='v87',saveSyncTimer=0,renderTimer=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function products(){try{return Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
 function productAt(idx){return products()[Number(idx)]||null}
 function invalidateAll(){
@@ -15282,7 +15285,7 @@ function productByPn(pn){pn=String(pn||'');var ps=products();for(var i=0;i<ps.le
 function syncState(){return read(SYNC_KEY,{url:'',key:'',user:''})}
 function requireConfig(){var s=syncState();if(!s.url||!s.key)throw new Error('데이터 관리에서 구글시트 동기화 URL과 비밀키를 먼저 입력하세요.');return s}
 async function apiPost(action,data){var s=requireConfig(),r=await fetch(String(s.url).trim(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:action,key:s.key},data||{}))}),tx=await r.text(),d;try{d=JSON.parse(tx)}catch(e){throw new Error('Apps Script 응답이 JSON 형식이 아닙니다. Apps Script v10을 새 버전으로 배포했는지 확인하세요.')}if(!d.ok)throw new Error(d.error||'서버 처리 오류');return d}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}},350)}
 function clearLocalFile(pn){var map=read(DRAW_KEY,{}),r=Object.assign({},map[pn]||{});['fileId','fileName','fileMime','fileSize','fileUrl','downloadUrl','fileUploadedAt','fileUploadedBy','fileFolderId','fileFolderName','groupName'].forEach(function(k){delete r[k]});r.has=false;r.status='미등록';map[pn]=r;write(DRAW_KEY,map);return map}
 function updateDriveCell(pn,map){var r=(map||read(DRAW_KEY,{}))[pn]||{};document.querySelectorAll('.draw-drive-actions[data-pn]').forEach(function(box){if(clean(box.getAttribute('data-pn'))!==pn)return;var td=box.closest('td');if(!td)return;td.innerHTML='<div class="draw-drive-actions" data-pn="'+esc(pn)+'"><button type="button" class="primary" data-drive-upload="'+esc(pn)+'">도면 업로드</button></div>'})}
@@ -15370,7 +15373,7 @@ window.refreshDrawingAggregatesV88=refreshAggregates;
   function laserDetail(){var md=materialObject(),t=n(md.thickness),w=n(md.width),l=n(md.length),use=n(md.qty)||1,r=nearestRate(t),per=Math.max(0,(w+l)*2),raw=r.p*per*use,m=multiplier>0?multiplier:1;return{t:t,w:w,l:l,useQty:use,rateT:r.t,rate:r.p,perimeter:per,raw:raw,mult:m,base:raw*m,ready:t>0&&w>0&&l>0&&r.p>0}}
   function unitBase(s){var mode=modeOf(s);if(isLaser(s.proc)&&mode==='flat'){var ld=laserDetail();return ld.ready?ld.base:0}var p=price(s.proc);return mode==='flat'?n(p.flat):n(s.st)*n(p.rate)}
   function applied(s){if(s.override!==''&&s.override!=null)return n(s.override);var b=unitBase(s);return modeOf(s)==='flat'?b*defaultQty(s):b}
-  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+  function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
   function rewriteHeader(){var t=document.querySelector('#view-quick .quick-step-table');if(!t)return;var h=t.querySelector('thead tr');if(h)h.innerHTML='<th style="width:52px">순서</th><th>공정명</th><th>구분</th><th>파트</th><th>설비</th><th class="num">S/T(초)</th><th class="num">수량</th><th>구분방식</th><th class="num">기본단가</th><th class="num">적용단가(개당)</th><th style="width:94px">이동·삭제</th>';var f=t.querySelector('tfoot tr');if(f)f.innerHTML='<td colspan="9" class="num strong">공정비 합계</td><td class="num cost" id="qk-procsum">0</td><td></td>';}
   function row(s,i){var mode=modeOf(s),qty=defaultQty(s),base=unitBase(s),laser=isLaser(s.proc),ov=s.override!==''&&s.override!=null;return '<tr data-i="'+i+'" class="'+(laser?'q89-laser-row':'')+'" ondragover="quickDragOver(event,'+i+')" ondragleave="quickDragLeave(event)" ondrop="quickDropStep(event,'+i+')">'+
     '<td><div class="q89-order-box"><span class="q89-drag" draggable="true" title="드래그하여 순서 변경" ondragstart="quickDragStart(event,'+i+')" ondragend="quickDragEnd(event)">☷</span><span class="q89-step-no">'+(i+1)+'</span></div></td>'+
@@ -15450,7 +15453,7 @@ function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function syncState(){return read(SYNC_KEY,{url:'',key:'',user:''})}
 function requireConfig(){var s=syncState();if(!s.url||!s.key)throw new Error('데이터 관리에서 구글시트 동기화 URL과 비밀키를 먼저 입력하세요.');return s}
 function parseTime(v){var t=Date.parse(v||'');return isFinite(t)?t:0}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 async function api(action,data,method){var s=requireConfig(),url=String(s.url).trim();if(method==='GET'){var q=Object.assign({action:action,key:s.key,_t:Date.now()},data||{});url+=(url.indexOf('?')>=0?'&':'?')+Object.keys(q).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(q[k]==null?'':q[k])}).join('&')}var ctl=typeof AbortController!=='undefined'?new AbortController():null,t=ctl?setTimeout(function(){ctl.abort()},90000):null;try{var r=await fetch(url,method==='GET'?{cache:'no-store',signal:ctl?ctl.signal:void 0}:{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:action,key:s.key},data||{})),signal:ctl?ctl.signal:void 0}),tx=await r.text(),d;try{d=JSON.parse(tx)}catch(e){throw new Error('Apps Script 응답이 올바르지 않습니다. Apps Script v11을 새 버전으로 배포했는지 확인하세요.')}if(!d.ok)throw new Error(d.error||'서버 처리 오류');return d}finally{if(t)clearTimeout(t)}}
 function blankFileFields(r){['fileId','fileName','fileMime','fileSize','fileUrl','downloadUrl','fileUploadedAt','fileUploadedBy','fileFolderId','fileFolderName','groupName','rootFolderId'].forEach(function(k){r[k]=k==='fileSize'?0:''});return r}
 function tombstone(pn,deletedAt){var map=read(DRAW_KEY,{}),r=Object.assign({},map[pn]||{});blankFileFields(r);r.has=false;r.status='미등록';r.fileDeletedAt=deletedAt||new Date().toISOString();map[pn]=r;write(DRAW_KEY,map);return map}
@@ -15548,7 +15551,7 @@ function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function readMap(){try{return JSON.parse(localStorage.getItem(DRAW_KEY)||'{}')||{}}catch(e){return {}}}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function cellHtml(pn,r){
   r=r||{};var has=!!clean(r.fileId),name=clean(r.fileName),buttons;
   if(has){
@@ -15710,7 +15713,7 @@ window.refreshDrawingActionLayoutV91=function(){try{if(typeof window.decorateDra
   function setV(){
     var v=document.getElementById('bomAppVer');
     if(v)v.textContent=(v.textContent||'버전 v92').replace(/v\d+/,'v92');
-    if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,'v92'):document.title+' v92';
+    if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,'v92'):window.__legacyDocumentTitleV99+' v92';
   }
   setV();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setV);
@@ -15742,7 +15745,7 @@ function rawWrite(k,v){rawSet.call(localStorage,k,JSON.stringify(v))}
 function parseTime(v){var t=Date.parse(v||'');return isFinite(t)?t:0}
 function nowIso(){return new Date().toISOString()}
 function state(){return read(SYNC_KEY,{url:'',key:'',user:''})}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function blank(r,deletedAt){
   r=r&&typeof r==='object'?Object.assign({},r):{};
   ['fileId','fileName','fileMime','fileSize','fileUrl','downloadUrl','fileUploadedAt','fileUploadedBy','fileFolderId','fileFolderName','groupName','rootFolderId'].forEach(function(k){r[k]=k==='fileSize'?0:''});
@@ -15818,8 +15821,8 @@ install();if(document.readyState==='loading')document.addEventListener('DOMConte
 })();
 </script>
 
-<!-- ===== V97: 도면 담당자 표시 · DWG/PDF 이중 업로드 ===== -->
-<style id="v97-drawing-dual-file-style">
+<!-- ===== V98: 도면 담당자 표시 · DWG/PDF 이중 업로드 ===== -->
+<style id="v98-drawing-dual-file-style">
 #view-draw.v97-building #drawGroupBody,
 #view-drawowner.v97-building #ownerBody{visibility:hidden!important}
 #view-draw .draw-inline-table,#view-drawowner .draw-inline-table{min-width:1420px!important}
@@ -15837,18 +15840,24 @@ install();if(document.readyState==='loading')document.addEventListener('DOMConte
 .v97-progress{position:fixed;z-index:21000;left:50%;top:50%;transform:translate(-50%,-50%);background:#16284a;color:#fff;border-radius:10px;padding:14px 20px;box-shadow:0 18px 55px rgba(0,0,0,.3);font-size:13px;font-weight:800;min-width:260px;text-align:center}
 #view-draw .draw-analysis-tools:before{content:'담당자';font-size:11px;font-weight:800;color:#5b6b82;margin-right:-4px}
 </style>
-<script id="v97-drawing-dual-file-script">
+
+<style id="v98-menu-stability-style">
+header .tabs button{pointer-events:auto!important}
+.v98-owner-select{width:100%!important;height:28px!important;border:1px solid #c9d3e0!important;border-radius:6px!important;background:#fff!important;color:#24354d!important;font-size:11px!important;padding:3px 6px!important}
+.v98-file-stack{display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important}
+</style>
+<script id="v98-drawing-dual-file-stable-script">
 (function(){
 'use strict';
-var VER='v97',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',MAX_FILE=8*1024*1024;
-var refreshing=false,uploading={},deleting={},installed=false;
+var VER='v99',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',MAX_FILE=8*1024*1024;
+var refreshing=false,uploading={},deleting={},installed=false,lastRefresh=0,decorateQueued={};
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
-function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function syncState(){return read(SYNC_KEY,{url:'',key:'',user:''})}
-function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
 function kindOf(m){var k=clean(m&&m.fileKind).toUpperCase(),n=clean(m&&m.fileName).toLowerCase(),t=clean(m&&m.mimeType).toLowerCase();if(k==='PDF'||/\.pdf$/i.test(n)||t.indexOf('pdf')>=0)return 'PDF';if(k==='DWG'||/\.dwg$/i.test(n)||t.indexOf('dwg')>=0||t.indexOf('acad')>=0)return 'DWG';return ''}
 function prefix(kind){return kind==='PDF'?'pdf':'dwg'}
 function fields(kind){var p=prefix(kind);return {id:p+'FileId',name:p+'FileName',mime:p+'FileMime',size:p+'FileSize',url:p+'FileUrl',download:p+'DownloadUrl',at:p+'FileUploadedAt',by:p+'FileUploadedBy',folder:p+'FileFolderId'}}
@@ -15859,35 +15868,64 @@ function recompute(r){var d=typedMeta(r,'DWG'),p=typedMeta(r,'PDF'),primary=d.fi
 function migrateRecord(r){r=r&&typeof r==='object'?Object.assign({},r):{};if(!clean(r.dwgFileId)&&!clean(r.pdfFileId)&&clean(r.fileId)){var k=kindOf({fileName:r.fileName,mimeType:r.fileMime});if(k)setTyped(r,k,{fileId:r.fileId,fileName:r.fileName,mimeType:r.fileMime,size:r.fileSize,viewUrl:r.fileUrl,downloadUrl:r.downloadUrl,uploadedAt:r.fileUploadedAt,uploadedBy:r.fileUploadedBy,folderId:r.fileFolderId})}return recompute(r)}
 function readMap(){var m=read(DRAW_KEY,{}),changed=false;Object.keys(m).forEach(function(pn){var before=JSON.stringify(m[pn]);m[pn]=migrateRecord(m[pn]);if(before!==JSON.stringify(m[pn]))changed=true});if(changed)write(DRAW_KEY,m);return m}
 function saveMap(m){Object.keys(m).forEach(function(pn){m[pn]=recompute(m[pn]||{})});write(DRAW_KEY,m);try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}return m}
-function productByPn(pn){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)){for(var i=0;i<PRODUCTS.length;i++)if(clean(PRODUCTS[i].pn)===pn)return PRODUCTS[i]}}catch(e){}var tr=findRow(pn);if(tr){var cells=tr.cells||[];return {pn:pn,item:cells[1]?clean(cells[1].textContent):'',spec:cells[2]?clean(cells[2].textContent):''}}return {pn:pn,item:'',spec:''}}
-function findRow(pn){var rows=document.querySelectorAll('#view-draw .draw-inline-table tbody tr,#view-drawowner .draw-inline-table tbody tr');for(var i=0;i<rows.length;i++){var x=rowPn(rows[i]);if(x===pn)return rows[i]}return null}
 function rowPn(tr){if(!tr)return '';var x=clean(tr.getAttribute&&tr.getAttribute('data-pn'));if(x)return x;var p=tr.querySelector&&tr.querySelector('.pn');return p?clean(p.textContent):''}
+function findRow(pn){var rows=document.querySelectorAll('#view-draw .draw-inline-table tbody tr,#view-drawowner .draw-inline-table tbody tr');for(var i=0;i<rows.length;i++)if(rowPn(rows[i])===pn)return rows[i];return null}
+function productByPn(pn){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)){for(var i=0;i<PRODUCTS.length;i++)if(clean(PRODUCTS[i].pn)===pn)return PRODUCTS[i]}}catch(e){}var tr=findRow(pn);if(tr){var cells=tr.cells||[];return {pn:pn,item:cells[1]?clean(cells[1].textContent):'',spec:cells[2]?clean(cells[2].textContent):''}}return {pn:pn,item:'',spec:''}}
 function apiUrl(action,params){var s=syncState();if(!s.url||!s.key)throw new Error('데이터 관리에서 구글시트 동기화 URL과 비밀키를 먼저 입력하세요.');var q=Object.assign({action:action,key:s.key,_t:Date.now()},params||{}),u=clean(s.url);return u+(u.indexOf('?')>=0?'&':'?')+Object.keys(q).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(q[k]==null?'':q[k])}).join('&')}
 async function parseResponse(r){var tx=await r.text(),d;try{d=JSON.parse(tx)}catch(e){throw new Error('Apps Script 응답이 올바르지 않습니다. Apps Script v13을 새 버전으로 배포했는지 확인하세요.')}if(!d.ok)throw new Error(d.error||'서버 처리 오류');return d}
 async function apiGet(action,params){return parseResponse(await fetch(apiUrl(action,params),{cache:'no-store'}))}
 async function apiPost(action,data){var s=syncState();if(!s.url||!s.key)throw new Error('데이터 관리에서 구글시트 동기화 URL과 비밀키를 먼저 입력하세요.');return parseResponse(await fetch(clean(s.url),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:action,key:s.key},data||{}))}))}
-function showProgress(msg){hideProgress();var e=document.createElement('div');e.id='v97Progress';e.className='v97-progress';e.textContent=msg;document.body.appendChild(e)}function hideProgress(){var e=id('v97Progress');if(e)e.remove()}
-function scheduleSync(){clearTimeout(scheduleSync.t);scheduleSync.t=setTimeout(function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}},350)}
-function updateStatus(pn,map){var has=!!(map[pn]&&map[pn].has);try{if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(pn,has)}catch(e){}try{if(typeof window.refreshDrawingAggregatesV88==='function')window.refreshDrawingAggregatesV88(pn)}catch(e){}try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}}
-function ownerList(map){var a=[];try{if(typeof window.getOwnerMasterList==='function')a=a.concat(window.getOwnerMasterList()||[])}catch(e){}Object.keys(map||{}).forEach(function(pn){var n=clean(map[pn]&&map[pn].owner);if(n)a.push(n)});return a.filter(function(x,i,z){x=clean(x);return x&&z.indexOf(x)===i}).sort(function(x,y){return x.localeCompare(y,'ko')})}
-function decorateOwner(table,map){var hr=table&&table.tHead&&table.tHead.rows&&table.tHead.rows[0];if(!hr)return;var idx=-1;Array.prototype.some.call(hr.cells,function(c,i){var t=clean(c.textContent);if(t==='담당'||t==='도면 담당자'||c.classList.contains('draw-owner-head')){idx=i;c.textContent='도면 담당자';c.classList.add('draw-owner-head');return true}return false});if(idx<0)return;var cg=table.querySelector('colgroup');if(cg&&cg.children[idx]){cg.children[idx].style.width='132px';cg.children[idx].style.minWidth='132px'}var owners=ownerList(map);Array.prototype.forEach.call(table.tBodies[0].rows,function(tr){if(!tr.cells||!tr.cells[idx])return;var pn=rowPn(tr);if(!pn)return;var td=tr.cells[idx];td.classList.add('draw-owner-cell');var current=clean(map[pn]&&map[pn].owner);var sel=td.querySelector('.v97-owner-select');if(!sel){sel=document.createElement('select');sel.className='v97-owner-select';td.replaceChildren(sel);sel.addEventListener('change',function(){var m=readMap(),r=m[pn]||{};r.owner=this.value;m[pn]=r;saveMap(m);try{if(typeof window.updateDrawingMetaLite==='function')window.updateDrawingMetaLite(pn,'owner',this.value,false)}catch(e){}try{if(typeof window.registerOwnerFromField==='function'&&this.value)window.registerOwnerFromField(this.value)}catch(e){}scheduleSync()})}var opts=[''].concat(owners);if(current&&opts.indexOf(current)<0)opts.push(current);var html=opts.map(function(n){return '<option value="'+esc(n)+'">'+(n?esc(n):'담당자 미지정')+'</option>'}).join('');if(sel.innerHTML!==html)sel.innerHTML=html;sel.value=current})}
-function ensureFileCell(table,tr,pn){var hr=table.tHead&&table.tHead.rows&&table.tHead.rows[0],idx=-1;if(!hr)return null;Array.prototype.some.call(hr.cells,function(c,i){if(c.classList.contains('draw-drive-head')||clean(c.textContent)==='구글드라이브 도면'){idx=i;c.classList.add('draw-drive-head');c.textContent='구글드라이브 도면 (DWG / PDF)';return true}return false});if(idx<0){var th=document.createElement('th');th.className='draw-drive-head';th.textContent='구글드라이브 도면 (DWG / PDF)';hr.appendChild(th);idx=hr.cells.length-1;var cg0=table.querySelector('colgroup');if(cg0)cg0.appendChild(document.createElement('col'))}var cg=table.querySelector('colgroup');if(cg&&cg.children[idx]){cg.children[idx].style.width='405px';cg.children[idx].style.minWidth='405px';cg.children[idx].style.maxWidth='405px'}var td=tr.cells[idx];if(!td){while(tr.cells.length<idx){tr.appendChild(document.createElement('td'))}td=tr.insertCell(idx)}td.className='draw-drive-cell';return td}
-function fileRow(kind,m){var has=!!clean(m.fileId),k=kind.toLowerCase();return '<div class="v97-file-row" data-v97-kind="'+kind+'"><span class="v97-kind '+k+'">'+kind+'</span>'+(has?'<button type="button" class="download" data-v97-download="'+kind+'">다운로드</button><button type="button" data-v97-upload="'+kind+'">교체</button><button type="button" class="danger" data-v97-delete="'+kind+'">삭제</button>':'<button type="button" class="primary" data-v97-upload="'+kind+'">업로드</button><button type="button" disabled>교체</button><button type="button" class="danger" disabled>삭제</button>')+'<span class="v97-file-name" title="'+esc(m.fileName)+'">'+esc(m.fileName||'미등록')+'</span></div>'}
-function renderCell(td,pn,r){var d=typedMeta(r,'DWG'),p=typedMeta(r,'PDF'),state=[d.fileId,d.fileName,p.fileId,p.fileName].join('|');if(td.getAttribute('data-v97-state')===state&&td.querySelector('.v97-file-stack'))return;td.innerHTML='<div class="v97-file-stack" data-v97-pn="'+esc(pn)+'">'+fileRow('DWG',d)+fileRow('PDF',p)+'</div>';td.setAttribute('data-v97-state',state)}
-function decorateTable(table,map){if(!table||!table.tBodies||!table.tBodies.length)return;decorateOwner(table,map);Array.prototype.forEach.call(table.tBodies[0].rows,function(tr){if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;var pn=rowPn(tr);if(!pn)return;var td=ensureFileCell(table,tr,pn);if(td)renderCell(td,pn,map[pn]||{})})}
-function decorate(){var map=readMap();document.querySelectorAll('#view-draw .draw-inline-table,#view-drawowner .draw-inline-table').forEach(function(t){decorateTable(t,map)});setVersion()}
-function applyFiles(list){var map=readMap(),latest={},active={};(list||[]).forEach(function(m){var pn=clean(m&&m.pn),kind=kindOf(m);if(!pn||!kind)return;var key=pn+'|'+kind;if(!latest[key]||clean(m.uploadedAt)>clean(latest[key].uploadedAt))latest[key]=m;active[key]=true});var pns={};Object.keys(map).forEach(function(pn){pns[pn]=true});Object.keys(latest).forEach(function(k){pns[k.split('|')[0]]=true});Object.keys(pns).forEach(function(pn){var r=migrateRecord(map[pn]||{});['DWG','PDF'].forEach(function(kind){var m=latest[pn+'|'+kind];if(m)setTyped(r,kind,m);else clearTyped(r,kind)});map[pn]=recompute(r)});saveMap(map);Object.keys(pns).forEach(function(pn){updateStatus(pn,map)});decorate();scheduleSync();return map}
-async function refreshFiles(manual){if(refreshing)return false;refreshing=true;try{if(manual)showProgress('DWG · PDF 도면 목록을 확인하는 중…');var d=await apiGet('drawing_list',{});applyFiles(Array.isArray(d.files)?d.files:[]);if(manual&&typeof window.toast==='function')window.toast('도면파일 '+Number(d.count||0).toLocaleString()+'건 확인 완료');return true}catch(e){if(manual)alert('도면파일 새로고침 실패\n\n'+e.message);return false}finally{refreshing=false;hideProgress()}}
+function showProgress(msg){hideProgress();var e=document.createElement('div');e.id='v98Progress';e.className='v97-progress';e.textContent=msg;document.body.appendChild(e)}
+function hideProgress(){var e=id('v98Progress');if(e)e.remove()}
+function scheduleSync(){clearTimeout(scheduleSync.t);scheduleSync.t=setTimeout(function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}},600)}
+function updateStatus(pn,map){var has=!!(map[pn]&&map[pn].has);try{if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(pn,has)}catch(e){}try{if(typeof window.refreshDrawingAggregatesV88==='function')window.refreshDrawingAggregatesV88(pn)}catch(e){}}
+function finishChanges(pns,map){var seen={};(pns||[]).forEach(function(pn){pn=clean(pn);if(!pn||seen[pn])return;seen[pn]=1;updateStatus(pn,map)});try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}scheduleDecorateVisible();scheduleSync()}
+function ownerList(map){var a=[];try{if(typeof window.getOwnerMasterList==='function')a=a.concat(window.getOwnerMasterList()||[])}catch(e){}Object.keys(map||{}).forEach(function(pn){var n=clean(map[pn]&&map[pn].owner);if(n)a.push(n)});return a.map(clean).filter(function(x,i,z){return x&&z.indexOf(x)===i}).sort(function(x,y){return x.localeCompare(y,'ko')})}
+function ensureOwnerColumn(table){if(!table||!table.tHead||!table.tBodies||!table.tBodies.length)return -1;var hr=table.tHead.rows&&table.tHead.rows[0];if(!hr)return -1;var idx=-1;Array.prototype.some.call(hr.cells,function(c,i){var t=clean(c.textContent);if(t==='담당'||t==='도면 담당자'||c.classList.contains('draw-owner-head')){idx=i;c.textContent='도면 담당자';c.classList.add('draw-owner-head');return true}return false});if(idx<0){var before=-1;Array.prototype.some.call(hr.cells,function(c,i){if(clean(c.textContent)==='수정일'){before=i;return true}return false});idx=before>=0?before:hr.cells.length;var th=document.createElement('th');th.className='draw-owner-head';th.textContent='도면 담당자';if(idx<hr.cells.length)hr.insertBefore(th,hr.cells[idx]);else hr.appendChild(th);var cg=table.querySelector('colgroup');if(cg){var col=document.createElement('col');if(idx<cg.children.length)cg.insertBefore(col,cg.children[idx]);else cg.appendChild(col)}Array.prototype.forEach.call(table.tBodies[0].rows,function(tr){if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;tr.insertCell(Math.min(idx,tr.cells.length))})}var cg2=table.querySelector('colgroup');if(cg2&&cg2.children[idx]){cg2.children[idx].style.width='128px';cg2.children[idx].style.minWidth='128px'}return idx}
+function decorateOwner(table,map){var idx=ensureOwnerColumn(table);if(idx<0)return;var owners=ownerList(map),body=table.tBodies[0];if(!body)return;Array.prototype.forEach.call(body.rows,function(tr){if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;var pn=rowPn(tr);if(!pn)return;while(tr.cells.length<=idx)tr.appendChild(document.createElement('td'));var td=tr.cells[idx];td.classList.add('draw-owner-cell');var current=clean(map[pn]&&map[pn].owner),sel=td.querySelector('.v98-owner-select');if(!sel){sel=document.createElement('select');sel.className='v98-owner-select v97-owner-select';td.replaceChildren(sel);sel.addEventListener('change',function(){var m=readMap(),r=m[pn]||{};r.owner=this.value;m[pn]=r;saveMap(m);try{if(typeof window.updateDrawingMetaLite==='function')window.updateDrawingMetaLite(pn,'owner',this.value,false)}catch(e){}try{if(typeof window.registerOwnerFromField==='function'&&this.value)window.registerOwnerFromField(this.value)}catch(e){}scheduleSync()})}var opts=[''].concat(owners);if(current&&opts.indexOf(current)<0)opts.push(current);var html=opts.map(function(n){return '<option value="'+esc(n)+'">'+(n?esc(n):'담당자 미지정')+'</option>'}).join('');if(sel.innerHTML!==html)sel.innerHTML=html;sel.value=current})}
+function ensureFileColumn(table){if(!table||!table.tHead||!table.tBodies||!table.tBodies.length)return -1;var hr=table.tHead.rows&&table.tHead.rows[0],idx=-1;if(!hr)return -1;Array.prototype.some.call(hr.cells,function(c,i){var t=clean(c.textContent);if(c.classList.contains('draw-drive-head')||t==='구글드라이브 도면'||t.indexOf('구글드라이브 도면')===0){idx=i;c.classList.add('draw-drive-head');c.textContent='구글드라이브 도면 (DWG / PDF)';return true}return false});if(idx<0){var th=document.createElement('th');th.className='draw-drive-head';th.textContent='구글드라이브 도면 (DWG / PDF)';hr.appendChild(th);idx=hr.cells.length-1;var cg0=table.querySelector('colgroup');if(cg0)cg0.appendChild(document.createElement('col'))}var cg=table.querySelector('colgroup');if(cg&&cg.children[idx]){cg.children[idx].style.width='405px';cg.children[idx].style.minWidth='405px';cg.children[idx].style.maxWidth='405px'}return idx}
+function clearButton(b){['data-v98-upload','data-v98-download','data-v98-delete'].forEach(function(a){b.removeAttribute(a)});b.disabled=false;b.removeAttribute('aria-disabled');b.className=''}
+function ensureFileRow(stack,kind){var row=stack.querySelector('[data-v98-kind="'+kind+'"]');if(row)return row;row=document.createElement('div');row.className='v97-file-row';row.setAttribute('data-v98-kind',kind);var badge=document.createElement('span');badge.className='v97-kind '+kind.toLowerCase();badge.textContent=kind;row.appendChild(badge);for(var i=0;i<3;i++){var b=document.createElement('button');b.type='button';b.setAttribute('data-v98-slot',String(i));row.appendChild(b)}var name=document.createElement('span');name.className='v97-file-name';name.setAttribute('data-v98-name','1');row.appendChild(name);stack.appendChild(row);return row}
+function updateFileRow(row,pn,kind,m){var btn=row.querySelectorAll('button'),has=!!clean(m.fileId);if(btn.length!==3)return;btn.forEach(clearButton);if(has){btn[0].textContent='다운로드';btn[0].className='download';btn[0].setAttribute('data-v98-download',kind);btn[1].textContent='교체';btn[1].setAttribute('data-v98-upload',kind);btn[2].textContent='삭제';btn[2].className='danger';btn[2].setAttribute('data-v98-delete',kind)}else{btn[0].textContent='업로드';btn[0].className='primary';btn[0].setAttribute('data-v98-upload',kind);btn[1].textContent='교체';btn[1].disabled=true;btn[1].setAttribute('aria-disabled','true');btn[2].textContent='삭제';btn[2].className='danger';btn[2].disabled=true;btn[2].setAttribute('aria-disabled','true')}var n=row.querySelector('[data-v98-name="1"]');if(n){n.textContent=m.fileName||'미등록';n.title=m.fileName||''}}
+function renderCell(td,pn,r){var stack=td.querySelector('.v98-file-stack');if(!stack){td.replaceChildren();stack=document.createElement('div');stack.className='v97-file-stack v98-file-stack';stack.setAttribute('data-v98-pn',pn);td.appendChild(stack)}else stack.setAttribute('data-v98-pn',pn);updateFileRow(ensureFileRow(stack,'DWG'),pn,'DWG',typedMeta(r,'DWG'));updateFileRow(ensureFileRow(stack,'PDF'),pn,'PDF',typedMeta(r,'PDF'))}
+function decorateTable(table,map){if(!table||!table.tBodies||!table.tBodies.length)return;decorateOwner(table,map);var idx=ensureFileColumn(table);if(idx<0)return;Array.prototype.forEach.call(table.tBodies[0].rows,function(tr){if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;var pn=rowPn(tr);if(!pn)return;while(tr.cells.length<=idx)tr.appendChild(document.createElement('td'));var td=tr.cells[idx];td.className='draw-drive-cell';renderCell(td,pn,map[pn]||{})})}
+function decorateView(viewId){var view=id(viewId);if(!view)return;var map=readMap();view.querySelectorAll('.draw-inline-table').forEach(function(t){decorateTable(t,map)});setVersion()}
+function scheduleDecorate(viewId){viewId=viewId||'';if(decorateQueued[viewId])return;decorateQueued[viewId]=true;var run=function(){decorateQueued[viewId]=false;if(viewId)decorateView(viewId);else scheduleDecorateVisible()};if(window.requestAnimationFrame)requestAnimationFrame(run);else setTimeout(run,0)}
+function scheduleDecorateVisible(){['view-draw','view-drawowner'].forEach(function(v){var e=id(v);if(e&&!e.classList.contains('hidden'))scheduleDecorate(v)})}
+function applyFiles(list){var map=readMap(),latest={},pns={},changed=[];(list||[]).forEach(function(m){var pn=clean(m&&m.pn),kind=kindOf(m);if(!pn||!kind)return;var key=pn+'|'+kind;if(!latest[key]||clean(m.uploadedAt)>clean(latest[key].uploadedAt))latest[key]=m;pns[pn]=true});Object.keys(map).forEach(function(pn){pns[pn]=true});Object.keys(pns).forEach(function(pn){var before=JSON.stringify(migrateRecord(map[pn]||{})),r=migrateRecord(map[pn]||{});['DWG','PDF'].forEach(function(kind){var m=latest[pn+'|'+kind];if(m)setTyped(r,kind,m);else clearTyped(r,kind)});r=recompute(r);map[pn]=r;if(before!==JSON.stringify(r))changed.push(pn)});saveMap(map);finishChanges(changed,map);return map}
+async function refreshFiles(manual){if(refreshing)return false;refreshing=true;try{if(manual)showProgress('DWG · PDF 도면 목록을 확인하는 중…');var d=await apiGet('drawing_list',{});applyFiles(Array.isArray(d.files)?d.files:[]);lastRefresh=Date.now();if(manual&&typeof window.toast==='function')window.toast('도면파일 '+Number(d.count||0).toLocaleString()+'건 확인 완료');return true}catch(e){if(manual)alert('도면파일 새로고침 실패\n\n'+e.message);return false}finally{refreshing=false;hideProgress()}}
 function fileToBase64(file){return new Promise(function(resolve,reject){var rd=new FileReader();rd.onload=function(){resolve(String(rd.result||'').split(',').pop()||'')};rd.onerror=function(){reject(new Error('파일을 읽지 못했습니다.'))};rd.readAsDataURL(file)})}
-function chooseFile(pn,kind){var input=document.createElement('input');input.type='file';input.accept=kind==='PDF'?'.pdf,application/pdf':'.dwg';input.style.display='none';document.body.appendChild(input);input.onchange=async function(){var file=input.files&&input.files[0];input.remove();if(!file)return;if(file.size>MAX_FILE){alert('파일은 8MB 이하만 업로드할 수 있습니다.');return}if(kind==='PDF'&&!/\.pdf$/i.test(file.name)){alert('PDF 파일을 선택해 주세요.');return}if(kind==='DWG'&&!/\.dwg$/i.test(file.name)){alert('DWG 파일을 선택해 주세요.');return}var key=pn+'|'+kind;if(uploading[key])return;uploading[key]=true;try{showProgress(kind+' 도면을 업로드하는 중…');var p=productByPn(pn),base64=await fileToBase64(file),s=syncState();var d=await apiPost('drawing_upload',{pn:pn,item:p.item||'',spec:p.spec||'',groupName:p.item||'품목 미지정',fileName:file.name,mimeType:file.type||'application/octet-stream',base64:base64,uploadedBy:s.user||'',fileKind:kind});var map=readMap(),r=migrateRecord(map[pn]||{});setTyped(r,kind,d.file||{});map[pn]=recompute(r);saveMap(map);updateStatus(pn,map);decorate();scheduleSync();if(typeof window.toast==='function')window.toast(kind+' 도면 업로드 완료')}catch(e){alert(kind+' 도면 업로드 실패\n\n'+e.message)}finally{uploading[key]=false;hideProgress()}};input.click()}
+function chooseFile(pn,kind){var input=document.createElement('input');input.type='file';input.accept=kind==='PDF'?'.pdf,application/pdf':'.dwg';input.hidden=true;document.body.appendChild(input);input.onchange=async function(){var file=input.files&&input.files[0];input.remove();if(!file)return;if(file.size>MAX_FILE){alert('파일은 8MB 이하만 업로드할 수 있습니다.');return}if(kind==='PDF'&&!/\.pdf$/i.test(file.name)){alert('PDF 파일을 선택해 주세요.');return}if(kind==='DWG'&&!/\.dwg$/i.test(file.name)){alert('DWG 파일을 선택해 주세요.');return}var key=pn+'|'+kind;if(uploading[key])return;uploading[key]=true;try{showProgress(kind+' 도면을 업로드하는 중…');var p=productByPn(pn),base64=await fileToBase64(file),s=syncState(),d=await apiPost('drawing_upload',{pn:pn,item:p.item||'',spec:p.spec||'',groupName:p.item||'품목 미지정',fileName:file.name,mimeType:file.type||'application/octet-stream',base64:base64,uploadedBy:s.user||'',fileKind:kind});var map=readMap(),r=migrateRecord(map[pn]||{});setTyped(r,kind,d.file||{});map[pn]=recompute(r);saveMap(map);finishChanges([pn],map);if(typeof window.toast==='function')window.toast(kind+' 도면 업로드 완료')}catch(e){alert(kind+' 도면 업로드 실패\n\n'+e.message)}finally{uploading[key]=false;hideProgress()}};input.click()}
 function downloadFile(pn,kind){var map=readMap(),m=typedMeta(map[pn]||{},kind),url=m.downloadUrl||m.viewUrl;if(!url){alert(kind+' 도면 파일이 없습니다.');return}window.open(url,'_blank','noopener')}
-async function deleteFile(pn,kind){var map=readMap(),m=typedMeta(map[pn]||{},kind),key=pn+'|'+kind;if(!m.fileId){return}if(deleting[key])return;if(!confirm(kind+' 도면을 구글드라이브에서 삭제할까요?'))return;deleting[key]=true;try{showProgress(kind+' 도면을 삭제하는 중…');var s=syncState(),d=await apiPost('drawing_delete',{pn:pn,fileId:m.fileId,fileName:m.fileName,mimeType:m.mimeType,fileKind:kind,deletedBy:s.user||''});if(Number(d.remainingActive||0)>0)throw new Error(kind+' 활성 파일 기록이 서버에 남아 있습니다. Apps Script v13 배포 여부를 확인하세요.');map=readMap();var r=migrateRecord(map[pn]||{});clearTyped(r,kind);map[pn]=recompute(r);saveMap(map);updateStatus(pn,map);decorate();scheduleSync();if(typeof window.toast==='function')window.toast(kind+' 도면 삭제 완료')}catch(e){alert(kind+' 도면 삭제 실패\n\n'+e.message)}finally{deleting[key]=false;hideProgress()}}
-function installEvents(){if(document.__v97DrawingEvents)return;document.__v97DrawingEvents=true;document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-v97-upload],[data-v97-download],[data-v97-delete]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();var stack=b.closest('.v97-file-stack'),pn=clean(stack&&stack.getAttribute('data-v97-pn')),kind=clean(b.getAttribute('data-v97-upload')||b.getAttribute('data-v97-download')||b.getAttribute('data-v97-delete')).toUpperCase();if(!pn||!kind)return;if(b.hasAttribute('data-v97-upload'))chooseFile(pn,kind);else if(b.hasAttribute('data-v97-download'))downloadFile(pn,kind);else deleteFile(pn,kind)},true)}
-function unwrap(fn){var seen=[];while(typeof fn==='function'&&seen.indexOf(fn)<0){seen.push(fn);var n=fn.__v97Raw||fn.__v96Raw||fn.__v95Raw||fn.__v94Raw||fn.__v91Raw||fn.__v90Raw||fn.__raw;if(typeof n!=='function'||n===fn)break;fn=n}return fn}
-function wrapRender(name,viewId){var cur=window[name];if(typeof cur!=='function'||cur.__v97Dual)return;var raw=unwrap(cur);var w=function(){var v=id(viewId);if(v)v.classList.add('v97-building');try{var out=raw.apply(this,arguments);decorate();return out}finally{if(v)v.classList.remove('v97-building')}};w.__v97Dual=true;w.__v97Raw=raw;window[name]=w}
-function wrapSwitch(){var cur=window.switchTab;if(typeof cur!=='function'||cur.__v97Dual)return;var raw=cur;var w=function(t){var out=raw.apply(this,arguments);if(t==='draw'||t==='drawowner'){decorate();setTimeout(function(){refreshFiles(false)},0)}return out};w.__v97Dual=true;w.__v97Raw=raw;window.switchTab=w}
-function install(){if(installed){decorate();return}installed=true;setVersion();installEvents();wrapRender('renderDrawingAnalysis','view-draw');wrapRender('renderOwnerAnalysis','view-drawowner');wrapRender('openDrawGroup','view-draw');wrapSwitch();window.refreshDrawingFilesV79=refreshFiles;window.refreshDrawingFilesV85=refreshFiles;window.refreshDrawingFilesV90=refreshFiles;window.refreshDrawingFilesV93=refreshFiles;window.refreshDrawingFilesV97=refreshFiles;window.refreshDrawingActionLayoutV91=decorate;window.decorateDrawingButtonsNowV94=decorate;window.decorateDrawingButtonsNowV95=decorate;window.decorateDrawingButtonsNowV96=decorate;window.decorateDrawingButtonsNowV97=decorate;var b=id('driveDrawingRefreshBtn');if(b)b.onclick=function(){refreshFiles(true)};decorate();setTimeout(function(){refreshFiles(false)},80)}
-install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,30)});[500,1800,6000].forEach(function(ms){setTimeout(function(){installed=false;install()},ms)});
+async function deleteFile(pn,kind){var map=readMap(),m=typedMeta(map[pn]||{},kind),key=pn+'|'+kind;if(!m.fileId||deleting[key])return;if(!confirm(kind+' 도면을 구글드라이브에서 삭제할까요?'))return;deleting[key]=true;try{showProgress(kind+' 도면을 삭제하는 중…');var s=syncState(),d=await apiPost('drawing_delete',{pn:pn,fileId:m.fileId,fileName:m.fileName,mimeType:m.mimeType,fileKind:kind,deletedBy:s.user||''});if(Number(d.remainingActive||0)>0)throw new Error(kind+' 활성 파일 기록이 서버에 남아 있습니다. Apps Script v13 배포 여부를 확인하세요.');map=readMap();var r=migrateRecord(map[pn]||{});clearTyped(r,kind);map[pn]=recompute(r);saveMap(map);finishChanges([pn],map);if(typeof window.toast==='function')window.toast(kind+' 도면 삭제 완료')}catch(e){alert(kind+' 도면 삭제 실패\n\n'+e.message)}finally{deleting[key]=false;hideProgress()}}
+function installEvents(){if(document.__v98DrawingEvents)return;document.__v98DrawingEvents=true;document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-v98-upload],[data-v98-download],[data-v98-delete]');if(!b||b.disabled)return;var stack=b.closest('.v98-file-stack'),pn=clean(stack&&stack.getAttribute('data-v98-pn')),kind=clean(b.getAttribute('data-v98-upload')||b.getAttribute('data-v98-download')||b.getAttribute('data-v98-delete')).toUpperCase();if(!pn||!kind)return;e.preventDefault();e.stopPropagation();if(b.hasAttribute('data-v98-upload'))chooseFile(pn,kind);else if(b.hasAttribute('data-v98-download'))downloadFile(pn,kind);else deleteFile(pn,kind)},false);document.addEventListener('click',function(e){var tab=e.target.closest&&e.target.closest('#tab-draw,#tab-drawowner');if(!tab)return;setTimeout(function(){scheduleDecorateVisible();if(Date.now()-lastRefresh>60000)refreshFiles(false)},120)},false)}
+function wrapAfter(name,viewId,markers){var cur=window[name];if(typeof cur!=='function'||cur.__v98Dual)return;var w=function(){var out=cur.apply(this,arguments);decorateView(viewId);return out};w.__v98Dual=true;w.__v98Raw=cur;(markers||[]).forEach(function(m){w[m]=true});window[name]=w}
+function bindRefresh(){var b=id('driveDrawingRefreshBtn');if(b&&!b.__v98Bound){b.__v98Bound=true;b.onclick=function(){refreshFiles(true)}}}
+function install(){if(installed)return;installed=true;setVersion();installEvents();wrapAfter('renderDrawingAnalysis','view-draw',['__v96Stable','__v95StableRender','__v94FastDraw','__v91Buttons','__v90NoteStrip','__v79Drive']);wrapAfter('renderOwnerAnalysis','view-drawowner',['__v96Stable','__v94FastDraw','__v91Buttons','__v90NoteStrip','__v79Drive']);wrapAfter('openDrawGroup','view-draw',['__v96Stable','__v95StableGroup']);wrapAfter('closeDrawGroup','view-draw',['__v96Stable','__v95StableGroup']);wrapAfter('closeOwnerGroup','view-drawowner',['__v96Stable','__v95StableGroup']);bindRefresh();window.refreshDrawingFilesV79=refreshFiles;window.refreshDrawingFilesV85=refreshFiles;window.refreshDrawingFilesV90=refreshFiles;window.refreshDrawingFilesV93=refreshFiles;window.refreshDrawingFilesV97=refreshFiles;window.refreshDrawingFilesV98=refreshFiles;window.refreshDrawingActionLayoutV91=scheduleDecorateVisible;window.decorateDrawingButtonsNowV94=scheduleDecorateVisible;window.decorateDrawingButtonsNowV95=scheduleDecorateVisible;window.decorateDrawingButtonsNowV96=scheduleDecorateVisible;window.decorateDrawingButtonsNowV97=scheduleDecorateVisible;window.decorateDrawingButtonsNowV98=scheduleDecorateVisible;scheduleDecorateVisible();var idle=function(){if(syncState().url&&syncState().key)refreshFiles(false)};if(window.requestIdleCallback)requestIdleCallback(idle,{timeout:2500});else setTimeout(idle,1200)}
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});window.addEventListener('load',function(){bindRefresh();scheduleDecorateVisible()},{once:true});
+})();
+</script>
+
+
+
+<script id="v99-version-display-finalizer">
+(function(){
+'use strict';
+var LABEL='버전 v99';
+function apply(){
+  var el=document.getElementById('bomAppVer');
+  if(el){
+    var suffix='';
+    var m=String(el.textContent||'').match(/(\s*·\s*.+)$/);
+    if(m)suffix=m[1];
+    el.textContent=LABEL+suffix;
+  }
+}
+apply();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});
+window.addEventListener('load',apply,{once:true});
+setTimeout(apply,250);
+setTimeout(apply,1500);
 })();
 </script>
 
