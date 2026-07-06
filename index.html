@@ -14328,7 +14328,6 @@ header .tabs #tab-drawowner{order:130}
   var VER='v76', revision=0, lastRenderKey='', rendering=false, modalToken=0, renderTimer=0;
   function id(x){return document.getElementById(x)}
   function clean(v){return String(v==null?'':v).trim()}
-  function products(){try{return (typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:[]}catch(e){return []}}
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
     if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,VER);
@@ -14596,7 +14595,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="v79-drive-drawing-script">
 (function(){
 'use strict';
-var VER='v82', DRAW_KEY='dbfastec_cost_drawings_v1', SYNC_KEY='dbfastec_bom_gsync_v1';
+var VER='v83', DRAW_KEY='dbfastec_cost_drawings_v1', SYNC_KEY='dbfastec_bom_gsync_v1';
 var MAX_FILE=8*1024*1024, activePn='', busy=false, lastRefresh=0, wrapped=false;
 var ALLOWED_EXT=/\.(pdf|dwg|dxf|step|stp|igs|iges|zip|jpg|jpeg|png)$/i;
 function id(x){return document.getElementById(x)}
@@ -14617,7 +14616,8 @@ function drawMap(){return read(DRAW_KEY,{})}
 function rec(pn){return drawMap()[String(pn)]||{}}
 function saveFileMeta(pn,m){pn=String(pn||'');var d=drawMap(),r=d[pn]||{};r.has=true;r.status='보유';r.date=today();r.fileId=m.fileId||'';r.fileName=m.fileName||'';r.fileMime=m.mimeType||'';r.fileSize=Number(m.size)||0;r.fileUrl=m.viewUrl||'';r.downloadUrl=m.downloadUrl||'';r.fileUploadedAt=m.uploadedAt||new Date().toISOString();r.fileUploadedBy=m.uploadedBy||state().user||'';r.fileFolderId=m.folderId||'';d[pn]=r;write(DRAW_KEY,d);try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}return r}
 function clearFileMeta(pn){pn=String(pn||'');var d=drawMap(),r=d[pn]||{};['fileId','fileName','fileMime','fileSize','fileUrl','downloadUrl','fileUploadedAt','fileUploadedBy','fileFolderId'].forEach(function(k){delete r[k]});r.has=false;r.status='미등록';d[pn]=r;write(DRAW_KEY,d);try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}}
-function refreshViews(pn,has){try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}if(pn){try{if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(String(pn),!!has)}catch(e){}try{document.querySelectorAll('#view-draw .draw-inline-table,#view-drawowner .draw-inline-table,#view-usage .draw-inline-table').forEach(decorateTable)}catch(e){}}else{try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}try{if(typeof window.renderDrawingAnalysis==='function'&&id('view-draw')&&!id('view-draw').classList.contains('hidden'))window.renderDrawingAnalysis()}catch(e){}try{if(typeof window.renderOwnerAnalysis==='function'&&id('view-drawowner')&&!id('view-drawowner').classList.contains('hidden'))window.renderOwnerAnalysis()}catch(e){}}try{var fd=id('f-draw'),fw=id('v76-f-draw');if(fd&&fw){var btn=fw.querySelector('.v76-fast-select-btn'),op=fd.options[fd.selectedIndex];if(btn&&op)btn.textContent=op.textContent}}catch(e){}setTimeout(function(){decorateAll();if(pn&&typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(String(pn),!!has)},0)}
+function refreshDriveCellForPn(pn){pn=String(pn||'');document.querySelectorAll('.draw-drive-actions[data-pn]').forEach(function(box){if(String(box.getAttribute('data-pn')||'')!==pn)return;var td=box.closest('td');if(!td)return;var tb=document.createElement('tbody');tb.innerHTML='<tr>'+makeFileCell(pn)+'</tr>';var fresh=tb.firstElementChild&&tb.firstElementChild.firstElementChild;if(fresh)td.replaceWith(fresh)})}
+function refreshViews(pn,has){try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}if(pn){try{if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(String(pn),!!has)}catch(e){}try{refreshDriveCellForPn(String(pn))}catch(e){}try{var fd=id('f-draw'),fw=id('v76-f-draw');if(fd&&fw){var btn=fw.querySelector('.v76-fast-select-btn'),op=fd.options[fd.selectedIndex];if(btn&&op)btn.textContent=op.textContent}}catch(e){}return}try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}try{if(typeof window.renderDrawingAnalysis==='function'&&id('view-draw')&&!id('view-draw').classList.contains('hidden'))window.renderDrawingAnalysis()}catch(e){}try{if(typeof window.renderOwnerAnalysis==='function'&&id('view-drawowner')&&!id('view-drawowner').classList.contains('hidden'))window.renderOwnerAnalysis()}catch(e){}setTimeout(decorateAll,0)}
 function scheduleSync(){setTimeout(function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}},120)}
 function productByPn(pn){try{return (Array.isArray(PRODUCTS)?PRODUCTS:[]).find(function(p){return String(p.pn||'')===String(pn)})||{}}catch(e){return {}}}
 function makeFileCell(pn){var r=rec(pn),name=r.fileName||'',has=!!r.fileId;return '<td class="draw-drive-cell"><div class="draw-drive-actions" data-pn="'+esc(pn)+'">'+(has?'<button type="button" class="download" data-drive-download="'+esc(pn)+'">다운로드</button><button type="button" data-drive-upload="'+esc(pn)+'">교체</button><button type="button" class="danger" data-drive-delete="'+esc(pn)+'">삭제</button>':'<button type="button" class="primary" data-drive-upload="'+esc(pn)+'">도면 업로드</button>')+'</div>'+(name?'<span class="draw-drive-name" title="'+esc(name)+'">'+esc(name)+' · '+fmtSize(r.fileSize)+'</span>':'')+'</td>'}
@@ -14690,7 +14690,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   function statusSelect(tr){var list=tr&&tr.querySelectorAll?tr.querySelectorAll('select'):[];for(var i=0;i<list.length;i++){var vals=Array.prototype.map.call(list[i].options,function(o){return o.value});if(vals.indexOf('보유')>-1&&vals.indexOf('미등록')>-1)return list[i]}return null}
   function updateButton(btn,has,pn){if(!btn)return;btn.classList.toggle('has',has);btn.classList.toggle('none',!has);btn.textContent=has?'있음':'없음';btn.setAttribute('data-drawing-pn',pn);btn.setAttribute('aria-label',has?'도면 있음':'도면 없음')}
   function updateCounts(){
-    var map=readMap(),ps=products(),has=0;
+    var map=readMap(),ps=Array.isArray(window.PRODUCTS)?window.PRODUCTS:[],has=0;
     ps.forEach(function(p){if(map[String(p.pn||'')]&&map[String(p.pn||'')].has)has++});
     var none=Math.max(0,ps.length-has),fd=document.getElementById('f-draw');
     if(fd&&fd.options.length>=3){var cur=fd.value;fd.options[0].textContent='도면 구분 (전체 '+ps.length.toLocaleString()+')';fd.options[1].textContent='도면 있음 ('+has.toLocaleString()+')';fd.options[2].textContent='도면 없음 ('+none.toLocaleString()+')';fd.value=cur}
@@ -14704,12 +14704,158 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     return true;
   };
   function saveManual(pn,has){var d=readMap(),r=d[pn]||{};r.has=!!has;r.status=has?'보유':'미등록';if(has&&!r.date)r.date=today();d[pn]=r;writeMap(d);try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}window.applyDrawingStatusInPlaceV82(pn,has);try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}setTimeout(function(){window.applyDrawingStatusInPlaceV82(pn,has)},0);try{if(typeof window.bomSyncSave==='function')setTimeout(function(){window.bomSyncSave(true)},120)}catch(e){}return r}
-  window.toggleDrawing=function(ev,idx){if(ev){ev.preventDefault();ev.stopPropagation()}var ps=products(),p=ps[idx];if(!p)return;var pn=String(p.pn||''),r=readMap()[pn]||{},next=!r.has;saveManual(pn,next);if(typeof window.toast==='function')window.toast('도면 상태: '+(next?'있음':'없음'))};
+  window.toggleDrawing=function(ev,idx){if(ev){ev.preventDefault();ev.stopPropagation()}var ps=Array.isArray(window.PRODUCTS)?window.PRODUCTS:[],p=ps[idx];if(!p)return;var pn=String(p.pn||''),r=readMap()[pn]||{},next=!r.has;saveManual(pn,next);if(typeof window.toast==='function')window.toast('도면 상태: '+(next?'있음':'없음'))};
   window.toggleUsageDrawingV43=function(ev,pn){if(ev){ev.preventDefault();ev.stopPropagation()}pn=decodeURIComponent(String(pn||''));var r=readMap()[pn]||{},next=!r.has;saveManual(pn,next);if(typeof window.toast==='function')window.toast('도면 상태: '+(next?'있음':'없음'))};
   function tagButtons(){document.querySelectorAll('tr').forEach(function(tr){var pn=rowPn(tr);if(!pn)return;tr.querySelectorAll('.draw-toggle').forEach(function(b){b.setAttribute('data-drawing-pn',pn)})})}
-  var mo=new MutationObserver(function(){tagButtons()});
-  function init(){tagButtons();updateCounts();var root=document.getElementById('view-cost')||document.body;mo.observe(root,{childList:true,subtree:true});var v=document.getElementById('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v82').replace(/v\d+/,'v82');if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,'v82')}
+  function init(){tagButtons();updateCounts();var v=document.getElementById('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v83').replace(/v\d+/,'v83');if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,'v83')}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(init,500)});
+})();
+</script>
+
+
+
+<!-- ===== V83: 즉시 팝업 · 제목줄 도면담당자 · 상태 즉시반영 · 페이지 지연렌더 최적화 ===== -->
+<style id="v83-final-performance-style">
+/* 로딩 중에는 무거운 팝업 본문을 레이아웃에서 제외하여 제목창을 먼저 즉시 표시 */
+#overlay .v83-modal-loader{display:none;background:#fff;min-height:170px;align-items:center;justify-content:center;flex-direction:column;gap:9px;color:var(--navy);font-size:13px;font-weight:700}
+#overlay .v83-modal-loader::before{content:'';width:24px;height:24px;border:3px solid #dbe7f4;border-top-color:var(--blue);border-radius:50%;animation:v83spin .7s linear infinite}
+#overlay.v83-modal-loading .v83-modal-loader{display:flex!important}
+#overlay.v83-modal-loading .mbody,#overlay.v83-modal-loading .mfoot{display:none!important}
+#overlay.v83-modal-loading{align-items:flex-start!important}
+@keyframes v83spin{to{transform:rotate(360deg)}}
+
+/* 팝업 제목줄 담당자 선택 */
+#overlay .mhead{min-height:58px;flex-wrap:nowrap!important}
+#overlay .mhead>div:first-child{min-width:0;flex:1 1 auto}
+.v83-modal-owner{display:flex;align-items:center;gap:7px;margin-left:auto;flex:0 0 auto}
+.v83-modal-owner label{font-size:11px;font-weight:600;opacity:.82;white-space:nowrap}
+.v83-modal-owner select{min-width:132px;max-width:190px;height:32px;border:1px solid rgba(255,255,255,.35);border-radius:7px;padding:0 28px 0 9px;background:#fff;color:#172b4d;font-family:inherit;font-size:12px;font-weight:400;outline:none}
+#overlay .mhead .x{margin-left:2px!important;flex:0 0 30px}
+#product-owner-attr-v75{display:none!important}
+@media(max-width:760px){.v83-modal-owner label{display:none}.v83-modal-owner select{min-width:105px;max-width:130px}.mhead h3{font-size:13px!important}}
+
+/* 탭 전환 직후 페이지 프레임을 먼저 표시 */
+.wrap>[id^="view-"][data-v83-rendering="1"]{min-height:180px;position:relative}
+.wrap>[id^="view-"][data-v83-rendering="1"]::after{content:'화면을 준비하는 중…';position:absolute;left:50%;top:36px;transform:translateX(-50%);font-size:12px;color:var(--mut);background:#fff;padding:7px 12px;border-radius:8px;border:1px solid var(--line);z-index:2}
+</style>
+<script id="v83-final-performance-script">
+(function(){
+'use strict';
+var VER='v83',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
+var activeIdx=-1,openToken=0,rev=1,pageStamp=Object.create(null),legacySwitch=null,syncTimer=0;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function products(){try{return (typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:(Array.isArray(window.PRODUCTS)?window.PRODUCTS:[])}catch(e){return []}}
+function product(idx){try{return products()[Number(idx)]||null}catch(e){return null}}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function bump(){rev++;pageStamp=Object.create(null)}
+
+/* 같은 탭을 반복해서 열 때 전체 페이지를 다시 계산하지 않도록 데이터 변경만 감지 */
+function installStorageRevision(){
+  if(Storage.prototype.__v83SetItem)return;Storage.prototype.__v83SetItem=true;
+  var raw=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(k,v){var r=raw.apply(this,arguments);try{if(this===localStorage&&/^dbfastec_/.test(String(k)))bump()}catch(e){}return r};
+  window.addEventListener('storage',function(e){if(e&&/^dbfastec_/.test(String(e.key||'')))bump()});
+}
+
+function ownerNames(current){
+  var out=[];function add(v){v=clean(v);if(v&&out.indexOf(v)<0)out.push(v)}
+  var m=read(OWNER_KEY,[]);if(Array.isArray(m))m.forEach(add);
+  var d=read(DRAW_KEY,{});Object.keys(d||{}).forEach(function(k){add(d[k]&&d[k].owner)});add(current);
+  out.sort(function(a,b){return a.localeCompare(b,'ko')});return out;
+}
+function saveOwner(idx,name){
+  var p=product(idx);if(!p)return;var pn=String(p.pn||'');name=clean(name);
+  var d=read(DRAW_KEY,{}),r=d[pn]||{};if(clean(r.owner)===name)return;
+  r.owner=name;d[pn]=r;write(DRAW_KEY,d);
+  if(name){var m=read(OWNER_KEY,[]);if(!Array.isArray(m))m=[];if(m.indexOf(name)<0){m.push(name);m.sort(function(a,b){return String(a).localeCompare(String(b),'ko')});write(OWNER_KEY,m)}}
+  var old=id('m-owner-select-v75');if(old)old.value=name;
+  document.querySelectorAll('tr').forEach(function(tr){var pe=tr.querySelector('.pn');if(!pe||clean(pe.textContent)!==pn)return;tr.querySelectorAll('.db-owner-field').forEach(function(inp){inp.value=name})});
+  clearTimeout(syncTimer);syncTimer=setTimeout(function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}},300);
+  try{if(typeof window.toast==='function')window.toast(name?'도면 담당자: '+name:'도면 담당자 미지정')}catch(e){}
+}
+function ensureOwnerHeader(idx){
+  var p=product(idx),head=document.querySelector('#overlay .mhead');if(!p||!head)return;
+  var pn=String(p.pn||''),current=clean((read(DRAW_KEY,{})[pn]||{}).owner),box=id('v83-modal-owner');
+  if(!box){box=document.createElement('div');box.id='v83-modal-owner';box.className='v83-modal-owner';box.innerHTML='<label for="v83-owner-select">도면 담당자</label><select id="v83-owner-select"></select>';var x=head.querySelector('.x');head.insertBefore(box,x||null)}
+  var sel=id('v83-owner-select'),html='<option value="">담당자 미지정</option>'+ownerNames(current).map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+'</option>'}).join('');
+  if(sel.innerHTML!==html)sel.innerHTML=html;sel.value=current;sel.onchange=function(){saveOwner(activeIdx,this.value)};
+}
+function ensureLoader(){var ov=id('overlay');if(!ov)return;var l=id('v83-modal-loader');if(!l){l=document.createElement('div');l.id='v83-modal-loader';l.className='v83-modal-loader';l.textContent='제품 원가 정보를 불러오는 중…';var body=ov.querySelector('.mbody');ov.querySelector('.modal').insertBefore(l,body)}}
+function prepareShell(idx){
+  var p=product(idx),ov=id('overlay');if(!p||!ov)return false;activeIdx=Number(idx);ensureLoader();
+  var t=id('m-title'),s=id('m-sub');if(t)t.textContent=(p.item||'')+'  ·  '+(p.pn||'');if(s)s.textContent=p.spec||'';
+  ensureOwnerHeader(idx);ov.classList.add('v83-modal-loading');ov.classList.remove('v76-modal-loading','hidden');return true;
+}
+function installInstantOpen(){
+  var outer=window.openDetail;if(typeof outer!=='function')return false;
+  var base=outer;while(base&&base.__v76ImmediateModal&&base.__v76Raw)base=base.__v76Raw;
+  if(base&&base.__v83Instant){window.openDetail=base;return}
+  var full=base||outer;
+  var fast=function(idx){idx=Number(idx);var token=++openToken;if(!prepareShell(idx))return full.apply(this,arguments);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){if(token!==openToken)return;var ov=id('overlay');if(!ov||ov.classList.contains('hidden'))return;
+      try{full(idx)}catch(e){console.error(e)}
+      ensureOwnerHeader(idx);requestAnimationFrame(function(){if(token===openToken){ov.classList.remove('v83-modal-loading','v76-modal-loading')}});
+    })});
+  };
+  fast.__v83Instant=true;fast.__v83Raw=full;window.openDetail=fast;
+}
+
+/* 도면 상태는 전체 분석표를 다시 만들지 않고 현재 품번의 셀만 즉시 변경 */
+function rowPn(tr){if(!tr)return '';var x=tr.getAttribute&&tr.getAttribute('data-pn');if(x)return clean(x);var p=tr.querySelector&&tr.querySelector('.pn');return p?clean(p.textContent):''}
+function statusSelect(tr){var a=tr&&tr.querySelectorAll?tr.querySelectorAll('select'):[];for(var i=0;i<a.length;i++){var vals=Array.prototype.map.call(a[i].options,function(o){return o.value});if(vals.indexOf('보유')>=0&&vals.indexOf('미등록')>=0)return a[i]}return null}
+function updateDrawButton(b,has,pn){if(!b)return;b.classList.toggle('has',has);b.classList.toggle('none',!has);b.textContent=has?'있음':'없음';b.setAttribute('data-drawing-pn',pn);b.setAttribute('aria-label',has?'도면 있음':'도면 없음')}
+function updateDrawCounts(){
+  var d=read(DRAW_KEY,{}),ps=products(),n=0;ps.forEach(function(p){if(d[String(p.pn||'')]&&d[String(p.pn||'')].has)n++});
+  var fd=id('f-draw'),none=Math.max(0,ps.length-n);if(fd&&fd.options.length>=3){var val=fd.value;fd.options[0].textContent='도면 구분 (전체 '+ps.length.toLocaleString()+')';fd.options[1].textContent='도면 있음 ('+n.toLocaleString()+')';fd.options[2].textContent='도면 없음 ('+none.toLocaleString()+')';fd.value=val}
+  var fw=id('v76-f-draw');if(fw&&fd){var btn=fw.querySelector('.v76-fast-select-btn'),op=fd.options[fd.selectedIndex];if(btn&&op)btn.textContent=op.textContent}
+  document.querySelectorAll('#drawKpis .kpi').forEach(function(k){var lab=k.querySelector('.k'),val=k.querySelector('.v');if(lab&&val&&clean(lab.textContent)==='도면 보유율')val.innerHTML=(ps.length?n/ps.length*100:0).toFixed(1)+' <small>%</small>'});
+}
+window.applyDrawingStatusInPlaceV82=function(pn,has){
+  pn=clean(pn);if(!pn)return false;
+  var rows=[];document.querySelectorAll('tr').forEach(function(tr){if(rowPn(tr)===pn)rows.push(tr)});
+  rows.forEach(function(tr){tr.classList.toggle('draw-has',!!has);tr.classList.toggle('draw-none',!has);tr.querySelectorAll('.draw-toggle').forEach(function(b){updateDrawButton(b,!!has,pn)});var ss=statusSelect(tr);if(ss)ss.value=has?'보유':'미등록';var dt=tr.querySelector('input[type="date"]');if(has&&dt&&!dt.value)dt.value=today()});
+  updateDrawCounts();bump();return true;
+};
+
+/* 페이지는 먼저 보여 주고, 데이터가 바뀐 경우에만 다음 프레임에서 다시 계산 */
+function showPage(t){
+  if(t==='drawowner')t='draw';document.querySelectorAll('.wrap>[id^="view-"]').forEach(function(v){v.classList.add('hidden')});document.querySelectorAll('header .tabs button').forEach(function(b){b.classList.remove('on')});
+  var v=id('view-'+t),b=id('tab-'+t);if(v)v.classList.remove('hidden');if(b)b.classList.add('on');
+  if(t==='draw'){var ow=id('view-drawowner');if(ow)ow.classList.remove('hidden')}
+  window.scrollTo(0,0);return v;
+}
+function renderer(t){
+  if(t==='cost')return function(){if(typeof window.renderCost==='function')window.renderCost(false)};
+  if(t==='groupcost')return window.renderGroupCost;
+  if(t==='usage')return window.renderUsageAnalysis;
+  if(t==='equipanalysis')return window.renderEquipmentAnalysisV23;
+  if(t==='draw')return function(){if(typeof window.renderDrawingAnalysis==='function')window.renderDrawingAnalysis();if(typeof window.renderOwnerAnalysis==='function')window.renderOwnerAnalysis()};
+  if(t==='ana')return window.renderAna;
+  if(t==='price')return window.renderPrice;
+  if(t==='matprice')return window.renderMaterialPricePage;
+  if(t==='saleslink')return window.renderSalesLinkPage;
+  if(t==='raw')return window.renderRawMaterials;
+  if(t==='base')return window.renderBase;
+  return null;
+}
+function installFastTabs(){
+  if(!legacySwitch)legacySwitch=window.switchTab;if(typeof legacySwitch!=='function')return;
+  var fast=function(t){t=String(t||'cost');if(t==='drawowner')t='draw';var view=showPage(t),stamp=pageStamp[t];if(stamp===rev&&view&&view.getAttribute('data-v83-ready')==='1')return;
+    if(view)view.setAttribute('data-v83-rendering','1');
+    requestAnimationFrame(function(){requestAnimationFrame(function(){try{var fn=renderer(t);if(typeof fn==='function')fn();else legacySwitch(t)}catch(e){console.error(e)}finally{pageStamp[t]=rev;if(view){view.setAttribute('data-v83-ready','1');view.removeAttribute('data-v83-rendering')}}})});
+  };
+  fast.__v83Tabs=true;window.switchTab=fast;
+}
+function markInitial(){var c=id('view-cost');if(c&&id('tbody')&&id('tbody').children.length){c.setAttribute('data-v83-ready','1');pageStamp.cost=rev}}
+function install(){setVersion();installStorageRevision();ensureLoader();installInstantOpen();installFastTabs();markInitial()}
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,400)});
+setTimeout(install,1600);setTimeout(install,7200);setTimeout(setVersion,9000);
+window.invalidatePerformanceCacheV83=bump;
 })();
 </script>
 
