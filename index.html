@@ -15132,5 +15132,133 @@ window.stabilizeCostActionsV86=stabilizeActionButtons;
 })();
 </script>
 
+
+<!-- ===== V87: 공정수정 즉시반영 · 원프레임 팝업 · 중복 재계산 제거 ===== -->
+<style id="v87-process-save-modal-style">
+/* 팝업은 제목/공정/원가정보가 모두 준비된 한 화면만 노출 */
+#overlay,#overlay .modal,#overlay .mhead,#overlay .mbody,#overlay .mfoot,
+#overlay .step-table-wrap,#overlay #stepbody{
+  animation:none!important;transition:none!important;
+}
+#overlay.v87-preparing{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+#overlay:not(.hidden):not(.v87-preparing){visibility:visible!important;opacity:1!important}
+#overlay #stepbody{visibility:visible!important;opacity:1!important}
+</style>
+<script id="v87-process-save-modal-script">
+(function(){
+'use strict';
+var VER='v87',saveSyncTimer=0,renderTimer=0;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function products(){try{return Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
+function productAt(idx){return products()[Number(idx)]||null}
+function invalidateAll(){
+  try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV83==='function')window.invalidatePerformanceCacheV83()}catch(e){}
+}
+function buildFlow(p){return (p.steps||[]).map(function(s){return '<span class="chip proc-chip">'+esc(s.proc||'')+'</span>'}).join('<span class="arr">›</span>')||'<span class="muted">-</span>'}
+function setText(el,val){if(el)el.textContent=val}
+function updateCostRow(p){
+  if(!p)return false;var pn=String(p.pn||''),target=null;
+  document.querySelectorAll('#tbody tr.prod-row[data-pn]').forEach(function(tr){if(!target&&String(tr.getAttribute('data-pn')||'')===pn)target=tr});
+  if(!target)return false;
+  var n=(p.steps||[]).length,badge=target.querySelector('.proc-count .badge'),flow=target.querySelector('.flowcell .flow');
+  if(badge){badge.textContent=n;badge.style.background=n>=4?'var(--warn)':n>=2?'var(--blue)':'var(--mut)'}
+  if(flow)flow.innerHTML=buildFlow(p);
+  try{
+    var c=typeof window.calc==='function'?window.calc(p):(typeof calc==='function'?calc(p):null);
+    if(c){
+      var mat=target.querySelector('.matcell'),pc=target.querySelector('.proccostcell'),oh=target.querySelector('.ovhcell'),cc=target.querySelector('.costcell'),sale=target.querySelector('.salecell');
+      if(mat)mat.innerHTML=c.mat?(typeof won==='function'?won(c.mat):Math.round(c.mat).toLocaleString()):'<span class="muted">-</span>';
+      setText(pc,typeof won==='function'?won(c.proc):Math.round(c.proc||0).toLocaleString());
+      setText(oh,typeof won==='function'?won(c.ovh):Math.round(c.ovh||0).toLocaleString());
+      setText(cc,typeof won==='function'?won(c.withDef):Math.round(c.withDef||0).toLocaleString());
+      setText(sale,typeof won==='function'?won(c.sale):Math.round(c.sale||0).toLocaleString());
+    }
+  }catch(e){}
+  return true;
+}
+function scheduleBackgroundRefresh(){
+  clearTimeout(renderTimer);renderTimer=setTimeout(function(){
+    var work=function(){
+      try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}
+      /* 필터가 적용된 경우에만 전체 목록을 다시 계산하고, 일반 화면은 현재 행만 유지 */
+      var active=false;['q','f-item','f-gubun','f-part','f-equip','f-proc','f-bom','f-draw','f-usage'].forEach(function(k){var e=id(k);if(e&&clean(e.value))active=true});
+      if(active){try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}}
+    };
+    if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(work,{timeout:400});else setTimeout(work,0);
+  },70)
+}
+function scheduleSync(){clearTimeout(saveSyncTimer);saveSyncTimer=setTimeout(function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}},500)}
+
+/* 공정 저장 후 캐시된 제품행 대신 해당 품번 행을 직접 갱신 */
+function installSaveFix(){
+  var current=window.saveProduct;if(typeof current!=='function'||current.__v87ProcessSync)return;
+  var fixed=function(){
+    var idx=null,p=null,snapshot=null;
+    try{idx=(typeof curIdx!=='undefined'&&curIdx!=null)?Number(curIdx):null;p=idx!=null?productAt(idx):null;if(p&&typeof window.readModalSteps==='function')snapshot=window.readModalSteps()}catch(e){}
+    var result=current.apply(this,arguments);
+    try{
+      if(p&&snapshot&&Array.isArray(snapshot.steps)){
+        var cleaned=snapshot.steps.filter(function(s){return clean(s&&s.proc)!==''||(s&&s.st)!==''});
+        /* 새 배열로 교체하여 계산 캐시의 steps 참조도 확실히 무효화 */
+        p.steps=cleaned.map(function(s){return Object.assign({},s)});
+        if(typeof saveProd==='function')saveProd();
+        try{PRICES=seedPrices(PRICES);localStorage.setItem(LS_PRICE,JSON.stringify(PRICES))}catch(e){}
+        invalidateAll();
+        updateCostRow(p);
+        scheduleBackgroundRefresh();
+        scheduleSync();
+      }
+    }catch(e){console.error('v87 process save sync',e)}
+    return result;
+  };
+  fixed.__v87ProcessSync=true;fixed.__v75OwnerSelect=true;fixed.__v69LaserMultiplier=true;fixed.__v87Raw=current;window.saveProduct=fixed;
+}
+
+/* 열기 중 반복되는 재계산을 잠시 막고 마지막에 한 번만 계산하여 공정표를 한 프레임에 표시 */
+function installModalFix(){
+  var current=window.openDetail;if(typeof current!=='function'||current.__v87StableModal)return;
+  var base=current.__v84Raw||current.__v83Raw||current.__v76Raw||current;
+  var fixed=function(idx){
+    idx=Number(idx);var ov=id('overlay'),p=productAt(idx);if(!ov||!p)return base.apply(this,arguments);
+    ov.classList.add('v87-preparing');ov.classList.remove('v86-atomic-open','v84-preparing','v83-modal-loading','v76-modal-loading');
+    var originalRecalc=window.recalcModal,result;
+    try{
+      /* 기존 openDetail 내부의 중복 recalc 호출은 무시하고 DOM을 먼저 완성 */
+      if(typeof originalRecalc==='function')window.recalcModal=function(){};
+      result=base.call(this,idx);
+    }finally{
+      if(typeof originalRecalc==='function')window.recalcModal=originalRecalc;
+    }
+    try{if(typeof renumSteps==='function')renumSteps()}catch(e){}
+    try{if(typeof originalRecalc==='function')originalRecalc()}catch(e){console.error(e)}
+    try{if(typeof window.refreshCostModalHeaderV84==='function')window.refreshCostModalHeaderV84()}catch(e){}
+    /* 공정행이 누락되면 현재 제품 데이터로 즉시 복구 */
+    try{
+      var body=id('stepbody'),expected=(p.steps||[]).length;
+      if(body&&body.querySelectorAll('tr').length!==expected&&typeof detailRow==='function'){
+        var o=(typeof OV!=='undefined'&&OV[p.pn])?OV[p.pn]:{};
+        body.innerHTML=(p.steps||[]).map(function(s,i){return detailRow(s,i,(o.steps&&o.steps[i]!=null)?o.steps[i]:'')}).join('');
+        if(typeof renumSteps==='function')renumSteps();if(typeof originalRecalc==='function')originalRecalc();
+      }
+    }catch(e){}
+    void ov.offsetWidth;
+    ov.classList.remove('hidden','v87-preparing','v86-atomic-open','v84-preparing','v83-modal-loading','v76-modal-loading');
+    return result;
+  };
+  fixed.__v87StableModal=true;fixed.__v86Atomic=true;fixed.__v84NoFlicker=true;fixed.__v83Instant=true;fixed.__v76ImmediateModal=true;
+  fixed.__v84Raw=base;fixed.__v83Raw=base;fixed.__v76Raw=base;window.openDetail=fixed;
+}
+function install(){setVersion();installSaveFix();installModalFix()}
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,60)});
+[500,2200,7800,12500,14000].forEach(function(ms){setTimeout(install,ms)});setTimeout(setVersion,14500);
+window.updateCostProcessRowV87=updateCostRow;
+})();
+</script>
+
 </body>
 </html>
