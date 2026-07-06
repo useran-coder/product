@@ -3549,6 +3549,7 @@ if(document.readyState!=='loading') setTimeout(initApp,0); else document.addEven
   function escH(v){return (typeof esc==='function'?esc(v):String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]||c;}));}
   function products(){return (typeof PRODUCTS!=='undefined'&&PRODUCTS)?PRODUCTS:[];}
   function loadD(){if(DRAW_CACHE!==null)return DRAW_CACHE;try{DRAW_CACHE=JSON.parse(localStorage.getItem(LS_DRAW)||'{}')||{};}catch(e){DRAW_CACHE={};}return DRAW_CACHE;}
+  window.invalidateDrawingCacheV81=function(){DRAW_CACHE=null;return loadD();};
   function saveD(){localStorage.setItem(LS_DRAW,JSON.stringify(loadD()||{}));}
   function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   function productByPn(pn){pn=String(pn||'');var list=products();for(var i=0;i<list.length;i++){if(String(list[i].pn||'')===pn)return list[i];}return null;}
@@ -14327,6 +14328,7 @@ header .tabs #tab-drawowner{order:130}
   var VER='v76', revision=0, lastRenderKey='', rendering=false, modalToken=0, renderTimer=0;
   function id(x){return document.getElementById(x)}
   function clean(v){return String(v==null?'':v).trim()}
+  function products(){try{return (typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:[]}catch(e){return []}}
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
     if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,VER);
@@ -14594,7 +14596,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="v79-drive-drawing-script">
 (function(){
 'use strict';
-var VER='v79', DRAW_KEY='dbfastec_cost_drawings_v1', SYNC_KEY='dbfastec_bom_gsync_v1';
+var VER='v82', DRAW_KEY='dbfastec_cost_drawings_v1', SYNC_KEY='dbfastec_bom_gsync_v1';
 var MAX_FILE=8*1024*1024, activePn='', busy=false, lastRefresh=0, wrapped=false;
 var ALLOWED_EXT=/\.(pdf|dwg|dxf|step|stp|igs|iges|zip|jpg|jpeg|png)$/i;
 function id(x){return document.getElementById(x)}
@@ -14613,9 +14615,9 @@ async function apiGet(action,params){return parseResponse(await fetch(apiUrl(act
 async function apiPost(action,data,timeout){var s=config(),ctl=typeof AbortController!=='undefined'?new AbortController():null,t=ctl?setTimeout(function(){ctl.abort()},timeout||90000):null;try{return await parseResponse(await fetch(String(s.url).trim(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action:action,key:s.key},data||{})),signal:ctl?ctl.signal:undefined}))}catch(e){if(e&&e.name==='AbortError')throw new Error('처리 시간이 초과되었습니다. 파일 크기나 인터넷 연결을 확인하세요.');throw e}finally{if(t)clearTimeout(t)}}
 function drawMap(){return read(DRAW_KEY,{})}
 function rec(pn){return drawMap()[String(pn)]||{}}
-function saveFileMeta(pn,m){var d=drawMap(),r=d[pn]||{};r.has=true;r.status='보유';r.date=today();r.fileId=m.fileId||'';r.fileName=m.fileName||'';r.fileMime=m.mimeType||'';r.fileSize=Number(m.size)||0;r.fileUrl=m.viewUrl||'';r.downloadUrl=m.downloadUrl||'';r.fileUploadedAt=m.uploadedAt||new Date().toISOString();r.fileUploadedBy=m.uploadedBy||state().user||'';r.fileFolderId=m.folderId||'';d[pn]=r;write(DRAW_KEY,d);return r}
-function clearFileMeta(pn){var d=drawMap(),r=d[pn]||{};['fileId','fileName','fileMime','fileSize','fileUrl','downloadUrl','fileUploadedAt','fileUploadedBy','fileFolderId'].forEach(function(k){delete r[k]});r.has=false;r.status='미등록';d[pn]=r;write(DRAW_KEY,d)}
-function refreshViews(){try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}try{if(typeof window.renderDrawingAnalysis==='function'&&id('view-draw')&&!id('view-draw').classList.contains('hidden'))window.renderDrawingAnalysis()}catch(e){}try{if(typeof window.renderOwnerAnalysis==='function'&&id('view-drawowner')&&!id('view-drawowner').classList.contains('hidden'))window.renderOwnerAnalysis()}catch(e){}setTimeout(decorateAll,0)}
+function saveFileMeta(pn,m){pn=String(pn||'');var d=drawMap(),r=d[pn]||{};r.has=true;r.status='보유';r.date=today();r.fileId=m.fileId||'';r.fileName=m.fileName||'';r.fileMime=m.mimeType||'';r.fileSize=Number(m.size)||0;r.fileUrl=m.viewUrl||'';r.downloadUrl=m.downloadUrl||'';r.fileUploadedAt=m.uploadedAt||new Date().toISOString();r.fileUploadedBy=m.uploadedBy||state().user||'';r.fileFolderId=m.folderId||'';d[pn]=r;write(DRAW_KEY,d);try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}return r}
+function clearFileMeta(pn){pn=String(pn||'');var d=drawMap(),r=d[pn]||{};['fileId','fileName','fileMime','fileSize','fileUrl','downloadUrl','fileUploadedAt','fileUploadedBy','fileFolderId'].forEach(function(k){delete r[k]});r.has=false;r.status='미등록';d[pn]=r;write(DRAW_KEY,d);try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}}
+function refreshViews(pn,has){try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}if(pn){try{if(typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(String(pn),!!has)}catch(e){}try{document.querySelectorAll('#view-draw .draw-inline-table,#view-drawowner .draw-inline-table,#view-usage .draw-inline-table').forEach(decorateTable)}catch(e){}}else{try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}try{if(typeof window.renderDrawingAnalysis==='function'&&id('view-draw')&&!id('view-draw').classList.contains('hidden'))window.renderDrawingAnalysis()}catch(e){}try{if(typeof window.renderOwnerAnalysis==='function'&&id('view-drawowner')&&!id('view-drawowner').classList.contains('hidden'))window.renderOwnerAnalysis()}catch(e){}}try{var fd=id('f-draw'),fw=id('v76-f-draw');if(fd&&fw){var btn=fw.querySelector('.v76-fast-select-btn'),op=fd.options[fd.selectedIndex];if(btn&&op)btn.textContent=op.textContent}}catch(e){}setTimeout(function(){decorateAll();if(pn&&typeof window.applyDrawingStatusInPlaceV82==='function')window.applyDrawingStatusInPlaceV82(String(pn),!!has)},0)}
 function scheduleSync(){setTimeout(function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}},120)}
 function productByPn(pn){try{return (Array.isArray(PRODUCTS)?PRODUCTS:[]).find(function(p){return String(p.pn||'')===String(pn)})||{}}catch(e){return {}}}
 function makeFileCell(pn){var r=rec(pn),name=r.fileName||'',has=!!r.fileId;return '<td class="draw-drive-cell"><div class="draw-drive-actions" data-pn="'+esc(pn)+'">'+(has?'<button type="button" class="download" data-drive-download="'+esc(pn)+'">다운로드</button><button type="button" data-drive-upload="'+esc(pn)+'">교체</button><button type="button" class="danger" data-drive-delete="'+esc(pn)+'">삭제</button>':'<button type="button" class="primary" data-drive-upload="'+esc(pn)+'">도면 업로드</button>')+'</div>'+(name?'<span class="draw-drive-name" title="'+esc(name)+'">'+esc(name)+' · '+fmtSize(r.fileSize)+'</span>':'')+'</td>'}
@@ -14628,14 +14630,14 @@ function showProgress(msg){var e=id('v79UploadProgress');if(!e){e=document.creat
 function hideProgress(){var e=id('v79UploadProgress');if(e)e.style.display='none'}
 function chooseFile(pn){activePn=pn;var f=id('v79DrawingFile');if(!f){f=document.createElement('input');f.id='v79DrawingFile';f.type='file';f.accept='.pdf,.dwg,.dxf,.step,.stp,.igs,.iges,.zip,.jpg,.jpeg,.png';f.style.display='none';f.addEventListener('change',onFile);document.body.appendChild(f)}f.value='';f.click()}
 function readBase64(file){return new Promise(function(resolve,reject){var rd=new FileReader();rd.onload=function(){var s=String(rd.result||''),i=s.indexOf(',');resolve(i>=0?s.slice(i+1):s)};rd.onerror=function(){reject(new Error('파일을 읽지 못했습니다.'))};rd.readAsDataURL(file)})}
-async function onFile(e){var file=e.target.files&&e.target.files[0],pn=activePn;if(!file||!pn)return;if(!ALLOWED_EXT.test(file.name)){toast2('지원 형식: PDF, DWG, DXF, STEP, IGS, ZIP, JPG, PNG');return}if(file.size>MAX_FILE){toast2('파일은 8MB 이하만 업로드할 수 있습니다.');return}if(busy)return;busy=true;showProgress('도면 파일을 준비하는 중…');try{var base64=await readBase64(file),p=productByPn(pn);showProgress('구글드라이브에 업로드하는 중…');var d=await apiPost('drawing_upload',{pn:pn,item:p.item||'',spec:p.spec||'',fileName:file.name,mimeType:file.type||'application/octet-stream',size:file.size,base64:base64,uploadedBy:state().user||''},120000);saveFileMeta(pn,d.file||{});refreshViews();scheduleSync();toast2('도면 업로드 완료 · 지정 계정만 다운로드할 수 있습니다.')}catch(err){handleDriveError(err,'도면 업로드 실패')}finally{busy=false;hideProgress();e.target.value=''}}
+async function onFile(e){var file=e.target.files&&e.target.files[0],pn=activePn;if(!file||!pn)return;if(!ALLOWED_EXT.test(file.name)){toast2('지원 형식: PDF, DWG, DXF, STEP, IGS, ZIP, JPG, PNG');return}if(file.size>MAX_FILE){toast2('파일은 8MB 이하만 업로드할 수 있습니다.');return}if(busy)return;busy=true;showProgress('도면 파일을 준비하는 중…');try{var base64=await readBase64(file),p=productByPn(pn);showProgress('구글드라이브에 업로드하는 중…');var d=await apiPost('drawing_upload',{pn:pn,item:p.item||'',spec:p.spec||'',fileName:file.name,mimeType:file.type||'application/octet-stream',size:file.size,base64:base64,uploadedBy:state().user||''},120000);saveFileMeta(pn,d.file||{});refreshViews(pn,true);scheduleSync();toast2('도면 업로드 완료 · 지정 계정만 다운로드할 수 있습니다.')}catch(err){handleDriveError(err,'도면 업로드 실패')}finally{busy=false;hideProgress();e.target.value=''}}
 function handleDriveError(err,title){if(err&&(err.setupRequired||err.code==='DRIVE_AUTH_REQUIRED')){openAccountModal().then(function(){setModalStatus('구글드라이브 권한 승인이 필요합니다. 아래 순서대로 승인한 뒤 다시 시도하세요.','warn')});return}alert((title||'처리 실패')+'\\n\\n'+(err&&err.message?err.message:String(err)))}
 function downloadFile(pn){var r=rec(pn),u=r.downloadUrl||r.fileUrl;if(!u){toast2('연결된 구글드라이브 파일이 없습니다.');return}window.open(u,'_blank','noopener,noreferrer')}
-async function deleteFile(pn){var r=rec(pn);if(!r.fileId)return;if(!confirm('현재 도면 파일을 구글드라이브 휴지통으로 이동하고 도면 없음으로 변경할까요?'))return;if(busy)return;busy=true;showProgress('도면 파일을 삭제하는 중…');try{await apiPost('drawing_delete',{pn:pn,fileId:r.fileId,deletedBy:state().user||''},60000);clearFileMeta(pn);refreshViews();scheduleSync();toast2('도면 파일을 삭제했습니다.')}catch(e){handleDriveError(e,'도면 삭제 실패')}finally{busy=false;hideProgress()}}
+async function deleteFile(pn){var r=rec(pn);if(!r.fileId)return;if(!confirm('현재 도면 파일을 구글드라이브 휴지통으로 이동하고 도면 없음으로 변경할까요?'))return;if(busy)return;busy=true;showProgress('도면 파일을 삭제하는 중…');try{await apiPost('drawing_delete',{pn:pn,fileId:r.fileId,deletedBy:state().user||''},60000);clearFileMeta(pn);refreshViews(pn,false);scheduleSync();toast2('도면 파일을 삭제했습니다.')}catch(e){handleDriveError(e,'도면 삭제 실패')}finally{busy=false;hideProgress()}}
 async function refreshFromServer(manual){if(busy)return false;try{config()}catch(e){if(manual)toast2(e.message);return false}busy=true;if(manual)showProgress('구글드라이브 도면 목록을 확인하는 중…');try{var d=await apiGet('drawing_list',{}),list=d.files||[],dm=drawMap(),changed=0,active={};list.forEach(function(m){if(!m||!m.pn)return;active[String(m.pn)]=1;var old=dm[String(m.pn)]||{};if(old.fileId!==m.fileId||old.fileName!==m.fileName){saveFileMeta(String(m.pn),m);changed++}});lastRefresh=Date.now();if(changed){refreshViews();scheduleSync()}else decorateAll();if(manual)toast2('도면파일 '+list.length.toLocaleString()+'건 확인 완료'+(changed?' · '+changed+'건 반영':''));return true}catch(e){if(manual)handleDriveError(e,'도면파일 새로고침 실패');return false}finally{busy=false;if(manual)hideProgress()}}
 var lastAuthUrl='';
 function setModalStatus(msg,type){var e=id('v79DriveStatus');if(e){e.textContent=msg;e.className='v79-drive-status'+(type?' '+type:'')}}
-function setFolderInfo(cfg){var fi=id('v79FolderInfo');if(!fi)return;var ready=!!cfg.driveAuthorized;fi.innerHTML='<b>도면 폴더</b> · '+esc(cfg.folderName||'동방파스텍_제품도면_공유')+(cfg.folderUrl?' · <a href="'+esc(cfg.folderUrl)+'" target="_blank" rel="noopener">구글드라이브에서 열기</a>':'')+'<br><b>공유 방식</b> · 제한됨(지정 계정만) · 최대 파일 '+fmtSize(cfg.maxFileBytes||MAX_FILE)+'<br><b>Drive 권한</b> · '+(ready?'승인 완료':'최초 승인 필요')}
+function setFolderInfo(cfg){var fi=id('v79FolderInfo');if(!fi)return;var ready=!!cfg.driveAuthorized;fi.innerHTML='<b>도면 폴더</b> · '+esc(cfg.folderName||'Dwg share')+(cfg.folderUrl?' · <a href="'+esc(cfg.folderUrl)+'" target="_blank" rel="noopener">구글드라이브에서 열기</a>':'')+'<br><b>공유 방식</b> · 제한됨(지정 계정만) · 최대 파일 '+fmtSize(cfg.maxFileBytes||MAX_FILE)+'<br><b>Drive 권한</b> · '+(ready?'승인 완료':'최초 승인 필요')}
 function renderAuthState(cfg){cfg=cfg||{};lastAuthUrl=cfg.authorizationUrl||lastAuthUrl||'';var box=id('v79AuthBox');if(!box)return;if(cfg.driveAuthorized){box.classList.remove('show');box.innerHTML='';return}box.classList.add('show');box.innerHTML='<b>구글드라이브 최초 권한 승인이 필요합니다.</b><br>① Apps Script를 배포한 구글 계정으로 로그인합니다.<br>② 아래의 <b>구글 권한 승인 열기</b>를 눌러 Drive 권한을 허용합니다.<br>③ 승인 후 <b>권한 확인 및 폴더 생성</b>을 누릅니다.<div class="v79-auth-buttons"><button type="button" class="primary" id="v79OpenAuth">구글 권한 승인 열기</button><button type="button" id="v79ConfirmAuth">권한 확인 및 폴더 생성</button></div>';var oa=id('v79OpenAuth');if(oa)oa.onclick=openAuthorization;var ca=id('v79ConfirmAuth');if(ca)ca.onclick=confirmDrawingSetup}
 function closeModal(){var e=id('v79DriveOverlay');if(e)e.remove()}
 async function openAccountModal(){var old=id('v79DriveOverlay');if(old)old.remove();var ov=document.createElement('div');ov.id='v79DriveOverlay';ov.className='v79-drive-overlay';ov.innerHTML='<div class="v79-drive-modal"><div class="v79-drive-head"><h3>👥 구글드라이브 도면 공유계정</h3><button type="button" data-drive-close>×</button></div><div class="v79-drive-body"><label>다운로드를 허용할 구글 계정</label><textarea id="v79AllowedEmails" placeholder="한 줄에 이메일 1개씩 입력\nexample1@gmail.com\nexample2@company.com"></textarea><div id="v79AuthBox" class="v79-auth-box"></div><div id="v79FolderInfo" class="v79-drive-info">설정을 불러오는 중…</div><div class="v79-drive-actions-row"><button type="button" class="save" id="v79SaveAccounts">지정 계정 저장</button><button type="button" class="refresh" id="v79ReloadAccounts">다시 불러오기</button></div><div id="v79DriveStatus" class="v79-drive-status">등록된 계정만 구글드라이브 폴더의 뷰어 권한을 받아 도면을 열거나 다운로드할 수 있습니다.</div></div></div>';document.body.appendChild(ov);ov.addEventListener('click',function(e){if(e.target===ov||e.target.closest('[data-drive-close]'))closeModal()});id('v79SaveAccounts').onclick=saveAccounts;id('v79ReloadAccounts').onclick=loadAccounts;await loadAccounts();return true}
@@ -14648,6 +14650,66 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 window.openDrawingShareAccountsV79=openAccountModal;window.refreshDrawingFilesV79=function(){return refreshFromServer(true)};
 function init(){setVersion();installWraps();ensureToolbar();decorateAll();setTimeout(function(){installWraps();ensureToolbar();decorateAll();setVersion()},900)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(init,650)});setTimeout(setVersion,7000);
+})();
+</script>
+
+
+<!-- ===== V81: 도면 업로드 후 도면 있음 즉시 반영 ===== -->
+<script id="v81-drawing-status-sync-fix">
+(function(){
+  'use strict';
+  function invalidate(){
+    try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81();}catch(e){}
+    try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76();}catch(e){}
+  }
+  window.addEventListener('storage',function(e){
+    if(e&&e.key==='dbfastec_cost_drawings_v1'){invalidate();}
+  });
+  window.refreshDrawingStatusV81=function(){
+    invalidate();
+    try{if(typeof window.buildFilters==='function')window.buildFilters();}catch(e){}
+    try{if(typeof window.renderCost==='function')window.renderCost(false);}catch(e){}
+    try{if(typeof window.renderDrawingAnalysis==='function')window.renderDrawingAnalysis();}catch(e){}
+    return true;
+  };
+})();
+</script>
+
+
+
+<!-- ===== V82: Dwg share 폴더 표시 · 도면상태 즉시변경 · 행위치 고정 ===== -->
+<script id="v82-drawing-stable-row-fix">
+(function(){
+  'use strict';
+  var DRAW_KEY='dbfastec_cost_drawings_v1';
+  function readMap(){try{return JSON.parse(localStorage.getItem(DRAW_KEY)||'{}')||{}}catch(e){return {}}}
+  function writeMap(v){localStorage.setItem(DRAW_KEY,JSON.stringify(v||{}))}
+  function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function clean(v){return String(v==null?'':v).trim()}
+  function rowPn(tr){if(!tr)return '';var p=tr.getAttribute&&tr.getAttribute('data-pn');if(p)return clean(p);var e=tr.querySelector&&tr.querySelector('.pn');return e?clean(e.textContent):''}
+  function statusSelect(tr){var list=tr&&tr.querySelectorAll?tr.querySelectorAll('select'):[];for(var i=0;i<list.length;i++){var vals=Array.prototype.map.call(list[i].options,function(o){return o.value});if(vals.indexOf('보유')>-1&&vals.indexOf('미등록')>-1)return list[i]}return null}
+  function updateButton(btn,has,pn){if(!btn)return;btn.classList.toggle('has',has);btn.classList.toggle('none',!has);btn.textContent=has?'있음':'없음';btn.setAttribute('data-drawing-pn',pn);btn.setAttribute('aria-label',has?'도면 있음':'도면 없음')}
+  function updateCounts(){
+    var map=readMap(),ps=products(),has=0;
+    ps.forEach(function(p){if(map[String(p.pn||'')]&&map[String(p.pn||'')].has)has++});
+    var none=Math.max(0,ps.length-has),fd=document.getElementById('f-draw');
+    if(fd&&fd.options.length>=3){var cur=fd.value;fd.options[0].textContent='도면 구분 (전체 '+ps.length.toLocaleString()+')';fd.options[1].textContent='도면 있음 ('+has.toLocaleString()+')';fd.options[2].textContent='도면 없음 ('+none.toLocaleString()+')';fd.value=cur}
+    document.querySelectorAll('#kpis .kpi').forEach(function(k){var lab=k.querySelector('.k'),val=k.querySelector('.v');if(lab&&val&&clean(lab.textContent)==='도면 보유율'){val.innerHTML=(ps.length?has/ps.length*100:0).toFixed(1)+' <small>%</small>'}});
+  }
+  window.applyDrawingStatusInPlaceV82=function(pn,has){
+    pn=clean(pn);if(!pn)return false;
+    document.querySelectorAll('tr').forEach(function(tr){if(rowPn(tr)!==pn)return;tr.classList.toggle('draw-has',has);tr.classList.toggle('draw-none',!has);tr.querySelectorAll('.draw-toggle').forEach(function(b){updateButton(b,has,pn)});var ss=statusSelect(tr);if(ss)ss.value=has?'보유':'미등록';if(has){var date=tr.querySelector('input[type="date"]');if(date&&!date.value)date.value=today()}});
+    document.querySelectorAll('.draw-toggle[data-drawing-pn="'+(window.CSS&&CSS.escape?CSS.escape(pn):pn.replace(/"/g,'\\"'))+'"]').forEach(function(b){updateButton(b,has,pn)});
+    updateCounts();
+    return true;
+  };
+  function saveManual(pn,has){var d=readMap(),r=d[pn]||{};r.has=!!has;r.status=has?'보유':'미등록';if(has&&!r.date)r.date=today();d[pn]=r;writeMap(d);try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}window.applyDrawingStatusInPlaceV82(pn,has);try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}setTimeout(function(){window.applyDrawingStatusInPlaceV82(pn,has)},0);try{if(typeof window.bomSyncSave==='function')setTimeout(function(){window.bomSyncSave(true)},120)}catch(e){}return r}
+  window.toggleDrawing=function(ev,idx){if(ev){ev.preventDefault();ev.stopPropagation()}var ps=products(),p=ps[idx];if(!p)return;var pn=String(p.pn||''),r=readMap()[pn]||{},next=!r.has;saveManual(pn,next);if(typeof window.toast==='function')window.toast('도면 상태: '+(next?'있음':'없음'))};
+  window.toggleUsageDrawingV43=function(ev,pn){if(ev){ev.preventDefault();ev.stopPropagation()}pn=decodeURIComponent(String(pn||''));var r=readMap()[pn]||{},next=!r.has;saveManual(pn,next);if(typeof window.toast==='function')window.toast('도면 상태: '+(next?'있음':'없음'))};
+  function tagButtons(){document.querySelectorAll('tr').forEach(function(tr){var pn=rowPn(tr);if(!pn)return;tr.querySelectorAll('.draw-toggle').forEach(function(b){b.setAttribute('data-drawing-pn',pn)})})}
+  var mo=new MutationObserver(function(){tagButtons()});
+  function init(){tagButtons();updateCounts();var root=document.getElementById('view-cost')||document.body;mo.observe(root,{childList:true,subtree:true});var v=document.getElementById('bomAppVer');if(v)v.textContent=(v.textContent||'버전 v82').replace(/v\d+/,'v82');if(document.title&&/v\d+/.test(document.title))document.title=document.title.replace(/v\d+/,'v82')}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();window.addEventListener('load',function(){setTimeout(init,500)});
 })();
 </script>
 
