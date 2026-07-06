@@ -14622,7 +14622,7 @@ function scheduleSync(){setTimeout(function(){try{if(typeof window.bomSyncSave==
 function productByPn(pn){try{return (Array.isArray(PRODUCTS)?PRODUCTS:[]).find(function(p){return String(p.pn||'')===String(pn)})||{}}catch(e){return {}}}
 function makeFileCell(pn){var r=rec(pn),name=r.fileName||'',has=!!r.fileId;return '<td class="draw-drive-cell"><div class="draw-drive-actions" data-pn="'+esc(pn)+'">'+(has?'<button type="button" class="download" data-drive-download="'+esc(pn)+'">다운로드</button><button type="button" data-drive-upload="'+esc(pn)+'">교체</button><button type="button" class="danger" data-drive-delete="'+esc(pn)+'">삭제</button>':'<button type="button" class="primary" data-drive-upload="'+esc(pn)+'">도면 업로드</button>')+'</div>'+(name?'<span class="draw-drive-name" title="'+esc(name)+'">'+esc(name)+' · '+fmtSize(r.fileSize)+'</span>':'')+'</td>'}
 function decorateTable(table){if(!table||!table.tHead||!table.tBodies.length)return;var hr=table.tHead.rows[0];if(!hr.querySelector('.draw-drive-head')){var th=document.createElement('th');th.className='draw-drive-head';th.textContent='구글드라이브 도면';hr.appendChild(th);var cg=table.querySelector('colgroup');if(cg){var col=document.createElement('col');col.style.width='235px';cg.appendChild(col)}}Array.from(table.tBodies[0].rows).forEach(function(tr){if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;var pnEl=tr.querySelector('.pn'),pn=pnEl?String(pnEl.textContent||'').trim():'';if(!pn)return;var old=tr.querySelector('.draw-drive-cell');var html=makeFileCell(pn);if(old){var tmp=document.createElement('tbody');tmp.innerHTML='<tr>'+html+'</tr>';old.replaceWith(tmp.firstElementChild.firstElementChild)}else tr.insertAdjacentHTML('beforeend',html)})}
-function decorateAll(){document.querySelectorAll('#view-draw .draw-inline-table,#view-drawowner .draw-inline-table,#view-usage .draw-inline-table').forEach(decorateTable);ensureToolbar()}
+function decorateAll(){document.querySelectorAll('#view-usage .draw-inline-table').forEach(decorateTable);ensureToolbar()}
 function ensureToolbar(){var box=document.querySelector('#view-draw .draw-analysis-tools');if(box&&!id('driveDrawingRefreshBtn')){var b=document.createElement('button');b.id='driveDrawingRefreshBtn';b.className='drive-tool-btn';b.type='button';b.textContent='☁ 도면파일 새로고침';b.onclick=function(){refreshFromServer(true)};box.appendChild(b);var c=document.createElement('button');c.id='driveDrawingAccountsBtn';c.className='drive-tool-btn';c.type='button';c.textContent='👥 공유계정 관리';c.onclick=openAccountModal;box.appendChild(c)}}
 function wrapRender(name){var fn=window[name];if(typeof fn!=='function'||fn.__v79Drive)return;var w=function(){var r=fn.apply(this,arguments);setTimeout(decorateAll,0);return r};w.__v79Drive=true;w.__raw=fn;window[name]=w}
 function installWraps(){['renderDrawingAnalysis','renderOwnerAnalysis','renderUsageAnalysis'].forEach(wrapRender);if(wrapped)return;wrapped=true;var old=window.switchTab;if(typeof old==='function'){window.switchTab=function(t){var r=old.apply(this,arguments);if(t==='draw'||t==='drawowner'||t==='usage'){setTimeout(function(){decorateAll();if(t==='draw'&&Date.now()-lastRefresh>300000)refreshFromServer(false)},0)}return r}}}
@@ -15613,10 +15613,10 @@ function installObserver(){
   roots.forEach(function(r){ob.observe(r,{childList:true,subtree:true})});
 }
 function install(){
-  setVersion();wrap('renderDrawingAnalysis');wrap('renderOwnerAnalysis');wrapStatus();installObserver();schedule();
+  setVersion();
 }
 install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,150)});[700,2400,7000].forEach(function(ms){setTimeout(install,ms)});
-window.refreshDrawingActionLayoutV91=schedule;
+window.refreshDrawingActionLayoutV91=function(){try{if(typeof window.decorateDrawingButtonsNowV96==='function')window.decorateDrawingButtonsNowV96()}catch(e){}};
 })();
 </script>
 
@@ -16098,9 +16098,9 @@ function installRender(){
   if(current.__v95StableRender){stableRender=current;return true}
   rawRender=unwrapRender(current);
   stableRender=function(){
-    var args=arguments,self=this,view=id('view-draw');if(view)view.classList.add('v95-building');
+    var view=id('view-draw');if(view)view.classList.add('v95-building');
     var out;
-    try{out=suppressLegacyTimers(function(){return rawRender.apply(self,args)});decorateNow();prepared=!!(id('drawGroupBody')&&id('drawGroupBody').children.length);lastSnapshot=snapshot();return out}
+    try{out=suppressLegacyTimers(function(){return rawRender.apply(this,arguments)}.bind(this));decorateNow();prepared=!!(id('drawGroupBody')&&id('drawGroupBody').children.length);lastSnapshot=snapshot();return out}
     finally{if(view)view.classList.remove('v95-building')}
   };
   stableRender.__v95StableRender=true;stableRender.__v79Drive=true;stableRender.__v90NoteStrip=true;stableRender.__v91Buttons=true;stableRender.__v94FastDraw=true;
@@ -16119,15 +16119,15 @@ function installSwitch(){
     if(t==='draw'){
       var body=id('drawGroupBody'),same=snapshot()===lastSnapshot;
       if(prepared&&body&&body.children.length&&same){showDrawFast();decorateNow();scheduleBackgroundRefresh();return}
-      var args=arguments,self=this,out=suppressLegacyTimers(function(){return rawSwitch.apply(self,args)});decorateNow();prepared=!!(body&&body.children.length);lastSnapshot=snapshot();scheduleBackgroundRefresh();return out;
+      var out=suppressLegacyTimers(function(){return rawSwitch.apply(this,arguments)}.bind(this));decorateNow();prepared=!!(body&&body.children.length);lastSnapshot=snapshot();scheduleBackgroundRefresh();return out;
     }
     return rawSwitch.apply(this,arguments);
   };
   stableSwitch.__v95StableSwitch=true;stableSwitch.__v94FastDraw=true;stableSwitch.__v95Raw=rawSwitch;window.switchTab=stableSwitch;return true;
 }
 function installGroupOpen(){
-  var fn=window.openDrawGroup;if(typeof fn==='function'&&!fn.__v95StableGroup){var w=function(){var args=arguments,self=this,v=id('view-draw');if(v)v.classList.add('v95-building');try{return suppressLegacyTimers(function(){return fn.apply(self,args)})}finally{decorateNow();if(v)v.classList.remove('v95-building')}};w.__v95StableGroup=true;w.__v95Raw=fn;window.openDrawGroup=w}
-  var cl=window.closeDrawGroup;if(typeof cl==='function'&&!cl.__v95StableGroup){var cw=function(){var args=arguments,self=this,v=id('view-draw');if(v)v.classList.add('v95-building');try{return suppressLegacyTimers(function(){return cl.apply(self,args)})}finally{decorateNow();if(v)v.classList.remove('v95-building')}};cw.__v95StableGroup=true;cw.__v95Raw=cl;window.closeDrawGroup=cw}
+  var fn=window.openDrawGroup;if(typeof fn==='function'&&!fn.__v95StableGroup){var w=function(){var v=id('view-draw');if(v)v.classList.add('v95-building');try{return suppressLegacyTimers(function(){return fn.apply(this,arguments)}.bind(this))}finally{decorateNow();if(v)v.classList.remove('v95-building')}};w.__v95StableGroup=true;w.__v95Raw=fn;window.openDrawGroup=w}
+  var cl=window.closeDrawGroup;if(typeof cl==='function'&&!cl.__v95StableGroup){var cw=function(){var v=id('view-draw');if(v)v.classList.add('v95-building');try{return suppressLegacyTimers(function(){return cl.apply(this,arguments)}.bind(this))}finally{decorateNow();if(v)v.classList.remove('v95-building')}};cw.__v95StableGroup=true;cw.__v95Raw=cl;window.closeDrawGroup=cw}
 }
 function installObserver(){
   if(observerInstalled)return;var roots=[id('view-draw'),id('view-drawowner')].filter(Boolean);if(!roots.length)return;observerInstalled=true;
@@ -16151,6 +16151,89 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 window.addEventListener('load',function(){setTimeout(function(){install();prewarm()},40)});
 setTimeout(prewarm,120);[700,2200,7000,16000].forEach(function(ms){setTimeout(function(){install();setVersion()},ms)});
 window.decorateDrawingButtonsNowV95=decorateNow;
+})();
+</script>
+
+
+
+<!-- ===== V96: 도면 버튼 DOM 고정 · 품목군 펼침 무점멸 최종수정 ===== -->
+<style id="v96-drawing-action-stable-style">
+#view-draw.v96-building #drawGroupBody,
+#view-drawowner.v96-building .owner-body{visibility:hidden!important}
+#view-draw .draw-drive-cell,
+#view-drawowner .draw-drive-cell{width:254px!important;min-width:254px!important;max-width:254px!important;box-sizing:border-box!important}
+#view-draw .draw-drive-actions,
+#view-drawowner .draw-drive-actions{display:grid!important;grid-template-columns:minmax(84px,1.28fr) minmax(52px,.82fr) minmax(52px,.82fr)!important;gap:4px!important;width:100%!important;min-height:29px!important;visibility:visible!important;opacity:1!important}
+#view-draw .draw-drive-actions button,
+#view-drawowner .draw-drive-actions button{width:100%!important;height:29px!important;min-width:0!important;margin:0!important;animation:none!important;transition:none!important}
+#view-draw .draw-drive-name,
+#view-drawowner .draw-drive-name{min-height:12px!important}
+</style>
+<script id="v96-drawing-action-stable-script">
+(function(){
+'use strict';
+var VER='v96',DRAW_KEY='dbfastec_cost_drawings_v1';
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function readMap(){try{return JSON.parse(localStorage.getItem(DRAW_KEY)||'{}')||{}}catch(e){return {}}}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function rowPn(tr){if(!tr)return '';var x=clean(tr.getAttribute&&tr.getAttribute('data-pn'));if(x)return x;var p=tr.querySelector&&tr.querySelector('.pn');return p?clean(p.textContent):''}
+function hasFile(r){return !!clean(r&&r.fileId)&&r.has!==false&&!clean(r&&r.fileDeletedAt)}
+function ensureStructure(td,pn){
+  var box=td.querySelector('.draw-drive-actions[data-v96-stable="1"]');
+  if(box&&clean(box.getAttribute('data-pn'))===pn)return box;
+  td.replaceChildren();
+  box=document.createElement('div');box.className='draw-drive-actions';box.setAttribute('data-pn',pn);box.setAttribute('data-v96-stable','1');
+  for(var i=0;i<3;i++){var b=document.createElement('button');b.type='button';b.setAttribute('data-v96-slot',String(i+1));box.appendChild(b)}
+  var name=document.createElement('span');name.className='draw-drive-name';name.setAttribute('data-v96-name','1');
+  td.appendChild(box);td.appendChild(name);return box;
+}
+function clearActionAttrs(b){['data-drive-download','data-drive-upload','data-drive-delete','data-v90-busy','data-v93-busy'].forEach(function(a){b.removeAttribute(a)});b.disabled=false;b.removeAttribute('aria-disabled');b.className=''}
+function setDisabled(b,label,danger){clearActionAttrs(b);b.textContent=label;b.disabled=true;b.setAttribute('aria-disabled','true');b.className=(danger?'danger ':'')+'v91-disabled'}
+function updateCell(td,pn,r){
+  var box=ensureStructure(td,pn),btn=box.querySelectorAll('button'),has=hasFile(r),name=clean(r&&r.fileName);
+  if(btn.length!==3){td.removeAttribute('data-v96-state');box=ensureStructure(td,pn);btn=box.querySelectorAll('button')}
+  if(has){
+    clearActionAttrs(btn[0]);btn[0].textContent='다운로드';btn[0].className='download';btn[0].setAttribute('data-drive-download',pn);
+    clearActionAttrs(btn[1]);btn[1].textContent='교체';btn[1].setAttribute('data-drive-upload',pn);
+    clearActionAttrs(btn[2]);btn[2].textContent='삭제';btn[2].className='danger';btn[2].setAttribute('data-drive-delete',pn);
+  }else{
+    clearActionAttrs(btn[0]);btn[0].textContent='도면 업로드';btn[0].className='primary';btn[0].setAttribute('data-drive-upload',pn);
+    setDisabled(btn[1],'교체',false);setDisabled(btn[2],'삭제',true);
+  }
+  var n=td.querySelector('[data-v96-name="1"]');if(n){n.textContent=name;n.title=name;n.style.display=name?'block':'none'}
+  var state=(has?'has|':'none|')+clean(r&&r.fileId)+'|'+name;
+  td.setAttribute('data-v96-state',state);td.setAttribute('data-v95-state',state);td.setAttribute('data-v94-state',state);td.setAttribute('data-v91-state',state);
+}
+function stripNote(table){var hr=table&&table.tHead&&table.tHead.rows&&table.tHead.rows[0];if(!hr)return;var idx=-1;Array.prototype.some.call(hr.cells,function(c,i){if(clean(c.textContent)==='비고'){idx=i;return true}return false});if(idx<0)return;Array.prototype.forEach.call(table.rows,function(r){if(r.cells&&r.cells[idx])r.deleteCell(idx)});var cg=table.querySelector('colgroup');if(cg&&cg.children[idx])cg.removeChild(cg.children[idx])}
+function decorateTable(table,map){
+  if(!table||!table.tHead||!table.tBodies||!table.tBodies.length)return;stripNote(table);
+  var hr=table.tHead.rows&&table.tHead.rows[0],idx=-1;if(!hr)return;
+  Array.prototype.some.call(hr.cells,function(c,i){if(c.classList.contains('draw-drive-head')||clean(c.textContent)==='구글드라이브 도면'){idx=i;c.classList.add('draw-drive-head');return true}return false});
+  if(idx<0){var th=document.createElement('th');th.className='draw-drive-head';th.textContent='구글드라이브 도면';hr.appendChild(th);idx=hr.cells.length-1;var cg0=table.querySelector('colgroup');if(cg0)cg0.appendChild(document.createElement('col'))}
+  var cg=table.querySelector('colgroup');if(cg&&cg.children[idx]){cg.children[idx].style.width='254px';cg.children[idx].style.minWidth='254px';cg.children[idx].style.maxWidth='254px'}
+  Array.prototype.forEach.call(table.tBodies[0].rows,function(tr){
+    if(tr.classList.contains('draw-inline-detail')||tr.classList.contains('owner-detail')||tr.classList.contains('usage-detail'))return;
+    var pn=rowPn(tr);if(!pn)return;var td=tr.querySelector('.draw-drive-cell');if(!td){td=document.createElement('td');td.className='draw-drive-cell';tr.appendChild(td)}
+    updateCell(td,pn,map[pn]||{});
+  });
+}
+function decorate(){var map=readMap();document.querySelectorAll('#view-draw .draw-inline-table,#view-drawowner .draw-inline-table').forEach(function(t){decorateTable(t,map)});setVersion()}
+function unwrap(fn){var seen=[];while(typeof fn==='function'&&seen.indexOf(fn)<0){seen.push(fn);var n=fn.__v96Raw||fn.__v95Raw||fn.__v94Raw||fn.__v91Raw||fn.__v90Raw||fn.__raw;if(typeof n!=='function'||n===fn)break;fn=n}return fn}
+function installRender(){
+  var cur=window.renderDrawingAnalysis;if(typeof cur!=='function')return;
+  if(cur.__v96Stable)return;var raw=unwrap(cur);
+  var w=function(){var view=id('view-draw');if(view)view.classList.add('v96-building');try{var out=raw.apply(this,arguments);decorate();return out}finally{if(view)view.classList.remove('v96-building')}};
+  w.__v96Stable=true;w.__v95StableRender=true;w.__v94FastDraw=true;w.__v91Buttons=true;w.__v90NoteStrip=true;w.__v79Drive=true;w.__v96Raw=raw;window.renderDrawingAnalysis=w;
+}
+function installOwnerRender(){var cur=window.renderOwnerAnalysis;if(typeof cur!=='function'||cur.__v96Stable)return;var raw=unwrap(cur);var w=function(){var view=id('view-drawowner');if(view)view.classList.add('v96-building');try{var out=raw.apply(this,arguments);decorate();return out}finally{if(view)view.classList.remove('v96-building')}};w.__v96Stable=true;w.__v94FastDraw=true;w.__v91Buttons=true;w.__v90NoteStrip=true;w.__v79Drive=true;w.__v96Raw=raw;window.renderOwnerAnalysis=w}
+function installGroup(){
+  var cur=window.openDrawGroup;if(typeof cur==='function'&&!cur.__v96Stable){var raw=unwrap(cur);var w=function(){var view=id('view-draw');if(view)view.classList.add('v96-building');try{var out=raw.apply(this,arguments);decorate();return out}finally{if(view)view.classList.remove('v96-building')}};w.__v96Stable=true;w.__v95StableGroup=true;w.__v96Raw=raw;window.openDrawGroup=w}
+  var cc=window.closeDrawGroup;if(typeof cc==='function'&&!cc.__v96Stable){var rr=unwrap(cc);var cw=function(){var view=id('view-draw');if(view)view.classList.add('v96-building');try{var out=rr.apply(this,arguments);decorate();return out}finally{if(view)view.classList.remove('v96-building')}};cw.__v96Stable=true;cw.__v95StableGroup=true;cw.__v96Raw=rr;window.closeDrawGroup=cw}
+}
+function disconnectLegacy(){try{if(window.__v95DrawingObserver&&typeof window.__v95DrawingObserver.disconnect==='function')window.__v95DrawingObserver.disconnect()}catch(e){}window.__v95DrawingObserver=null}
+function install(){disconnectLegacy();installRender();installOwnerRender();installGroup();window.refreshDrawingActionLayoutV91=decorate;window.decorateDrawingButtonsNowV94=decorate;window.decorateDrawingButtonsNowV95=decorate;window.decorateDrawingButtonsNowV96=decorate;decorate();setVersion()}
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,30)});[300,1200,3500,9000].forEach(function(ms){setTimeout(install,ms)});
 })();
 </script>
 
