@@ -3591,8 +3591,8 @@ if(document.readyState!=='loading') setTimeout(initApp,0); else document.addEven
     var table=document.querySelector('#view-cost table.cost-table');
     if(table&&!table.getAttribute('data-draw-light')){var cg=table.querySelector('colgroup');if(cg){var col=document.createElement('col');col.className='draw-col';var cols=cg.querySelectorAll('col');if(cols[6])cg.insertBefore(col,cols[6]);else cg.appendChild(col);}var tr=table.querySelector('thead tr');if(tr){var th=document.createElement('th');th.className='sortable draw-head';th.setAttribute('data-key','draw');th.setAttribute('onclick',"setSort('draw')");th.innerHTML='도면<span class="sar"></span>';var ths=tr.children;if(ths[6])tr.insertBefore(th,ths[6]);else tr.appendChild(th);}table.setAttribute('data-draw-light','1');}
     var wrap=document.querySelector('.wrap');
-    if(wrap&&!byId('view-draw')){var vd=document.createElement('div');vd.id='view-draw';vd.className='hidden';vd.innerHTML='<div class="kpis" id="drawKpis"></div><div class="draw-hero"><div class="draw-card"><div class="dh">📊 전체 도면 유무</div><div class="db"><div id="drawOverallBars" class="draw-barbox"></div></div></div><div class="draw-card"><div class="dh">🧾 도면 관리 기준</div><div class="db"><div class="note" style="margin:0">도면 상태는 제품별로 저장됩니다. 품목군을 클릭하면 바로 아래에 품번/품목/규격 제품 리스트가 펼쳐지고, 도면번호·개정·담당자·수정일·상태를 관리할 수 있습니다.</div></div></div></div><div class="draw-card"><div class="dh">📁 품목군별 도면 보유 현황 <span id="drawGroupMeta" style="margin-left:auto;font-size:12px;font-weight:600"></span></div><div class="db"><div class="draw-tools draw-analysis-tools"><select id="drawOwnerFilter" onchange="renderDrawingAnalysis()"><option value="">담당 전체</option></select><select id="drawStatusFilter" onchange="renderDrawingAnalysis()"><option value="">관리상태 전체</option></select><select id="drawUsageFilter" onchange="renderDrawingAnalysis()"><option value="">공용/전용/비규격 전체</option></select><button id="drawViewToggle" type="button" onclick="toggleDrawViewMode()">품목/규격으로 보기</button><button type="button" onclick="resetDrawAnalysisFilters()">필터 초기화</button></div><div class="tablebox" style="box-shadow:none;border-radius:9px"><table class="draw-groups"><colgroup><col style="width:260px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col></colgroup><thead><tr><th id="drawGroupFirstTh">품목군</th><th class="num">제품수</th><th class="num">도면 있음</th><th class="num">도면 없음</th><th class="num">보유율</th><th>보유율 그래프</th></tr></thead><tbody id="drawGroupBody"></tbody></table></div></div></div>';var ana=byId('view-ana');wrap.insertBefore(vd,ana||wrap.firstChild);}
-    if(wrap&&!byId('view-drawowner')){var vo=document.createElement('div');vo.id='view-drawowner';vo.className='hidden';vo.innerHTML='<div class="kpis" id="ownerKpis"></div><div class="draw-card"><div class="dh">👤 담당자별 도면 확인 분석 <span id="ownerMeta" style="margin-left:auto;font-size:12px;font-weight:600"></span></div><div class="db"><div class="owner-tools"><input id="ownerSearch" placeholder="담당자 · 품번 · 품목 · 규격 · 도면번호 검색 (공백=모두 포함)" oninput="renderOwnerAnalysis()"><select id="ownerDrawFilter" onchange="renderOwnerAnalysis()"><option value="">도면 전체</option><option value="has">도면 있음</option><option value="none">도면 없음</option></select><button type="button" onclick="closeOwnerGroup()">접기</button></div><div class="summary-grid" id="ownerSummary"></div><div class="tablebox" style="margin-top:10px"><table class="owner-table"><colgroup><col><col style="width:105px"><col style="width:105px"><col style="width:105px"><col style="width:105px"><col></colgroup><thead><tr><th>담당자</th><th class="num">제품수</th><th class="num">도면 있음</th><th class="num">도면 없음</th><th class="num">보유율</th><th>그래프</th></tr></thead><tbody id="ownerBody"></tbody></table></div></div></div>';var price=byId('view-price');wrap.insertBefore(vo,price||wrap.appendChild(vo));}
+    if(wrap&&!byId('view-draw')){var vd=document.createElement('div');vd.id='view-draw';vd.className='hidden';vd.innerHTML='<div class="kpis" id="drawKpis"></div><div class="draw-hero"><div class="draw-card"><div class="dh">📊 전체 도면 유무</div><div class="db"><div id="drawOverallBars" class="draw-barbox"></div></div></div><div class="draw-card"><div class="dh">🧾 도면 관리 기준</div><div class="db"><div class="note" style="margin:0">도면 상태는 제품별로 저장됩니다. 품목군을 클릭하면 바로 아래에 품번/품목/규격 제품 리스트가 펼쳐지고, 담당자·수정일·관리상태를 관리할 수 있습니다.</div></div></div></div><div class="draw-card"><div class="dh">📁 품목군별 도면 보유 현황 <span id="drawGroupMeta" style="margin-left:auto;font-size:12px;font-weight:600"></span></div><div class="db"><div class="draw-tools draw-analysis-tools"><select id="drawOwnerFilter" onchange="renderDrawingAnalysis()"><option value="">담당 전체</option></select><select id="drawStatusFilter" onchange="renderDrawingAnalysis()"><option value="">관리상태 전체</option></select><select id="drawUsageFilter" onchange="renderDrawingAnalysis()"><option value="">공용/전용/비규격 전체</option></select><button id="drawViewToggle" type="button" onclick="toggleDrawViewMode()">품목/규격으로 보기</button><button type="button" onclick="resetDrawAnalysisFilters()">필터 초기화</button></div><div class="tablebox" style="box-shadow:none;border-radius:9px"><table class="draw-groups"><colgroup><col style="width:260px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col></colgroup><thead><tr><th id="drawGroupFirstTh">품목군</th><th class="num">제품수</th><th class="num">도면 있음</th><th class="num">도면 없음</th><th class="num">보유율</th><th>보유율 그래프</th></tr></thead><tbody id="drawGroupBody"></tbody></table></div></div></div>';var ana=byId('view-ana');wrap.insertBefore(vd,ana||wrap.firstChild);}
+    if(wrap&&!byId('view-drawowner')){var vo=document.createElement('div');vo.id='view-drawowner';vo.className='hidden';vo.innerHTML='<div class="kpis" id="ownerKpis"></div><div class="draw-card"><div class="dh">👤 담당자별 도면 확인 분석 <span id="ownerMeta" style="margin-left:auto;font-size:12px;font-weight:600"></span></div><div class="db"><div class="owner-tools"><input id="ownerSearch" placeholder="담당자 · 품번 · 품목 · 규격 검색 (공백=모두 포함)" oninput="renderOwnerAnalysis()"><select id="ownerDrawFilter" onchange="renderOwnerAnalysis()"><option value="">도면 전체</option><option value="has">도면 있음</option><option value="none">도면 없음</option></select><button type="button" onclick="closeOwnerGroup()">접기</button></div><div class="summary-grid" id="ownerSummary"></div><div class="tablebox" style="margin-top:10px"><table class="owner-table"><colgroup><col><col style="width:105px"><col style="width:105px"><col style="width:105px"><col style="width:105px"><col></colgroup><thead><tr><th>담당자</th><th class="num">제품수</th><th class="num">도면 있음</th><th class="num">도면 없음</th><th class="num">보유율</th><th>그래프</th></tr></thead><tbody id="ownerBody"></tbody></table></div></div></div>';var price=byId('view-price');wrap.insertBefore(vo,price||wrap.appendChild(vo));}
     if(wrap&&!byId('view-usage')){var vu=document.createElement('div');vu.id='view-usage';vu.className='hidden';vu.innerHTML='<div class="kpis" id="usageKpis"></div><div class="draw-card"><div class="dh">🏷 공용품 / 전용품 / 비규격 비중 <span id="usageMeta" style="margin-left:auto;font-size:12px;font-weight:600"></span></div><div class="db"><div id="usageBars"></div></div></div><div class="draw-card"><div class="dh">📁 품목군별 공용/전용품/비규격 관리</div><div class="db"><div class="usage-tools"><input id="usageSearch" placeholder="품번 · 품목 · 규격 · 특정업체 검색" oninput="renderUsageAnalysis()"><select id="usageFilter" onchange="renderUsageAnalysis()"><option value="">공용/전용/비규격 전체</option><option value="공용품">공용품</option><option value="전용품">전용품</option><option value="비규격">비규격</option></select><button type="button" onclick="closeUsageGroup()">접기</button></div><div class="usage-rule-note"><b>비규격 자동판정</b> · 상하보강 · 이너프레임 · 품목명 끝 <b>(L)</b> 제품 / 품목군을 펼친 뒤 구분 선택에서 직접 변경할 수 있습니다.</div><div class="tablebox"><table class="usage-table"><colgroup><col><col style="width:92px"><col style="width:92px"><col style="width:92px"><col style="width:92px"><col style="width:105px"><col></colgroup><thead><tr><th>품목군</th><th class="num">제품수</th><th class="num">공용품</th><th class="num">전용품</th><th class="num">비규격</th><th class="num">비규격비중</th><th>그래프</th></tr></thead><tbody id="usageBody"></tbody></table></div></div></div>';var raw=byId('view-raw');wrap.insertBefore(vu,raw||wrap.appendChild(vu));}
   }
   function buildDrawingFilter(){var el=byId('f-draw');if(!el)return;var cur=el.value;var all=products(),st=statDraw(all);var html='<option value="">도면 구분 (전체 '+all.length.toLocaleString()+')</option><option value="has">도면 있음 ('+st.has.toLocaleString()+')</option><option value="none">도면 없음 ('+st.none.toLocaleString()+')</option>';el.innerHTML=html;if(cur==='has'||cur==='none')el.value=cur;}
@@ -14178,7 +14178,7 @@ header .tabs #tab-drawowner{order:130}
     var baseRender=current;
     var fast=function(resetLimit){
       var body=id('tbody'),key=renderKey(resetLimit);
-      if(lastRenderKey===key&&body&&body.children.length){return body.children.length}
+      if(false&&lastRenderKey===key&&body&&body.children.length){return body.children.length}
       var r=baseRender.apply(this,arguments);
       lastRenderKey=renderKey(false);
       return r;
@@ -14385,8 +14385,8 @@ header .tabs #tab-drawowner{order:130}
     var base=current;
     var fast=function(resetLimit){
       var body=id('tbody'),key=keyForRender(resetLimit);
-      if(!rendering&&lastRenderKey===key&&body&&body.children.length)return body.children.length;
-      if(rendering)return;
+      if(false&&!rendering&&lastRenderKey===key&&body&&body.children.length)return body.children.length;
+      if(false&&rendering)return;
       rendering=true;
       try{
         var r=base.apply(this,arguments);
@@ -15926,6 +15926,155 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 window.addEventListener('load',apply,{once:true});
 setTimeout(apply,250);
 setTimeout(apply,1500);
+})();
+</script>
+
+
+
+<!-- ===== V100: 제품별 원가 전체 필터 정상화 · 도면번호 제거 · 특정업체 안내색 보정 ===== -->
+<style id="v100-filter-drawing-cleanup-style">
+/* 도면분석에서 도면번호 열을 완전히 숨김 */
+#view-draw .v100-docno-hidden{display:none!important;width:0!important;min-width:0!important;max-width:0!important;padding:0!important;border:0!important;overflow:hidden!important}
+/* 특정업체 비활성 안내문을 조금 더 연하게 표시 */
+#view-draw input.v100-dedicated-placeholder::placeholder,
+#view-draw input[placeholder="전용품만 입력"]::placeholder,
+#view-draw input[placeholder*="전용품만"]::placeholder{
+  color:#b8c1ce!important;
+  opacity:1!important;
+  font-weight:400!important;
+}
+#view-draw input.v100-dedicated-placeholder:disabled,
+#view-draw input:disabled[placeholder="전용품만 입력"],
+#view-draw input:disabled[placeholder*="전용품만"]{
+  background:#f7f9fc!important;
+  color:#a9b3c1!important;
+  -webkit-text-fill-color:#a9b3c1!important;
+}
+</style>
+<script id="v100-filter-drawing-cleanup-script">
+(function(){
+'use strict';
+var VER='v100';
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+
+/*
+ * v75/v76 성능 캐시가 여러 번 중첩되면서 다중 필터 상태가 바뀌어도
+ * 이전 906건 결과를 반환하는 문제가 있었다. 캐시 래퍼만 걷어내고
+ * 실제 최종 렌더 함수(숨김제품/제품구분/도면 기능 포함)는 그대로 사용한다.
+ */
+function unwrapRender(fn){
+  var seen=[];
+  while(typeof fn==='function'&&seen.indexOf(fn)<0){
+    seen.push(fn);
+    var next=null,keys=Object.keys(fn||{});
+    for(var i=0;i<keys.length;i++){
+      var k=keys[i];
+      if(/Raw$/i.test(k)&&typeof fn[k]==='function'){next=fn[k];break;}
+    }
+    if(!next)break;
+    fn=next;
+  }
+  return fn;
+}
+function installCostFilterRender(){
+  var current=window.renderCost;
+  if(typeof current!=='function'||current.__v100FilterFixed)return;
+  var base=unwrapRender(current);
+  if(typeof base!=='function')base=current;
+  var fixed=function(resetLimit){
+    var out=base.apply(this,arguments);
+    /* 버튼 표시와 선택 상태는 기존 컨트롤러가 관리하고, 결과만 항상 최신화 */
+    try{if(typeof window.markActiveFilters==='function')window.markActiveFilters()}catch(e){}
+    return out;
+  };
+  fixed.__v100FilterFixed=true;
+  fixed.__v100Raw=base;
+  /* 이후 구버전 지연 타이머가 renderCost를 다시 덮어쓰지 못하도록 최종 함수를 고정 */
+  try{
+    Object.defineProperty(window,'renderCost',{
+      configurable:true,enumerable:true,
+      get:function(){return fixed},
+      set:function(){/* 구버전 재할당 무시 */}
+    });
+  }catch(e){window.renderCost=fixed}
+}
+
+function hideHeaderColumn(table,label){
+  if(!table||!table.tHead||!table.tHead.rows||!table.tHead.rows.length)return;
+  var hr=table.tHead.rows[0],idx=-1;
+  Array.prototype.some.call(hr.cells,function(cell,i){
+    if(clean(cell.textContent)===label){idx=i;return true}
+    return false;
+  });
+  if(idx<0)return;
+  var colgroup=table.querySelector('colgroup');
+  if(colgroup&&colgroup.children[idx])colgroup.children[idx].classList.add('v100-docno-hidden');
+  if(hr.cells[idx])hr.cells[idx].classList.add('v100-docno-hidden');
+  Array.prototype.forEach.call(table.tBodies||[],function(tb){
+    Array.prototype.forEach.call(tb.rows||[],function(tr){
+      /* 상세 설명용 colspan 1행은 제외 */
+      if(tr.cells&&tr.cells.length>idx&&tr.cells.length>1)tr.cells[idx].classList.add('v100-docno-hidden');
+    });
+  });
+}
+function softenCustomerPlaceholder(table){
+  if(!table||!table.tHead||!table.tHead.rows||!table.tHead.rows.length)return;
+  var hr=table.tHead.rows[0],idx=-1;
+  Array.prototype.some.call(hr.cells,function(cell,i){
+    if(clean(cell.textContent)==='특정업체'){idx=i;return true}
+    return false;
+  });
+  if(idx<0)return;
+  Array.prototype.forEach.call(table.tBodies||[],function(tb){
+    Array.prototype.forEach.call(tb.rows||[],function(tr){
+      if(!tr.cells||tr.cells.length<=idx||tr.cells.length<=1)return;
+      var input=tr.cells[idx].querySelector('input');
+      if(!input)return;
+      if(input.disabled){input.placeholder='전용품만 입력';input.classList.add('v100-dedicated-placeholder')}
+      else{input.classList.remove('v100-dedicated-placeholder');if(clean(input.placeholder)==='전용품만 입력')input.placeholder='업체 검색 또는 직접 입력'}
+    });
+  });
+}
+function cleanupDrawingAnalysis(){
+  var root=id('view-draw');if(!root)return;
+  root.querySelectorAll('table').forEach(function(table){
+    hideHeaderColumn(table,'도면번호');
+    softenCustomerPlaceholder(table);
+  });
+  var note=root.querySelector('.note');
+  if(note&&note.textContent.indexOf('도면번호')>=0)note.textContent=note.textContent.replace(/도면번호[·ㆍ]?\s*/g,'');
+}
+function wrapDrawingRender(name){
+  var fn=window[name];if(typeof fn!=='function'||fn.__v100NoDocNo)return;
+  var wrapped=function(){var r=fn.apply(this,arguments);cleanupDrawingAnalysis();return r};
+  wrapped.__v100NoDocNo=true;wrapped.__v100Raw=fn;window[name]=wrapped;
+}
+function installDrawingCleanup(){
+  wrapDrawingRender('renderDrawingAnalysis');
+  wrapDrawingRender('openDrawGroup');
+  wrapDrawingRender('closeDrawGroup');
+  cleanupDrawingAnalysis();
+}
+function setVersion(){
+  var v=id('bomAppVer');if(v){
+    var suffix='',m=String(v.textContent||'').match(/(\s*·\s*.+)$/);if(m)suffix=m[1];
+    var target='버전 '+VER+suffix;if(v.textContent!==target)v.textContent=target;
+    if(!v.__v100VersionObserver){
+      v.__v100VersionObserver=true;
+      new MutationObserver(function(){
+        var mm=String(v.textContent||'').match(/(\s*·\s*.+)$/),ss=mm?mm[1]:'';
+        var tt='버전 '+VER+ss;if(v.textContent!==tt)v.textContent=tt;
+      }).observe(v,{childList:true,characterData:true,subtree:true});
+    }
+  }
+  document.title='제품별 제조원가 프로그램 v100 | (주)동방파스텍';
+}
+function install(){installCostFilterRender();installDrawingCleanup();setVersion()}
+install();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+window.addEventListener('load',function(){install();cleanupDrawingAnalysis();setVersion()},{once:true});
+setTimeout(function(){install();cleanupDrawingAnalysis();setVersion()},300);
 })();
 </script>
 
