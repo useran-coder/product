@@ -14859,5 +14859,108 @@ window.invalidatePerformanceCacheV83=bump;
 })();
 </script>
 
+
+<!-- ===== V84: 팝업 무깜빡임 · 제목줄 도면상태/담당자 완전연동 ===== -->
+<style id="v84-modal-stable-header-style">
+/* 기존 2단계 로딩 화면을 사용하지 않고, 상세 내용이 완성된 뒤 한 번에 표시 */
+#overlay .v83-modal-loader{display:none!important}
+#overlay.v83-modal-loading .mbody,
+#overlay.v83-modal-loading .mfoot{display:block!important}
+#overlay.v84-preparing{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+#overlay:not(.hidden):not(.v84-preparing){visibility:visible!important;opacity:1!important}
+
+/* 제품 원가 팝업 제목줄: 도면 상태 + 도면 담당자 */
+#overlay .mhead{flex-wrap:nowrap!important;gap:10px!important}
+#overlay .mhead>div:first-child{min-width:0;flex:1 1 auto}
+#overlay .mhead h3,#overlay .mhead .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#v83-modal-owner{display:none!important}
+.v84-modal-meta{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto}
+.v84-draw-state{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.v84-draw-state .lab,.v84-owner-wrap .lab{font-size:11px;font-weight:500;opacity:.82}
+.v84-draw-pill{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:29px;padding:0 10px;border-radius:15px;font-size:11.5px;font-weight:800;border:1px solid rgba(255,255,255,.28);box-sizing:border-box}
+.v84-draw-pill.has{background:#dff6e8;color:#08703e;border-color:#bce8ce}
+.v84-draw-pill.none{background:#eef1f5;color:#68778d;border-color:#d6dde7}
+.v84-owner-wrap{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.v84-owner-wrap select{width:150px;max-width:190px;height:30px;border:1px solid rgba(255,255,255,.4);border-radius:7px;background:#fff;color:#172b4d;padding:0 28px 0 9px;font:400 12px 'Malgun Gothic','맑은 고딕',sans-serif;outline:none}
+.v84-owner-wrap select:focus{border-color:#8eb8ef;box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+#overlay .mhead .x{margin-left:0!important;flex:0 0 30px}
+@media(max-width:850px){.v84-draw-state .lab,.v84-owner-wrap .lab{display:none}.v84-owner-wrap select{width:118px}.v84-draw-pill{min-width:42px;padding:0 7px}}
+@media(max-width:620px){.v84-modal-meta{gap:5px}.v84-owner-wrap select{width:100px}.v84-draw-pill{height:28px}.mhead h3{font-size:12.5px!important}}
+</style>
+<script id="v84-modal-stable-header-script">
+(function(){
+'use strict';
+var VER='v84',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
+var activeIdx=-1,openToken=0,syncTimer=0;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function products(){try{return (typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:(Array.isArray(window.PRODUCTS)?window.PRODUCTS:[])}catch(e){return []}}
+function product(idx){return products()[Number(idx)]||null}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(document.title)document.title=/v\d+/.test(document.title)?document.title.replace(/v\d+/,VER):document.title+' '+VER}
+function recordFor(idx){var p=product(idx);if(!p)return {};return (read(DRAW_KEY,{})[String(p.pn||'')]||{})}
+function ownerNames(current){
+  var out=[];function add(v){v=clean(v);if(v&&out.indexOf(v)<0)out.push(v)}
+  try{if(typeof window.getOwnerMasterList==='function')(window.getOwnerMasterList()||[]).forEach(add)}catch(e){}
+  var m=read(OWNER_KEY,[]);if(Array.isArray(m))m.forEach(add);
+  var d=read(DRAW_KEY,{});Object.keys(d||{}).forEach(function(k){add(d[k]&&d[k].owner)});add(current);
+  out.sort(function(a,b){return a.localeCompare(b,'ko')});return out;
+}
+function saveOwner(idx,name){
+  var p=product(idx);if(!p)return;name=clean(name);var pn=String(p.pn||''),d=read(DRAW_KEY,{}),r=d[pn]||{};
+  if(clean(r.owner)===name)return;r.owner=name;d[pn]=r;write(DRAW_KEY,d);
+  if(name){var m=read(OWNER_KEY,[]);if(!Array.isArray(m))m=[];if(m.indexOf(name)<0){m.push(name);m.sort(function(a,b){return String(a).localeCompare(String(b),'ko')});write(OWNER_KEY,m)}}
+  ['m-owner-select-v75','v83-owner-select'].forEach(function(k){var e=id(k);if(e)e.value=name});
+  document.querySelectorAll('tr').forEach(function(tr){var pnEl=tr.querySelector&&tr.querySelector('.pn');if(!pnEl||clean(pnEl.textContent)!==pn)return;tr.querySelectorAll('.db-owner-field').forEach(function(inp){inp.value=name})});
+  clearTimeout(syncTimer);syncTimer=setTimeout(function(){try{if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}},250);
+  try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}
+  refreshHeader(idx);
+  try{if(typeof window.toast==='function')window.toast(name?'도면 담당자: '+name:'도면 담당자 미지정')}catch(e){}
+}
+function ensureHeaderBox(){
+  var head=document.querySelector('#overlay .mhead');if(!head)return null;var box=id('v84-modal-meta');
+  if(!box){box=document.createElement('div');box.id='v84-modal-meta';box.className='v84-modal-meta';box.innerHTML='<div class="v84-draw-state"><span class="lab">도면</span><span id="v84-draw-pill" class="v84-draw-pill none">없음</span></div><div class="v84-owner-wrap"><span class="lab">도면 담당자</span><select id="v84-owner-select" aria-label="도면 담당자"></select></div>';var x=head.querySelector('.x');head.insertBefore(box,x||null)}
+  return box;
+}
+function refreshHeader(idx){
+  idx=Number(idx);var p=product(idx),box=ensureHeaderBox();if(!p||!box)return;activeIdx=idx;
+  var r=recordFor(idx),has=!!r.has,pill=id('v84-draw-pill');
+  if(pill){pill.textContent=has?'있음':'없음';pill.classList.toggle('has',has);pill.classList.toggle('none',!has);pill.title=has?'도면 파일이 등록되어 있습니다.':'등록된 도면 파일이 없습니다.'}
+  var current=clean(r.owner),sel=id('v84-owner-select');if(sel){var html='<option value="">담당자 미지정</option>'+ownerNames(current).map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+'</option>'}).join('');if(sel.innerHTML!==html)sel.innerHTML=html;sel.value=current;sel.onchange=function(){saveOwner(activeIdx,this.value)}}
+}
+function unwrapOpen(fn){
+  var seen=[],n=0;while(fn&&n++<20&&seen.indexOf(fn)<0){seen.push(fn);if(fn.__v84NoFlicker&&fn.__v84Raw){fn=fn.__v84Raw;continue}if(fn.__v83Instant&&fn.__v83Raw){fn=fn.__v83Raw;continue}if(fn.__v76ImmediateModal&&fn.__v76Raw){fn=fn.__v76Raw;continue}break}return fn;
+}
+function installOpen(){
+  var current=window.openDetail;if(typeof current!=='function')return;
+  if(current.__v84NoFlicker)return;
+  var unwrapped=unwrapOpen(current);if(unwrapped&&unwrapped.__v84NoFlicker){window.openDetail=unwrapped;return}
+  var full=unwrapped||current;
+  var fast=function(idx){
+    idx=Number(idx);activeIdx=idx;var ov=id('overlay'),token=++openToken;if(!ov)return full.apply(this,arguments);
+    ov.classList.remove('v83-modal-loading','v76-modal-loading');ov.classList.add('v84-preparing');
+    var result;
+    try{result=full.call(this,idx)}catch(e){ov.classList.remove('v84-preparing');throw e}
+    refreshHeader(idx);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){if(token!==openToken)return;refreshHeader(idx);ov.classList.remove('v84-preparing','v83-modal-loading','v76-modal-loading')})});
+    return result;
+  };
+  fast.__v84NoFlicker=true;fast.__v84Raw=full;fast.__v83Instant=true;fast.__v83Raw=full;window.openDetail=fast;
+}
+function installStatusLink(){
+  var old=window.applyDrawingStatusInPlaceV82;if(typeof old==='function'&&!old.__v84HeaderLink){
+    var fn=function(pn,has){var r=old.apply(this,arguments),p=product(activeIdx);if(p&&String(p.pn||'')===String(pn||''))refreshHeader(activeIdx);return r};fn.__v84HeaderLink=true;fn.__v84Raw=old;window.applyDrawingStatusInPlaceV82=fn;
+  }
+}
+function install(){setVersion();ensureHeaderBox();installOpen();installStatusLink();if(id('overlay')&&!id('overlay').classList.contains('hidden')&&activeIdx>=0)refreshHeader(activeIdx)}
+window.addEventListener('storage',function(e){if(e&&e.key===DRAW_KEY&&activeIdx>=0)refreshHeader(activeIdx)});
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);window.addEventListener('load',function(){setTimeout(install,250)});
+[1250,1750,6600,7450,9300].forEach(function(ms){setTimeout(install,ms)});setTimeout(setVersion,9800);
+window.refreshCostModalHeaderV84=function(){if(activeIdx>=0)refreshHeader(activeIdx)};
+})();
+</script>
+
 </body>
 </html>
