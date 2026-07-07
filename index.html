@@ -17727,5 +17727,172 @@ install();[80,300,1000,4000,12000,20000].forEach(function(ms){setTimeout(install
 })();
 </script>
 
+
+<!-- ===== v124.8 제품팝업 버튼정렬 · 담당자연동 · 빠른 선택목록 ===== -->
+<style id="v124-8-modal-combo-style">
+/* 하단 버튼: 기본값은 왼쪽, 닫기·저장은 오른쪽 */
+#overlay.v1247-ready .mfoot,
+#overlay .mfoot{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:10px!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+#overlay .mfoot .reset{margin-right:auto!important}
+#overlay .mfoot .cancel,#overlay .mfoot .save{margin-left:0!important}
+
+/* 구버전 로딩막·전환을 제거해 팝업 본문을 즉시 표시 */
+#overlay #v123ModalLoading,#overlay .v83-modal-loader{display:none!important}
+#overlay .modal,#overlay .mbody,#overlay .mfoot{animation:none!important;transition:none!important}
+#overlay:not(.hidden){visibility:visible!important;opacity:1!important}
+
+/* 팝업 전용 선택필드 */
+.v1248-combo-wrap{position:relative;display:flex;align-items:center;width:100%;min-width:0}
+.v1248-combo-wrap>input{flex:1 1 auto;min-width:0;padding-right:31px!important}
+.v1248-combo-arrow{position:absolute!important;right:2px!important;top:50%!important;translate:0 -50%!important;width:27px!important;height:calc(100% - 4px)!important;min-height:24px!important;border:0!important;border-left:1px solid #d8e0ea!important;border-radius:0 5px 5px 0!important;background:#f7f9fc!important;color:#526780!important;padding:0!important;font-size:12px!important;line-height:1!important;box-shadow:none!important;z-index:2!important}
+.v1248-combo-arrow:hover{background:#eaf2fb!important;color:#234e85!important;translate:0 -50%!important;scale:1!important}
+.v1248-native-select{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important}
+.v1248-select-button{width:100%!important;height:100%!important;min-height:30px!important;border:1px solid #cbd7e6!important;border-radius:7px!important;background:#fff!important;color:#172b4d!important;padding:0 30px 0 9px!important;text-align:left!important;font-family:inherit!important;font-size:12px!important;font-weight:400!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;position:relative!important;box-shadow:none!important}
+.v1248-select-button::after{content:'▾';position:absolute;right:9px;top:50%;translate:0 -50%;font-size:11px;color:#536a84}
+.v1248-select-button:hover{background:#fff!important;translate:0!important;scale:1!important;box-shadow:0 0 0 2px rgba(47,111,176,.08)!important}
+.v84-owner-wrap .v1248-combo-wrap{width:150px;height:30px}
+.material-grid .v1248-combo-wrap{height:35px}
+
+/* 브라우저 기본 검정 datalist 대신 항상 흰색으로 즉시 표시 */
+#v1248ModalComboPortal{position:fixed;display:none;z-index:50000;width:340px;max-width:calc(100vw - 18px);background:#fff;color:#1b2435;border:1px solid #bfcddd;border-radius:9px;box-shadow:0 14px 38px rgba(15,35,65,.24);overflow:hidden;animation:none!important;transition:none!important}
+#v1248ModalComboPortal.open{display:block!important}
+#v1248ModalComboPortal .v1248-combo-search-wrap{padding:8px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+#v1248ModalComboPortal .v1248-combo-search{width:100%;height:34px;border:1px solid #c9d5e4;border-radius:7px;padding:0 10px;font-family:inherit;font-size:12.5px;background:#fff;color:#1b2435;outline:none}
+#v1248ModalComboPortal .v1248-combo-search:focus{border-color:#7fa9d7;box-shadow:0 0 0 2px rgba(47,111,176,.10)}
+#v1248ModalComboPortal .v1248-combo-list{max-height:min(360px,48vh);overflow:auto;background:#fff;padding:4px}
+#v1248ModalComboPortal .v1248-combo-option{display:block;width:100%;min-height:32px;border:0;border-radius:6px;background:#fff;color:#24344b;padding:7px 9px;text-align:left;font-family:inherit;font-size:12px;font-weight:500;white-space:normal;word-break:break-word;box-shadow:none!important;translate:0!important;scale:1!important}
+#v1248ModalComboPortal .v1248-combo-option:hover,#v1248ModalComboPortal .v1248-combo-option.on{background:#eaf3fd!important;color:#173e6c!important}
+#v1248ModalComboPortal .v1248-combo-empty{padding:18px 10px;text-align:center;color:#728096;font-size:12px;background:#fff}
+@media(max-width:700px){.v84-owner-wrap .v1248-combo-wrap{width:112px}#v1248ModalComboPortal{width:min(340px,calc(100vw - 12px))}}
+</style>
+<script id="v124-8-modal-combo-script">
+(function(){
+'use strict';
+var VER='v124.8',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
+var portal=null,active=null,listCache=Object.create(null),openBase=null;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function read(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error(e);return false}}
+function products(){try{return typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
+function currentIndex(){try{return typeof curIdx!=='undefined'&&curIdx!=null?Number(curIdx):-1}catch(e){return -1}}
+function currentProduct(){var i=currentIndex(),p=products();return i>=0?p[i]||null:null}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'').replace(/v\d+(?:\.\d+)?/,VER);document.title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';try{window.__legacyDocumentTitleV99=document.title}catch(e){}}
+function syncUser(){try{var s=read('dbfastec_bom_gsync_v1',{});return clean(s.user)}catch(e){return ''}}
+
+function ownerNames(current){
+  var out=[];function add(v){v=clean(v);if(v&&out.indexOf(v)<0)out.push(v)}
+  try{if(typeof window.getOwnerMasterList==='function')(window.getOwnerMasterList()||[]).forEach(add)}catch(e){}
+  var m=read(OWNER_KEY,[]);if(Array.isArray(m))m.forEach(add);
+  var d=read(DRAW_KEY,{});Object.keys(d||{}).forEach(function(k){add(d[k]&&d[k].owner)});
+  document.querySelectorAll('.db-owner-field').forEach(function(e){add(e.value)});
+  var old=id('v84-owner-select');if(old)Array.prototype.forEach.call(old.options||[],function(o){add(o.value)});
+  add(current);out.sort(function(a,b){return a.localeCompare(b,'ko')});return out;
+}
+function saveOwnerFallback(sel){
+  var p=currentProduct();if(!p||!sel)return;var pn=clean(p.pn),name=clean(sel.value),all=read(DRAW_KEY,{}),r=all[pn]||{};
+  if(clean(r.owner)!==name){r.owner=name;r._modifiedAt=Date.now();r._modifiedBy=syncUser();all[pn]=r;write(DRAW_KEY,all)}
+  if(name){var m=read(OWNER_KEY,[]);if(!Array.isArray(m))m=[];if(m.indexOf(name)<0){m.push(name);m.sort(function(a,b){return String(a).localeCompare(String(b),'ko')});write(OWNER_KEY,m)}}
+  try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'drawings',pn:pn,field:'owner'}}))}catch(e){}
+  try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync()}catch(e){}
+}
+function refreshOwnerSelect(){
+  try{if(typeof window.refreshCostModalHeaderV84==='function')window.refreshCostModalHeaderV84()}catch(e){}
+  var sel=id('v84-owner-select'),p=currentProduct();if(!sel||!p)return;
+  var rec=(read(DRAW_KEY,{})[clean(p.pn)]||{}),current=clean(rec.owner),names=ownerNames(current),sig=names.join('\u0001')+'|'+current;
+  if(sel.dataset.v1248OwnerSig!==sig){sel.innerHTML='<option value="">담당자 미지정</option>'+names.map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+'</option>'}).join('');sel.dataset.v1248OwnerSig=sig}
+  sel.value=current;
+  if(!sel.__v1248OwnerBound){sel.__v1248OwnerBound=true;sel.addEventListener('change',function(){setTimeout(function(){saveOwnerFallback(sel);syncSelectButton(sel)},0)})}
+  enhanceSelect(sel);syncSelectButton(sel);
+}
+
+function ensurePortal(){
+  if(portal)return portal;
+  portal=document.createElement('div');portal.id='v1248ModalComboPortal';portal.setAttribute('role','listbox');
+  portal.innerHTML='<div class="v1248-combo-search-wrap"><input class="v1248-combo-search" type="search" autocomplete="off" placeholder="목록에서 검색"></div><div class="v1248-combo-list"></div>';
+  document.body.appendChild(portal);
+  portal.querySelector('.v1248-combo-search').addEventListener('input',renderPortal);
+  portal.addEventListener('pointerdown',function(e){e.stopPropagation()});
+  portal.addEventListener('click',function(e){var b=e.target.closest('.v1248-combo-option');if(!b||!active)return;choose(b.dataset.value||'')});
+  return portal;
+}
+function datalistItems(listId){
+  var dl=id(listId);if(!dl)return [];
+  var sig=(dl.options?dl.options.length:0)+'|'+dl.innerHTML.length;if(listCache[listId]&&listCache[listId].sig===sig)return listCache[listId].items;
+  var seen={},arr=[];Array.prototype.forEach.call(dl.options||[],function(o){var v=clean(o.value||o.textContent),lab=clean(o.label||o.textContent||v);if(!v||seen[v])return;seen[v]=1;arr.push({value:v,label:lab&&lab!==v?v+' · '+lab:v})});
+  listCache[listId]={sig:sig,items:arr};return arr;
+}
+function selectItems(sel){var arr=[];Array.prototype.forEach.call(sel.options||[],function(o){arr.push({value:String(o.value),label:clean(o.textContent)||String(o.value)})});return arr}
+function activeItems(){if(!active)return [];return active.kind==='select'?selectItems(active.el):datalistItems(active.listId)}
+function renderPortal(){
+  if(!portal||!active)return;var q=clean(portal.querySelector('.v1248-combo-search').value).toLowerCase(),items=activeItems().filter(function(x){return !q||(x.label+' '+x.value).toLowerCase().indexOf(q)>=0}),list=portal.querySelector('.v1248-combo-list'),cur=clean(active.el.value);
+  if(!items.length){list.innerHTML='<div class="v1248-combo-empty">포함된 선택항목이 없습니다.</div>';return}
+  var frag=document.createDocumentFragment();items.forEach(function(x){var b=document.createElement('button');b.type='button';b.className='v1248-combo-option'+(String(x.value)===cur?' on':'');b.dataset.value=x.value;b.textContent=x.label;b.title=x.label;frag.appendChild(b)});list.replaceChildren(frag);
+}
+function positionPortal(anchor){if(!portal||!anchor)return;var r=anchor.getBoundingClientRect(),w=Math.max(260,Math.min(420,Math.max(r.width,340))),left=Math.max(6,Math.min(r.left,window.innerWidth-w-6));portal.style.width=w+'px';portal.style.left=left+'px';portal.classList.add('open');var h=Math.min(portal.offsetHeight||400,window.innerHeight-12),below=window.innerHeight-r.bottom;portal.style.top=(below>=Math.min(260,h)?r.bottom+4:Math.max(6,r.top-h-4))+'px'}
+function openCombo(el,anchor,kind,listId,focusSearch){
+  ensurePortal();active={el:el,anchor:anchor||el,kind:kind,listId:listId||''};portal.querySelector('.v1248-combo-search').value='';renderPortal();positionPortal(anchor||el);if(focusSearch)setTimeout(function(){var s=portal&&portal.querySelector('.v1248-combo-search');if(s)s.focus()},0)
+}
+function closePortal(){if(portal)portal.classList.remove('open');active=null}
+function choose(value){
+  if(!active)return;var el=active.el,kind=active.kind;el.value=value;
+  el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));
+  if(kind==='select')syncSelectButton(el);else{try{el.focus({preventScroll:true})}catch(e){el.focus()}}
+  closePortal();
+}
+function enhanceInput(inp){
+  if(!inp||inp.dataset.v1248Combo==='1')return;var listId=inp.getAttribute('list');if(!listId)return;
+  inp.dataset.v1248Combo='1';inp.dataset.v1248List=listId;inp.removeAttribute('list');
+  var wrap=document.createElement('span');wrap.className='v1248-combo-wrap';inp.parentNode.insertBefore(wrap,inp);wrap.appendChild(inp);
+  var arrow=document.createElement('button');arrow.type='button';arrow.className='v1248-combo-arrow';arrow.textContent='▾';arrow.title='전체 선택목록 보기';arrow.setAttribute('aria-label','전체 선택목록 보기');wrap.appendChild(arrow);
+  arrow.addEventListener('pointerdown',function(e){e.preventDefault();e.stopPropagation();openCombo(inp,wrap,'input',listId,true)});
+  inp.addEventListener('focus',function(){openCombo(inp,wrap,'input',listId,false)});
+  inp.addEventListener('pointerdown',function(){if(!portal||!portal.classList.contains('open'))openCombo(inp,wrap,'input',listId,false)});
+  inp.addEventListener('input',function(){if(active&&active.el===inp){portal.querySelector('.v1248-combo-search').value=inp.value;renderPortal()}});
+}
+function syncSelectButton(sel){var b=sel&&sel.parentNode?sel.parentNode.querySelector('.v1248-select-button'):null;if(!b)return;var o=sel.options&&sel.options[sel.selectedIndex];b.textContent=o?o.textContent:'선택';b.title=o?o.textContent:'';b.classList.toggle('filter-active',!!clean(sel.value))}
+function enhanceSelect(sel){
+  if(!sel)return;if(sel.dataset.v1248Combo==='1'){syncSelectButton(sel);return}
+  sel.dataset.v1248Combo='1';sel.classList.add('v1248-native-select');
+  var wrap=document.createElement('span');wrap.className='v1248-combo-wrap';sel.parentNode.insertBefore(wrap,sel);wrap.appendChild(sel);
+  var b=document.createElement('button');b.type='button';b.className='v1248-select-button';b.setAttribute('aria-haspopup','listbox');wrap.appendChild(b);
+  b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openCombo(sel,b,'select','',true)});
+  sel.addEventListener('change',function(){syncSelectButton(sel)});
+  try{var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO==='function')new MO(function(){syncSelectButton(sel)}).observe(sel,{childList:true,subtree:true,characterData:true})}catch(e){}
+  syncSelectButton(sel);
+}
+function enhanceModalControls(){
+  var ov=id('overlay');if(!ov)return;
+  ov.querySelectorAll('#stepbody input[list]').forEach(enhanceInput);
+  ['m-grade','m-allow','v84-owner-select'].forEach(function(k){var e=id(k);if(e)enhanceSelect(e)});
+  ov.querySelectorAll('.v1248-native-select').forEach(syncSelectButton);
+}
+function prewarm(){ensurePortal();['dl-proc','dl-gubun','dl-part','dl-equip'].forEach(datalistItems);ownerNames('')}
+function clearLoading(){var ov=id('overlay');if(!ov)return;['v123-opening','v83-modal-loading','v76-modal-loading','v84-preparing','v86-atomic-open','v87-preparing'].forEach(function(c){ov.classList.remove(c)});ov.classList.add('v1247-ready');var body=ov.querySelector('.mbody'),foot=ov.querySelector('.mfoot');if(body){body.style.display='';body.style.visibility='visible';body.style.opacity='1'}if(foot){foot.style.display='flex';foot.style.visibility='visible';foot.style.opacity='1'}}
+function installOpen(){
+  var current=window.openDetail;if(typeof current!=='function'||current.__v1248ModalCombo)return;
+  openBase=current;var fast=function(idx){var r=current.apply(this,arguments);clearLoading();refreshOwnerSelect();enhanceModalControls();requestAnimationFrame(function(){clearLoading();refreshOwnerSelect();enhanceModalControls()});return r};
+  ['__v1247Stable','__v124Position','__v123FastModal','__v121MaterialHistory','__v120ProcessHistory','__v87StableModal','__v84NoFlicker','__v83Instant','__v76ImmediateModal','__v75OwnerSelect','__v115TitleLine'].forEach(function(k){fast[k]=true});fast.__v1248ModalCombo=true;fast.__v124Raw=current;window.openDetail=fast;
+}
+function install(){setVersion();ensurePortal();installOpen();refreshOwnerSelect();enhanceModalControls();clearLoading()}
+
+document.addEventListener('pointerdown',function(e){if(portal&&portal.classList.contains('open')&&!e.target.closest('#v1248ModalComboPortal')&&!e.target.closest('.v1248-combo-wrap'))closePortal()},true);
+window.addEventListener('resize',closePortal);window.addEventListener('scroll',function(e){if(portal&&portal.classList.contains('open')&&!e.target.closest?.('#v1248ModalComboPortal'))closePortal()},true);
+window.addEventListener('storage',function(e){if(e&&(e.key===OWNER_KEY||e.key===DRAW_KEY)){listCache=Object.create(null);refreshOwnerSelect()}});
+window.addEventListener('bomSyncApplied',function(){listCache=Object.create(null);refreshOwnerSelect()});
+var stepbody=id('stepbody');if(stepbody){try{var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO==='function')new MO(function(){enhanceModalControls()}).observe(stepbody,{childList:true,subtree:true})}catch(e){}}
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});window.addEventListener('load',function(){install();(window.requestIdleCallback||function(fn){setTimeout(fn,30)})(prewarm)},{once:true});[100,500,1800,5000].forEach(function(ms){setTimeout(install,ms)});
+})();
+</script>
+
 </body>
 </html>
