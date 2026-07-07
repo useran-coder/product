@@ -9032,7 +9032,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="sync-history-v39-script">
 (function(){
   'use strict';
-  var VER='v124';
+  var VER='v124.10';
   var STATE_KEY='dbfastec_bom_gsync_v1';
   var EDIT_KEY='dbfastec_bom_edit_log_v1';
   var SEEN_KEY='dbfastec_bom_edit_seen_v1';
@@ -9125,10 +9125,22 @@ header .hbtns #bomSyncBtn{order:10!important}
     Object.keys(r).concat(Object.keys(l),Object.keys(rm.records[section]||{}),Object.keys(lm.records[section]||{})).forEach(function(k){keys[k]=1});
     Object.keys(keys).forEach(function(k){var rt=+(rm.records[section]&&rm.records[section][k]||0),lt=+(lm.records[section]&&lm.records[section][k]||0),side=lt>rt?'local':rt>lt?'remote':preferLocal?'local':'remote',src=side==='local'?l:r;if(Object.prototype.hasOwnProperty.call(src,k))out[k]=clone(src[k])});return out;
   }
+  function processHash(v){var str=String(v==null?'':v),h=2166136261;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+  function stepPlain(s){s=s||{};return {proc:s.proc||'',st:s.st==null?'':s.st,gubun:s.gubun||'',part:s.part||'',equip:s.equip||'',qty:s.qty==null?'':s.qty,costMode:s.costMode||''}}
+  function normalizeProductSteps(p,pn,recordStamp){var a=Array.isArray(p&&p.steps)?p.steps:[];return a.map(function(raw,i){var x=clone(raw)||{},sid=String(x._syncId||'');if(!sid)sid='ps_'+processHash(String(pn)+'|'+i+'|'+JSON.stringify(stepPlain(x)));x._syncId=sid;x._updatedAt=Number(x._updatedAt||recordStamp||0);x._order=Number.isFinite(Number(x._order))?Number(x._order):i;return x})}
+  function mergeProcessSteps(rp,lp,pn,rt,lt,preferLocal){
+    var ra=normalizeProductSteps(rp,pn,rt),la=normalizeProductSteps(lp,pn,lt),rm={},lm={},ids={},rd=clone(rp&&rp._deletedStepIds||{})||{},ld=clone(lp&&lp._deletedStepIds||{})||{};
+    ra.forEach(function(x){rm[x._syncId]=x;ids[x._syncId]=1});la.forEach(function(x){lm[x._syncId]=x;ids[x._syncId]=1});Object.keys(rd).concat(Object.keys(ld)).forEach(function(k){ids[k]=1});
+    var chosen={};Object.keys(ids).forEach(function(k){var r=rm[k],l=lm[k],rut=Number(r&&r._updatedAt||rt||0),lut=Number(l&&l._updatedAt||lt||0),del=Math.max(Number(rd[k]||0),Number(ld[k]||0)),x;if(lut>rut)x=l;else if(rut>lut)x=r;else x=preferLocal?(l||r):(r||l);var ut=Math.max(rut,lut);if(del>0&&del>=ut)return;if(x)chosen[k]=clone(x)});
+    var ro=Number(rp&&rp._processOrderUpdatedAt||rt||0),lo=Number(lp&&lp._processOrderUpdatedAt||lt||0),order=(lo>ro||lo===ro&&preferLocal?la:ra).map(function(x){return x._syncId}),seen={},out=[];
+    order.forEach(function(k){if(chosen[k]&&!seen[k]){chosen[k]._order=out.length;out.push(chosen[k]);seen[k]=1}});Object.keys(chosen).sort(function(a,b){return Number(chosen[a]._order||0)-Number(chosen[b]._order||0)}).forEach(function(k){if(!seen[k]){chosen[k]._order=out.length;out.push(chosen[k]);seen[k]=1}});return out
+  }
+  function mergeProductRecord(rp,lp,pn,rt,lt,preferLocal){var side=lt>rt?'local':rt>lt?'remote':preferLocal?'local':'remote',base=clone(side==='local'?lp:rp)||clone(side==='local'?rp:lp)||{};base.steps=mergeProcessSteps(rp||{},lp||{},pn,rt,lt,preferLocal);base._deletedStepIds=mergeMaxMap(rp&&rp._deletedStepIds,lp&&lp._deletedStepIds);base._processOrderUpdatedAt=Math.max(Number(rp&&rp._processOrderUpdatedAt||0),Number(lp&&lp._processOrderUpdatedAt||0));base._processUpdatedAt=Math.max(Number(rp&&rp._processUpdatedAt||0),Number(lp&&lp._processUpdatedAt||0),rt,lt);return base}
   function mergeProductsByStamp(remote,local,preferLocal){
     var rm=normalizeSyncMeta(remote&&remote._syncMeta),lm=normalizeSyncMeta(local&&local._syncMeta),r=recordMap('products',remote&&remote.products),l=recordMap('products',local&&local.products),keys={},patches={},deleted=[];
     Object.keys(r).concat(Object.keys(l),Object.keys(rm.records.products||{}),Object.keys(lm.records.products||{})).forEach(function(k){keys[k]=1});
-    Object.keys(keys).forEach(function(k){var rt=+(rm.records.products&&rm.records.products[k]||0),lt=+(lm.records.products&&lm.records.products[k]||0),side=lt>rt?'local':rt>lt?'remote':preferLocal?'local':'remote',chosen=(side==='local'?l:r),other=(side==='local'?r:l),rec;rec=chosen[k];if(!rec){var chosenTs=side==='local'?lt:rt;if(chosenTs>0)return;rec=other[k]}if(!rec)return;if(rec.deleted)deleted.push(String(k));else patches[String(k)]=clone(rec.value)});
+    Object.keys(keys).forEach(function(k){var rt=Number(rm.records.products&&rm.records.products[k]||0),lt=Number(lm.records.products&&lm.records.products[k]||0),rr=r[k],lr=l[k],side=lt>rt?'local':rt>lt?'remote':preferLocal?'local':'remote',chosen=side==='local'?lr:rr,other=side==='local'?rr:lr,chosenTs=side==='local'?lt:rt;
+      if(!chosen&&chosenTs>0)return;if(!chosen)chosen=other;if(!chosen)return;if(chosen.deleted){deleted.push(String(k));return}if(rr&&lr&&!rr.deleted&&!lr.deleted)patches[String(k)]=mergeProductRecord(rr.value,lr.value,String(k),rt,lt,preferLocal);else patches[String(k)]=clone(chosen.value)});
     return {patches:patches,deleted:deleted};
   }
   function mergeEquipment(remote,local,remoteMeta,localMeta,preferLocal){
@@ -9154,24 +9166,29 @@ header .hbtns #bomSyncBtn{order:10!important}
   function mergeMaxMap(a,b){var o={},all=mergeObj(a||{},b||{});Object.keys(all).forEach(function(k){o[k]=Math.max(+(a&&a[k]||0),+(b&&b[k]||0))});return o}
   function materialRowId(y,k,r,i){return String(r&&r._id||('legacy_'+y+'_'+k+'_'+i+'_'+String(r&&r.vendor||'').replace(/\s+/g,'_')))}
   function mergeMaterialDb(remote,local){
-    var r=normalizeMaterialDb(remote),l=normalizeMaterialDb(local);
-    function maxStamp(x){var m=+(x._resetAt||0),k;Object.keys(x._cellUpdated||{}).forEach(function(k){m=Math.max(m,+(x._cellUpdated[k]||0))});Object.keys(x._rowDeleted||{}).forEach(function(k){m=Math.max(m,+(x._rowDeleted[k]||0))});var u=Date.parse(x.updated||'');if(!isNaN(u))m=Math.max(m,u);return m}
-    var rs=+(r._resetAt||0),ls=+(l._resetAt||0),rmax=maxStamp(r),lmax=maxStamp(l);if(ls>0&&ls>=rmax)return l;if(rs>0&&rs>=lmax)return r;
-    var out=normalizeMaterialDb(r),years=Object.keys(mergeObj(r.years,l.years));
-    out._cellUpdated=mergeMaxMap(r._cellUpdated,l._cellUpdated);out._rowDeleted=mergeMaxMap(r._rowDeleted,l._rowDeleted);out.years={};
-    years.forEach(function(y){out.years[y]={};var grades=Object.keys(mergeObj((r.years||{})[y],(l.years||{})[y]));grades.forEach(function(k){var rr=((r.years||{})[y]||{})[k]||[],lr=((l.years||{})[y]||{})[k]||[],rows={},order=[];
-      rr.forEach(function(row,i){var id=materialRowId(y,k,row,i);rows[id]=clone(row);rows[id]._id=id;order.push(id)});
-      lr.forEach(function(row,i){var id=materialRowId(y,k,row,i),base=rows[id]||{_id:id,vendor:'',m:Array(12).fill('')};if(order.indexOf(id)<0)order.push(id);if(!Array.isArray(base.m))base.m=Array(12).fill('');var lm=Array.isArray(row.m)?row.m:[],prefix=y+'|'+k+'|'+id+'|';
-        ['vendor'].concat(Array.from({length:12},function(_,mi){return 'm'+mi})).forEach(function(field){var lt=+(l._cellUpdated[prefix+field]||0),rt=+(r._cellUpdated[prefix+field]||0);if(lt>0&&(lt>=rt)){if(field==='vendor')base.vendor=row.vendor||'';else base.m[+field.slice(1)]=lm[+field.slice(1)]==null?'':lm[+field.slice(1)]}});rows[id]=base});
-      order.forEach(function(id){var dt=Math.max(+(r._rowDeleted[id]||0),+(l._rowDeleted[id]||0));if(!dt&&rows[id]){if(!Array.isArray(rows[id].m))rows[id].m=Array(12).fill('');out.years[y][k]=(out.years[y][k]||[]);out.years[y][k].push(rows[id])}})
+    var r=normalizeMaterialDb(remote),l=normalizeMaterialDb(local);if(!r._extraUpdated)r._extraUpdated={};if(!l._extraUpdated)l._extraUpdated={};if(!r._extraDeleted)r._extraDeleted={};if(!l._extraDeleted)l._extraDeleted={};
+    function maxStamp(x){var m=Number(x._resetAt||0);['_cellUpdated','_rowDeleted','_extraUpdated','_extraDeleted'].forEach(function(n){Object.keys(x[n]||{}).forEach(function(k){m=Math.max(m,Number(x[n][k]||0))})});var u=Date.parse(x.updated||'');if(!isNaN(u))m=Math.max(m,u);return m}
+    var rs=Number(r._resetAt||0),ls=Number(l._resetAt||0),rmax=maxStamp(r),lmax=maxStamp(l);if(ls>0&&ls>=rmax)return l;if(rs>0&&rs>=lmax)return r;
+    var out=normalizeMaterialDb({years:{},marketPrices:{},updated:'',_cellUpdated:mergeMaxMap(r._cellUpdated,l._cellUpdated),_rowDeleted:mergeMaxMap(r._rowDeleted,l._rowDeleted)}),years=Object.keys(mergeObj(r.years,l.years));out._extraUpdated=mergeMaxMap(r._extraUpdated,l._extraUpdated);out._extraDeleted=mergeMaxMap(r._extraDeleted,l._extraDeleted);
+    years.forEach(function(y){out.years[y]={};var grades=Object.keys(mergeObj((r.years||{})[y],(l.years||{})[y]));grades.forEach(function(k){var rr=((r.years||{})[y]||{})[k]||[],lr=((l.years||{})[y]||{})[k]||[],rrows={},lrows={},ids={};rr.forEach(function(row,i){var id=materialRowId(y,k,row,i),x=clone(row)||{};x._id=id;rrows[id]=x;ids[id]=1});lr.forEach(function(row,i){var id=materialRowId(y,k,row,i),x=clone(row)||{};x._id=id;lrows[id]=x;ids[id]=1});
+      Object.keys(ids).forEach(function(id){var ar=rrows[id]||{},al=lrows[id]||{},row={_id:id,vendor:'',m:Array(12).fill('')},prefix=y+'|'+k+'|'+id+'|',latest=0;['vendor'].concat(Array.from({length:12},function(_,mi){return 'm'+mi})).forEach(function(field){var rt=Number(r._cellUpdated[prefix+field]||0),lt=Number(l._cellUpdated[prefix+field]||0),pick=lt>rt?'local':rt>lt?'remote':'remote',src=pick==='local'?al:ar,other=pick==='local'?ar:al,val;if(field==='vendor')val=src.vendor;else val=Array.isArray(src.m)?src.m[Number(field.slice(1))]:undefined;if(val===undefined){if(field==='vendor')val=other.vendor;else val=Array.isArray(other.m)?other.m[Number(field.slice(1))]:undefined}if(field==='vendor')row.vendor=val==null?'':val;else row.m[Number(field.slice(1))]=val==null?'':val;latest=Math.max(latest,rt,lt)});var del=Math.max(Number(r._rowDeleted[id]||0),Number(l._rowDeleted[id]||0));if(!(del>0&&del>=latest)){if(!out.years[y][k])out.years[y][k]=[];out.years[y][k].push(row)}})
     })});
-    out.marketPrices=clone(r.marketPrices||{});Object.keys(l.marketPrices||{}).forEach(function(y){if(!out.marketPrices[y])out.marketPrices[y]={};Object.keys(l.marketPrices[y]||{}).forEach(function(k){var key=y+'|'+k+'|market',lt=+(l._cellUpdated[key]||0),rt=+(r._cellUpdated[key]||0);if(lt>0&&lt>=rt)out.marketPrices[y][k]=l.marketPrices[y][k]})});
-    out._resetAt=Math.max(+(r._resetAt||0),+(l._resetAt||0));out.updated=(String(l.updated||'')>String(r.updated||''))?l.updated:r.updated;return out
+    var marketKeys={};Object.keys(r.marketPrices||{}).forEach(function(y){Object.keys(r.marketPrices[y]||{}).forEach(function(k){marketKeys[y+'|'+k]=1})});Object.keys(l.marketPrices||{}).forEach(function(y){Object.keys(l.marketPrices[y]||{}).forEach(function(k){marketKeys[y+'|'+k]=1})});Object.keys(mergeObj(r._cellUpdated,l._cellUpdated)).forEach(function(k){if(/\|market$/.test(k))marketKeys[k.replace(/\|market$/,'')]=1});Object.keys(marketKeys).forEach(function(yk){var p=yk.split('|'),y=p.shift(),k=p.join('|'),key=yk+'|market',rt=Number(r._cellUpdated[key]||0),lt=Number(l._cellUpdated[key]||0),src=lt>rt?l:r,val=src.marketPrices&&src.marketPrices[y]?src.marketPrices[y][k]:undefined;if(val!==undefined){if(!out.marketPrices[y])out.marketPrices[y]={};out.marketPrices[y][k]=clone(val)}});
+    function extraRows(x){var z={};(x.egiExtras||[]).forEach(function(row,i){var id=String(row&&row._id||('ex_'+processHash(String(row&&row.name||'')+'|'+i))),q=clone(row)||{};q._id=id;z[id]=q});return z}var re=extraRows(r),le=extraRows(l),eids={};Object.keys(re).concat(Object.keys(le),Object.keys(r._extraDeleted||{}),Object.keys(l._extraDeleted||{})).forEach(function(k){eids[k]=1});out.egiExtras=[];Object.keys(eids).forEach(function(id){var a=re[id]||{},b=le[id]||{},row={_id:id},latest=0;['name','amount','note'].forEach(function(f){var rt=Number(r._extraUpdated[id+'|'+f]||0),lt=Number(l._extraUpdated[id+'|'+f]||0),src=lt>rt?b:a,other=lt>rt?a:b,val=src[f];if(val===undefined)val=other[f];row[f]=val==null?'':val;latest=Math.max(latest,rt,lt)});var del=Math.max(Number(r._extraDeleted[id]||0),Number(l._extraDeleted[id]||0));if(!(del>0&&del>=latest))out.egiExtras.push(row)});
+    out._resetAt=Math.max(rs,ls);out.updated=(String(l.updated||'')>String(r.updated||''))?l.updated:r.updated;['pressSeedVersion'].forEach(function(k){out[k]=l[k]!==undefined?clone(l[k]):clone(r[k])});return out
   }
+  window.__v12410MergeMaterialDb=mergeMaterialDb;window.__v12410MergeProductsByStamp=mergeProductsByStamp;
+  function normalizeStepOverrideMap(ov,product,recordStamp){var map=clone(ov&&ov._stepOverridesById||{})||{},steps=normalizeProductSteps(product||{},String(product&&product.pn||''),recordStamp),legacy=ov&&ov.steps&&typeof ov.steps==='object'?ov.steps:{};Object.keys(legacy).forEach(function(i){var st=steps[Number(i)];if(st&&!map[st._syncId])map[st._syncId]={value:legacy[i],updatedAt:recordStamp||0}});return map}
+  function mergeOverridesByField(remote,local,mergedProducts,preferLocal){var rm=normalizeSyncMeta(remote&&remote._syncMeta),lm=normalizeSyncMeta(local&&local._syncMeta),r=remote&&remote.overrides&&typeof remote.overrides==='object'?remote.overrides:{},l=local&&local.overrides&&typeof local.overrides==='object'?local.overrides:{},out={},keys={};Object.keys(r).concat(Object.keys(l),Object.keys(rm.records.overrides||{}),Object.keys(lm.records.overrides||{})).forEach(function(k){keys[k]=1});
+    Object.keys(keys).forEach(function(pn){var rt=Number(rm.records.overrides&&rm.records.overrides[pn]||0),lt=Number(lm.records.overrides&&lm.records.overrides[pn]||0),rv=r[pn],lv=l[pn],side=lt>rt?'local':rt>lt?'remote':preferLocal?'local':'remote';if(!rv||!lv){var src=side==='local'?lv:rv,ts=side==='local'?lt:rt;if(!src&&ts>0)return;src=src||(side==='local'?rv:lv);if(src)out[pn]=clone(src);return}
+      var nr={},rf=rv._fieldUpdated||{},lf=lv._fieldUpdated||{},fields={};Object.keys(rv).concat(Object.keys(lv)).forEach(function(f){if(f!=='_fieldUpdated'&&f!=='_stepOverridesById'&&f!=='steps')fields[f]=1});Object.keys(fields).forEach(function(f){var rft=Number(rf[f]||rt||0),lft=Number(lf[f]||lt||0),pick=lft>rft?'local':rft>lft?'remote':preferLocal?'local':'remote',src=pick==='local'?lv:rv,ts=pick==='local'?lft:rft;if(Object.prototype.hasOwnProperty.call(src,f))nr[f]=clone(src[f]);else if(ts<=0){var other=pick==='local'?rv:lv;if(Object.prototype.hasOwnProperty.call(other,f))nr[f]=clone(other[f])}});
+      nr._fieldUpdated=mergeMaxMap(rf,lf);var rp=(remote.products&&remote.products.patches||{})[pn]||{},lp=(local.products&&local.products.patches||{})[pn]||{},rmap=normalizeStepOverrideMap(rv,rp,rt),lmap=normalizeStepOverrideMap(lv,lp,lt),omap={},ids={};Object.keys(rmap).concat(Object.keys(lmap)).forEach(function(k){ids[k]=1});Object.keys(ids).forEach(function(k){var a=rmap[k],b=lmap[k],at=Number(a&&a.updatedAt||0),bt=Number(b&&b.updatedAt||0),x=bt>at?b:at>bt?a:preferLocal?(b||a):(a||b);if(x)omap[k]=clone(x)});nr._stepOverridesById=omap;
+      var prod=(mergedProducts&&mergedProducts.patches||{})[pn]||lp||rp;if(!prod||!Array.isArray(prod.steps)){try{prod=(SEED_PRODUCTS||[]).find(function(x){return String(x.pn)===String(pn)})||prod}catch(_){}}var steps=normalizeProductSteps(prod,pn,Math.max(rt,lt)),legacy={};steps.forEach(function(st,i){var x=omap[st._syncId];if(x&&!x.deleted&&x.value!==''&&x.value!=null)legacy[i]=x.value});if(Object.keys(legacy).length)nr.steps=legacy;else delete nr.steps;var business=Object.keys(nr).filter(function(k){return !/^_/.test(k)});if(business.length||Object.keys(omap).length)out[pn]=nr});return out}
   function mergePayload(remote,local,options){
     remote=remote||{};local=local||{};options=options||{};var only=options.onlySections||null,out=clone(remote)||{};function use(k){return !only||!!only[k]}function prefer(k){return !!(only&&only[k])}
     if(use('products'))out.products=mergeProductsByStamp(remote,local,prefer('products'));
-    ['prices','base','drawings','userBom','overrides'].forEach(function(k){if(use(k))out[k]=mergeRecordObject(k,remote,local,prefer(k))});
+    ['prices','base','drawings','userBom'].forEach(function(k){if(use(k))out[k]=mergeRecordObject(k,remote,local,prefer(k))});
+    if(use('overrides'))out.overrides=mergeOverridesByField(remote,local,out.products,prefer('overrides'));
     ['hiddenProducts','owners','salesLink'].forEach(function(k){if(use(k)){var side=newerSection(remote,local,k,prefer(k));out[k]=clone(side==='local'?local[k]:remote[k]);if(out[k]===undefined)out[k]=clone(side==='local'?remote[k]:local[k])}});
     if(use('equipment'))out.equipment=mergeEquipment(remote.equipment,local.equipment,remote._syncMeta,local._syncMeta,prefer('equipment'));
     if(use('materialDB'))out.materialDB=remote.materialDB?mergeMaterialDb(remote.materialDB,local.materialDB):clone(local.materialDB);
@@ -9252,6 +9269,8 @@ header .hbtns #bomSyncBtn{order:10!important}
       for(var attempt=0;attempt<3;attempt++){
         trackChanges(true);var local=collect(true,true);sentDigest=JSON.stringify(makeDigests());payload=mergePayload(remote,local,mergeOptions);
         await postRoot(s,payload);saved=await fetchRoot(s);if(!saved)throw new Error('저장 후 서버 확인에 실패했습니다. 다시 동기화하세요.');
+        /* 거의 동시에 들어온 다른 사용자의 POST가 뒤늦게 완료되는 경우까지 한 번 더 확인한다. */
+        await new Promise(function(resolve){setTimeout(resolve,320)});var verified=await fetchRoot(s);if(verified)saved=verified;
         /* 다른 사용자가 동시에 저장했으면 방금 받은 서버자료와 현재 로컬자료를 다시 병합한다. */
         if(payload.updatedAt&&saved.updatedAt&&saved.updatedAt!==payload.updatedAt){remote=saved;continue}
         trackChanges(true);if(JSON.stringify(makeDigests())!==sentDigest){remote=saved;mergeOptions={onlySections:dirtySections};continue}
@@ -9265,6 +9284,8 @@ header .hbtns #bomSyncBtn{order:10!important}
   async function syncLoad(silent){
     if(busy)return false;var s;try{s=validate(readInputs())}catch(e){if(!silent)setStatus(e.message,'bad');return false}
     trackChanges(true);
+    /* 제품 팝업에 아직 저장하지 않은 입력이 있으면 원격 불러오기로 화면/기준자료를 바꾸지 않는다. */
+    if(window.__v12410PopupDirty){if(silent){finishButton('idle');return true}setStatus('제품 팝업에 저장하지 않은 공정 수정이 있어 불러오기를 중단했습니다. 팝업에서 먼저 저장하거나 닫아 주세요.','bad');toast('제품 팝업의 수정내용을 먼저 저장해 주세요.');return false}
     /* 로컬 변경이 있는 상태에서 불러오기로 덮어쓰지 않는다. 먼저 병합 저장하도록 안내한다. */
     if(dirty||autoTimer||changeTrackTimer){if(silent){scheduleAutoSave();finishButton('idle');return true}setStatus('로컬 변경사항이 있어 불러오기를 중단했습니다. 먼저 저장(병합)을 실행하세요.','bad');toast('로컬 변경사항을 먼저 저장(병합)해 주세요.');return false}
     busy=true;setButton('working','불러오는 중…');if(!silent)setStatus('구글시트 자료를 불러오는 중…');
@@ -9312,7 +9333,12 @@ header .hbtns #bomSyncBtn{order:10!important}
       return r;
     };
     window.addEventListener('storage',function(e){if(e&&trackedStorageKeys[String(e.key||'')])queueTrackChanges()});
-    window.addEventListener('bomDataChanged',queueTrackChanges);
+    window.addEventListener('bomDataChanged',function(e){
+      var raw=e&&e.detail&&e.detail.section?String(e.detail.section):'',parts=raw.split(',');
+      parts.forEach(function(k){k=String(k||'').trim();if(k&&Object.prototype.hasOwnProperty.call(sectionNames,k))dirtySections[k]=true});
+      if(parts.length){dirty=true;persistDirty()}
+      queueTrackChanges();
+    });
   }
 
   function renderHistoryButton(){
@@ -17890,7 +17916,134 @@ window.addEventListener('resize',closePortal);window.addEventListener('scroll',f
 window.addEventListener('storage',function(e){if(e&&(e.key===OWNER_KEY||e.key===DRAW_KEY)){listCache=Object.create(null);refreshOwnerSelect()}});
 window.addEventListener('bomSyncApplied',function(){listCache=Object.create(null);refreshOwnerSelect()});
 var stepbody=id('stepbody');if(stepbody){try{var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO==='function')new MO(function(){enhanceModalControls()}).observe(stepbody,{childList:true,subtree:true})}catch(e){}}
+window.__v1248RefreshOwnerSelect=refreshOwnerSelect;window.__v1248EnhanceModalControls=enhanceModalControls;window.__v1248ClearLoading=clearLoading;
 install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});window.addEventListener('load',function(){install();(window.requestIdleCallback||function(fn){setTimeout(fn,30)})(prewarm)},{once:true});[100,500,1800,5000].forEach(function(ms){setTimeout(install,ms)});
+})();
+</script>
+
+
+
+<!-- ===== v124.9 재료비 저장 · 도면 담당자 · 동기화 최종 안정화 ===== -->
+<style id="v124-9-material-owner-sync-style">
+#overlay .v1249-save-warning{display:none;margin:0 20px 10px;padding:8px 11px;border:1px solid #f4c7c7;border-radius:8px;background:#fff5f5;color:#a61b1b;font-size:11.5px;font-weight:700}
+#overlay .v1249-save-warning.show{display:block}
+</style>
+<script id="v124-9-material-owner-sync-script">
+(function(){
+'use strict';
+var VER='v124.10',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1',OV_KEY='dbfastec_cost_overrides_v2',SYNC_META_KEY='dbfastec_sync_meta_v1246';
+var activeIndex=-1,coreOpen=window.__dbfCoreOpenDetail,priorSave=window.saveProduct;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function number(v){var n=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(n)?n:0}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function read(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error(e);return false}}
+function products(){try{return typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
+function productAt(i){var a=products();return Number.isInteger(Number(i))?a[Number(i)]||null:null}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function syncUser(){var s=read('dbfastec_bom_gsync_v1',{});return clean(s.user)||'이름없음'}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=String(v.textContent||'').replace(/v\d+(?:\.\d+)?/,VER);document.title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';try{window.__legacyDocumentTitleV99=document.title}catch(e){}}
+function markSync(section,key){
+  var t=Date.now(),m=read(SYNC_META_KEY,{sections:{},records:{}});if(!m||typeof m!=='object')m={};if(!m.sections)m.sections={};if(!m.records)m.records={};m.sections[section]=t;
+  if(key!=null&&['products','prices','base','overrides','userBom','drawings','equipment'].indexOf(section)>=0){if(!m.records[section])m.records[section]={};m.records[section][String(key)]=t}
+  write(SYNC_META_KEY,m);
+  try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:section,key:key,pn:key}}))}catch(e){}
+}
+function ownerNames(current){
+  var out=[];function add(v){v=clean(v);if(v&&out.indexOf(v)<0)out.push(v)}
+  try{if(typeof window.getOwnerMasterList==='function')(window.getOwnerMasterList()||[]).forEach(add)}catch(e){}
+  var m=read(OWNER_KEY,[]);if(Array.isArray(m))m.forEach(add);
+  var d=read(DRAW_KEY,{});Object.keys(d||{}).forEach(function(k){add(d[k]&&d[k].owner)});
+  document.querySelectorAll('.db-owner-field').forEach(function(e){add(e.value)});add(current);out.sort(function(a,b){return a.localeCompare(b,'ko')});return out;
+}
+function ensureOwnerHeader(idx){
+  var p=productAt(idx),head=document.querySelector('#overlay .mhead');if(!p||!head)return null;var box=id('v84-modal-meta');
+  if(!box){box=document.createElement('div');box.id='v84-modal-meta';box.className='v84-modal-meta';box.innerHTML='<div class="v84-draw-state"><span class="lab">도면</span><span id="v84-draw-pill" class="v84-draw-pill none">없음</span></div><div class="v84-owner-wrap"><span class="lab">도면 담당자</span><select id="v84-owner-select" aria-label="도면 담당자"></select></div>';var x=head.querySelector('.x');head.insertBefore(box,x||null)}
+  var pn=clean(p.pn),rec=read(DRAW_KEY,{})[pn]||{},pill=id('v84-draw-pill');if(pill){pill.textContent=rec.has?'있음':'없음';pill.classList.toggle('has',!!rec.has);pill.classList.toggle('none',!rec.has)}
+  var sel=id('v84-owner-select'),current=clean(rec.owner),names=ownerNames(current);if(sel){var html='<option value="">담당자 미지정</option>'+names.map(function(n){return '<option value="'+esc(n)+'">'+esc(n)+'</option>'}).join('');if(sel.innerHTML!==html)sel.innerHTML=html;sel.value=current;sel.dataset.v1249Index=String(idx);if(!sel.__v1249Bound){sel.__v1249Bound=true;sel.addEventListener('change',function(){saveOwner(Number(sel.dataset.v1249Index),sel.value,false)})}}
+  try{if(typeof window.__v1248RefreshOwnerSelect==='function')window.__v1248RefreshOwnerSelect()}catch(e){}
+  try{if(typeof window.__v1248EnhanceModalControls==='function')window.__v1248EnhanceModalControls()}catch(e){}
+  return sel;
+}
+function saveOwner(idx,name,quiet){
+  var p=productAt(idx);if(!p)return false;var pn=clean(p.pn);name=clean(name);var all=read(DRAW_KEY,{}),rec=all[pn]||{};rec.owner=name;rec._modifiedAt=Date.now();rec._modifiedBy=syncUser();all[pn]=rec;write(DRAW_KEY,all);markSync('drawings',pn);
+  var masters=read(OWNER_KEY,[]);if(!Array.isArray(masters))masters=[];if(name&&masters.indexOf(name)<0){masters.push(name);masters.sort(function(a,b){return String(a).localeCompare(String(b),'ko')});write(OWNER_KEY,masters);markSync('owners')}
+  ['m-owner-select-v75','v83-owner-select','v84-owner-select'].forEach(function(k){var e=id(k);if(e)e.value=name});
+  try{if(typeof window.__v1248RefreshOwnerSelect==='function')window.__v1248RefreshOwnerSelect()}catch(e){}
+  if(!quiet&&typeof window.toast==='function')window.toast(name?'도면 담당자 저장: '+name:'도면 담당자 지정 해제');return true;
+}
+function modalMode(){var b=id('m-mode-direct');return b&&b.classList.contains('on')?'direct':'dimension'}
+function captureMaterial(){
+  var val=function(k){var e=id(k);return e?clean(e.value):''},mult=id('laserMultiplierV69');
+  return {mode:modalMode(),grade:val('m-grade')||'EGI',density:val('m-density'),unitPrice:val('m-matkg'),recoverWeight:val('m-recoverw'),thickness:val('m-thickness'),width:val('m-width'),length:val('m-length'),qty:val('m-useqty')||'1',allow:val('m-allow')||'auto',scrapW:val('m-scrapw'),scrapL:val('m-scrapl'),weight:val('m-matw'),ovh:val('m-ovh'),profit:val('m-profit'),laserMultiplier:mult?(number(mult.value)||1):1};
+}
+function captureSteps(){
+  var steps=[],ovs={};document.querySelectorAll('#overlay #stepbody tr').forEach(function(tr){var st=clean(tr.querySelector('.d-st')&&tr.querySelector('.d-st').value),s={proc:clean(tr.querySelector('.d-proc')&&tr.querySelector('.d-proc').value),gubun:clean(tr.querySelector('.d-gubun')&&tr.querySelector('.d-gubun').value),part:clean(tr.querySelector('.d-part')&&tr.querySelector('.d-part').value),equip:clean(tr.querySelector('.d-equip')&&tr.querySelector('.d-equip').value),st:st===''?'':(isNaN(Number(st))?st:Number(st))};var q=tr.querySelector('.d-qty'),cm=tr.querySelector('.d-mode-select');if(q)s.qty=clean(q.value)===''?'':number(q.value);if(cm)s.costMode=clean(cm.value);if(s.proc||s.st!==''){var i=steps.length,ov=clean(tr.querySelector('.stepov')&&tr.querySelector('.stepov').value);steps.push(s);if(ov!=='')ovs[i]=ov}});return {steps:steps,overrides:ovs};
+}
+function hasMaterial(m){var baseDensity=7.85;try{if(typeof gradeDensity==='function')baseDensity=number(gradeDensity(m.grade||'EGI'))||7.85}catch(e){}var densityChanged=m.density!==''&&Math.abs(number(m.density)-baseDensity)>0.000001;return m.grade!=='EGI'||densityChanged||m.unitPrice!==''||number(m.thickness)>0||number(m.width)>0||number(m.length)>0||number(m.recoverWeight)>0||number(m.scrapW)>0||number(m.scrapL)>0||number(m.qty)!==1||m.allow!=='auto'||number(m.laserMultiplier)!==1||(m.mode==='direct'&&m.weight!=='')}
+function persistFinal(idx,material,proc,owner){
+  var p=productAt(idx);if(!p)throw new Error('저장할 제품을 찾을 수 없습니다.');var pn=clean(p.pn);p.steps=proc.steps.map(function(x){return Object.assign({},x)});
+  try{if(typeof saveProd==='function')saveProd();else write('dbfastec_cost_products_v2',products())}catch(e){write('dbfastec_cost_products_v2',products())}markSync('products',pn);
+  var base={};try{base=(typeof OV!=='undefined'&&OV[pn]&&typeof OV[pn]==='object')?clone(OV[pn]):{}}catch(e){base=read(OV_KEY,{})[pn]||{}};
+  if(Object.keys(proc.overrides).length)base.steps=clone(proc.overrides);else delete base.steps;
+  if(hasMaterial(material)){
+    base.material={mode:material.mode,grade:material.grade,density:material.density,unitPrice:material.unitPrice,thickness:material.thickness,width:material.width,length:material.length,qty:material.qty||1,allow:material.allow||'auto',scrapW:material.scrapW,scrapL:material.scrapL,recoverWeight:material.recoverWeight,laserMultiplier:material.laserMultiplier||1};
+    if(material.unitPrice!=='')base.matkg=material.unitPrice;else delete base.matkg;
+    if(material.mode==='direct'){if(material.weight!=='')base.matw=material.weight;else delete base.matw}else{try{var cm=typeof calculateMaterial==='function'?calculateMaterial(p.steps,{material:base.material,matkg:material.unitPrice}):null;if(cm&&isFinite(cm.weight))base.matw=cm.weight;else delete base.matw}catch(e){delete base.matw}}
+  }else{delete base.material;delete base.matkg;delete base.matw}
+  if(material.ovh!=='')base.ovh=material.ovh;else delete base.ovh;if(material.profit!=='')base.profit=material.profit;else delete base.profit;base._modifiedAt=Date.now();base._modifiedBy=syncUser();
+  var business=Object.keys(base).filter(function(k){return !/^_/.test(k)});try{if(typeof OV!=='undefined'){if(business.length||base._editMeta||base._editHistory)OV[pn]=base;else delete OV[pn]}}catch(e){}
+  try{if(typeof saveOV==='function')saveOV();else{var all=read(OV_KEY,{});if(business.length||base._editMeta||base._editHistory)all[pn]=base;else delete all[pn];write(OV_KEY,all)}}catch(e){var all2=read(OV_KEY,{});all2[pn]=base;write(OV_KEY,all2)}markSync('overrides',pn);
+  saveOwner(idx,owner,true);return pn;
+}
+function clearLoading(){var ov=id('overlay');if(!ov)return;['v123-opening','v83-modal-loading','v76-modal-loading','v84-preparing','v86-atomic-open','v87-preparing'].forEach(function(c){ov.classList.remove(c)});ov.classList.add('v1247-ready');ov.classList.remove('hidden');var l=id('v123ModalLoading');if(l)l.style.display='none';var body=ov.querySelector('.mbody'),foot=ov.querySelector('.mfoot');[body,foot].forEach(function(e){if(e){e.style.display='';e.style.visibility='visible';e.style.opacity='1';e.style.pointerEvents='auto'}})}
+function reapplyMaterial(idx){var p=productAt(idx);if(!p)return;var ov={};try{ov=(typeof OV!=='undefined'&&OV[p.pn])?OV[p.pn]:(read(OV_KEY,{})[p.pn]||{})}catch(e){ov=read(OV_KEY,{})[p.pn]||{}}var m=ov.material||{},set=function(k,v){var e=id(k);if(e)e.value=v==null?'':v};try{if(typeof window.setModalMaterialMode==='function')window.setModalMaterialMode(m.mode||((ov.matw!==''&&ov.matw!=null)?'direct':'dimension'))}catch(e){}set('m-grade',m.grade||'EGI');set('m-density',m.density!==undefined?m.density:(typeof gradeDensity==='function'?gradeDensity(m.grade||'EGI'):7.85));set('m-matkg',ov.matkg!==undefined?ov.matkg:m.unitPrice);set('m-recoverw',m.recoverWeight);set('m-thickness',m.thickness);set('m-width',m.width);set('m-length',m.length);set('m-useqty',m.qty||1);set('m-allow',m.allow||'auto');set('m-scrapw',m.scrapW);set('m-scrapl',m.scrapL);set('m-matw',ov.matw!==undefined?ov.matw:m.weight);set('m-ovh',ov.ovh);set('m-profit',ov.profit);var lm=id('laserMultiplierV69');if(lm)lm.value=number(m.laserMultiplier)||1}
+function finalOpen(idx){
+  idx=Number(idx);var p=productAt(idx);if(!p||typeof coreOpen!=='function')return false;activeIndex=idx;try{curIdx=idx}catch(e){}window.__v1249ActiveIndex=idx;
+  var ov=id('overlay');if(ov)ov.classList.remove('hidden');try{if(typeof window.__dbfSetupDetailTable==='function')window.__dbfSetupDetailTable();coreOpen.call(this,idx);try{curIdx=idx}catch(e){}reapplyMaterial(idx);ensureOwnerHeader(idx);try{if(typeof window.refreshCostModalTitleV115==='function')window.refreshCostModalTitleV115(idx)}catch(e){}try{if(typeof window.renderInlineMeta==='function')window.renderInlineMeta(clean(p.pn))}catch(e){}try{if(typeof window.recalcModal==='function')window.recalcModal()}catch(e){}try{if(typeof window.__v1248EnhanceModalControls==='function')window.__v1248EnhanceModalControls()}catch(e){}clearLoading();return true}catch(e){console.error('v124.9 open',e);clearLoading();if(typeof window.toast==='function')window.toast('제품 정보를 불러오지 못했습니다.');return false}
+}
+function finalSave(){
+  var idx=activeIndex>=0?activeIndex:(window.__v1249ActiveIndex!=null?Number(window.__v1249ActiveIndex):(typeof curIdx!=='undefined'&&curIdx!=null?Number(curIdx):-1)),p=productAt(idx);if(!p){if(typeof window.toast==='function')window.toast('저장할 제품을 찾을 수 없습니다. 제품을 다시 열어 주세요.');return false}
+  var material=captureMaterial(),proc=captureSteps(),sel=id('v84-owner-select'),owner=sel?sel.value:clean((read(DRAW_KEY,{})[clean(p.pn)]||{}).owner),legacyError=null;
+  try{curIdx=idx}catch(e){};
+  try{if(typeof priorSave==='function')priorSave.apply(this,arguments)}catch(e){legacyError=e;console.warn('기존 저장 후처리 오류를 최종 저장으로 복구합니다.',e)}
+  try{persistFinal(idx,material,proc,owner);try{if(typeof buildFilters==='function')buildFilters()}catch(e){}try{if(typeof renderCost==='function')renderCost(false)}catch(e){}try{if(typeof closeModal==='function')closeModal();else if(id('overlay'))id('overlay').classList.add('hidden')}catch(e){}try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false)}catch(e){}if(typeof window.toast==='function')window.toast(legacyError?'저장 과정의 오류를 복구하여 재료비·담당자를 저장했습니다.':'재료비 속성·공정·도면 담당자를 저장했습니다.');return true}catch(e){console.error('v124.9 save',e);if(typeof window.toast==='function')window.toast('저장 중 오류가 발생했습니다: '+(e.message||e));return false}
+}
+function install(){
+  setVersion();if(typeof coreOpen==='function')coreOpen.__v123FastModal=true;
+  finalOpen.__v1249Stable=true;finalOpen.__v1247Stable=true;finalOpen.__v1248ModalCombo=true;finalOpen.__v124Position=true;finalOpen.__v123FastModal=true;finalOpen.__v121MaterialHistory=true;finalOpen.__v120ProcessHistory=true;finalOpen.__v87StableModal=true;finalOpen.__v84NoFlicker=true;finalOpen.__v83Instant=true;finalOpen.__v76ImmediateModal=true;finalOpen.__v75OwnerSelect=true;if(!(window.openDetail&&window.openDetail.__v12410Concurrency))window.openDetail=finalOpen;
+  finalSave.__v1249Stable=true;finalSave.__v124Position=true;finalSave.__v121MaterialHistory=true;finalSave.__v120ProcessHistory=true;finalSave.__v87ProcessSync=true;finalSave.__v75OwnerSelect=true;finalSave.__v69LaserMultiplier=true;if(!(window.saveProduct&&window.saveProduct.__v12410Concurrency))window.saveProduct=finalSave;
+}
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});window.addEventListener('load',function(){install();setTimeout(install,2200);setTimeout(install,5200);setTimeout(install,13000);setTimeout(install,22000)},{once:true});
+window.addEventListener('bomSyncApplied',function(){if(activeIndex>=0&&id('overlay')&&!id('overlay').classList.contains('hidden'))ensureOwnerHeader(activeIndex)});window.addEventListener('storage',function(e){if(e&&(e.key===OWNER_KEY||e.key===DRAW_KEY)&&activeIndex>=0)ensureOwnerHeader(activeIndex)});
+})();
+</script>
+
+
+<!-- ===== v124.10 공정·원자재 다중사용 동기화 검증 보강 ===== -->
+<script id="v124-10-concurrency-sync-script">
+(function(){
+'use strict';
+var VER='v124.10',PROD_KEY='dbfastec_cost_products_v2',OV_KEY='dbfastec_cost_overrides_v2',MAT_KEY='dbfastec_material_price_history_v1',META_KEY='dbfastec_sync_meta_v1246',STATE_KEY='dbfastec_bom_gsync_v1';
+var baseOpen=window.openDetail,baseSave=window.saveProduct,baseClose=window.closeModal,openSnapshot=null,installing=false;
+function id(x){return document.getElementById(x)}function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(_){return v}}function read(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(_){return d}}function write(k,v){localStorage.setItem(k,JSON.stringify(v))}function clean(v){return String(v==null?'':v).trim()}function user(){return clean((read(STATE_KEY,{})||{}).user)||'이름없음'}
+function products(){try{return Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(_){return read(PROD_KEY,[])}}function productAt(i){return products()[Number(i)]||null}function hash(v){var s=String(v),h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}function plain(s){s=s||{};return{proc:s.proc||'',st:s.st==null?'':s.st,gubun:s.gubun||'',part:s.part||'',equip:s.equip||'',qty:s.qty==null?'':s.qty,costMode:s.costMode||''}}
+function stableId(pn,s,i){return String(s&&s._syncId||('ps_'+hash(pn+'|'+i+'|'+JSON.stringify(plain(s)))))}
+function mark(section,key){var t=Date.now(),m=read(META_KEY,{sections:{},records:{}});if(!m.sections)m.sections={};if(!m.records)m.records={};m.sections[section]=t;if(key!=null){if(!m.records[section])m.records[section]={};m.records[section][String(key)]=t}write(META_KEY,m);try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:section,key:key,pn:key}}))}catch(_){}}
+function popupRows(){var rows=[];document.querySelectorAll('#overlay #stepbody tr').forEach(function(tr){var st=clean(tr.querySelector('.d-st')&&tr.querySelector('.d-st').value),x={orig:tr.dataset.orig,step:{proc:clean(tr.querySelector('.d-proc')&&tr.querySelector('.d-proc').value),gubun:clean(tr.querySelector('.d-gubun')&&tr.querySelector('.d-gubun').value),part:clean(tr.querySelector('.d-part')&&tr.querySelector('.d-part').value),equip:clean(tr.querySelector('.d-equip')&&tr.querySelector('.d-equip').value),st:st===''?'':(isNaN(Number(st))?st:Number(st))},override:clean(tr.querySelector('.stepov')&&tr.querySelector('.stepov').value)};var q=tr.querySelector('.d-qty'),cm=tr.querySelector('.d-mode-select');if(q)x.step.qty=clean(q.value)===''?'':Number(q.value||0);if(cm)x.step.costMode=clean(cm.value);if(x.step.proc||x.step.st!=='')rows.push(x)});return rows}
+function decorateSavedProduct(idx,before,rows,beforeOv){var p=productAt(idx);if(!p)return;var pn=clean(p.pn),now=Date.now(),who=user(),old=(before&&Array.isArray(before.steps)?before.steps:[]).map(function(x,i){var q=clone(x)||{};q._syncId=stableId(pn,q,i);return q}),oldMap={};old.forEach(function(x){oldMap[x._syncId]=x});var used={},newIds=[];(p.steps||[]).forEach(function(s,i){var r=rows[i]||{},oi=Number(r.orig),os=Number.isInteger(oi)&&oi>=0?old[oi]:null;if(!os){for(var j=0;j<old.length;j++){var cand=old[j];if(!used[cand._syncId]&&JSON.stringify(plain(cand))===JSON.stringify(plain(s))){os=cand;break}}}var sid=os?os._syncId:('ps_new_'+now.toString(36)+'_'+i+'_'+Math.random().toString(36).slice(2,7));used[sid]=1;newIds.push(sid);s._syncId=sid;s._updatedAt=os&&JSON.stringify(plain(os))===JSON.stringify(plain(s))?Number(os._updatedAt||0):now;s._updatedBy=s._updatedAt===now?who:(os&&os._updatedBy||who);s._order=i});var del=clone(before&&before._deletedStepIds||{})||{};old.forEach(function(x){if(newIds.indexOf(x._syncId)<0)del[x._syncId]=now});p._deletedStepIds=del;var oldOrder=old.map(function(x){return x._syncId}).join('|'),newOrder=newIds.join('|');p._processOrderUpdatedAt=oldOrder===newOrder?Number(before&&before._processOrderUpdatedAt||0):now;p._processUpdatedAt=now;p._processUpdatedBy=who;try{if(typeof saveProd==='function')saveProd();else write(PROD_KEY,products())}catch(_){write(PROD_KEY,products())}mark('products',pn);
+  var ovAll=read(OV_KEY,{}),ov=clone((typeof OV!=='undefined'&&OV[pn])?OV[pn]:ovAll[pn]||{})||{},prev=clone(beforeOv||{})||{},fu=clone(ov._fieldUpdated||prev._fieldUpdated||{})||{};['material','matkg','matw','ovh','profit'].forEach(function(f){if(JSON.stringify(prev[f])!==JSON.stringify(ov[f]))fu[f]=now});var sm=clone(prev._stepOverridesById||{})||{};newIds.forEach(function(sid,i){var v=rows[i]?rows[i].override:'',oldv=sm[sid];if(v!==''){if(!oldv||oldv.deleted||String(oldv.value)!==String(v))sm[sid]={value:v,updatedAt:now,updatedBy:who}}else if(oldv&&!oldv.deleted)sm[sid]={deleted:true,updatedAt:now,updatedBy:who}});old.forEach(function(x){if(newIds.indexOf(x._syncId)<0)sm[x._syncId]={deleted:true,updatedAt:now,updatedBy:who}});ov._fieldUpdated=fu;ov._stepOverridesById=sm;ov._modifiedAt=now;ov._modifiedBy=who;if(typeof OV!=='undefined')OV[pn]=ov;ovAll[pn]=ov;write(OV_KEY,ovAll);try{if(typeof saveOV==='function')saveOV()}catch(_){}mark('overrides',pn)}
+function wrappedOpen(idx){window.__v12410PopupDirty=false;var p=productAt(idx);openSnapshot=p?{idx:Number(idx),product:clone(p),override:clone((read(OV_KEY,{})||{})[clean(p.pn)]||{})}:null;var r=baseOpen.apply(this,arguments),ov=id('overlay');if(ov&&!ov.__v12410DirtyBound){ov.__v12410DirtyBound=true;ov.addEventListener('input',function(e){if(e.target&&e.target.closest&&e.target.closest('.mbody'))window.__v12410PopupDirty=true},true);ov.addEventListener('change',function(e){if(e.target&&e.target.closest&&e.target.closest('.mbody'))window.__v12410PopupDirty=true},true)}return r}
+function wrappedClose(){window.__v12410PopupDirty=false;openSnapshot=null;return typeof baseClose==='function'?baseClose.apply(this,arguments):void(id('overlay')&&id('overlay').classList.add('hidden'))}
+function wrappedSave(){var idx=window.__v1249ActiveIndex!=null?Number(window.__v1249ActiveIndex):(openSnapshot?openSnapshot.idx:-1),p=productAt(idx),before=openSnapshot&&openSnapshot.idx===idx?clone(openSnapshot.product):clone(p),beforeOv=openSnapshot&&openSnapshot.idx===idx?clone(openSnapshot.override):clone((read(OV_KEY,{})||{})[p&&p.pn]||{}),rows=popupRows(),r=baseSave.apply(this,arguments);try{decorateSavedProduct(idx,before,rows,beforeOv)}catch(e){console.error('v124.10 공정 동기화 메타 저장 오류',e);if(typeof window.toast==='function')window.toast('공정은 저장됐지만 동기화 메타 보강 중 오류가 발생했습니다. 다시 저장해 주세요.')}window.__v12410PopupDirty=false;openSnapshot=null;return r}
+function ensureMaterialShape(){var db=window.MATERIAL_DB||read(MAT_KEY,{years:{},marketPrices:{}});if(!db._cellUpdated)db._cellUpdated={};if(!db._rowDeleted)db._rowDeleted={};if(!db._extraUpdated)db._extraUpdated={};if(!db._extraDeleted)db._extraDeleted={};if(!Array.isArray(db.egiExtras))db.egiExtras=[];db.egiExtras.forEach(function(x,i){if(!x._id)x._id='ex_'+hash(String(x.name||'')+'|'+i)});window.MATERIAL_DB=db;return db}
+function saveMat(){try{if(typeof window.saveMaterialDB==='function')window.saveMaterialDB(true);else write(MAT_KEY,window.MATERIAL_DB)}catch(_){write(MAT_KEY,window.MATERIAL_DB)}try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'materialDB'}}))}catch(_){}}
+function installMaterialFns(){window.addMaterialVendorV56=function(k){var db=ensureMaterialShape(),y=String((id('mp-year')&&id('mp-year').value)||new Date().getFullYear());k=String(k||'').trim();if(!db.years[y])db.years[y]={};if(!db.years[y][k])db.years[y][k]=[];var row={_id:'mr_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),vendor:'',m:Array(12).fill('')};db.years[y][k].push(row);db._cellUpdated[y+'|'+k+'|'+row._id+'|vendor']=Date.now();saveMat();if(typeof window.renderMaterialPricePage==='function')window.renderMaterialPricePage()};window.deleteMaterialVendorV56=function(k,ri){var db=ensureMaterialShape(),y=String((id('mp-year')&&id('mp-year').value)||new Date().getFullYear()),rows=((db.years[y]||{})[k]||[]);if(rows.length<=1||!confirm('이 업체 단가 행을 삭제할까요?'))return;var row=rows[Number(ri)];if(row){if(!row._id)row._id='mr_'+hash(y+'|'+k+'|'+ri+'|'+String(row.vendor||''));db._rowDeleted[row._id]=Date.now()}rows.splice(Number(ri),1);saveMat();if(typeof window.renderMaterialPricePage==='function')window.renderMaterialPricePage()};window.deleteMaterialVendor=window.deleteMaterialVendorV56}
+function bindExtraStamps(){if(document.__v12410ExtraStamp)return;document.__v12410ExtraStamp=true;document.addEventListener('input',function(e){var t=e.target;if(!t||!t.classList)return;var f=t.classList.contains('mp-extra-amount')?'amount':t.classList.contains('mp-extra-note')?'note':'';if(!f)return;var db=ensureMaterialShape(),row=db.egiExtras[Number(t.dataset.i)];if(!row)return;db._extraUpdated[row._id+'|'+f]=Date.now()},true)}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent=String(v.textContent||'').replace(/v\d+(?:\.\d+)?/,VER);document.title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍'}
+function install(){if(installing)return;installing=true;try{if(window.openDetail!==wrappedOpen&&!(window.openDetail&&window.openDetail.__v12410Concurrency)){baseOpen=window.openDetail;wrappedOpen.__v12410Concurrency=true;window.openDetail=wrappedOpen}if(window.saveProduct!==wrappedSave&&!(window.saveProduct&&window.saveProduct.__v12410Concurrency)){baseSave=window.saveProduct;wrappedSave.__v12410Concurrency=true;window.saveProduct=wrappedSave}if(window.closeModal!==wrappedClose&&!(window.closeModal&&window.closeModal.__v12410Concurrency)){baseClose=window.closeModal;wrappedClose.__v12410Concurrency=true;window.closeModal=wrappedClose}installMaterialFns();bindExtraStamps();setVersion()}finally{installing=false}}
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});window.addEventListener('load',install,{once:true});[100,700,2500,6000,14000,23000].forEach(function(ms){setTimeout(install,ms)});var guard=setInterval(install,150);setTimeout(function(){clearInterval(guard);install()},26000);window.addEventListener('bomSyncApplied',function(){ensureMaterialShape()});
 })();
 </script>
 
