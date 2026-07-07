@@ -2096,9 +2096,9 @@ function renderCost(resetLimit=true){
   if(pp)pp.classList.remove('hidden');
   if(gpath){gpath.classList.add('hidden'); gpath.innerHTML='';}
 
-  const v128ChangedOnly=!!window.__v128ProcessChangedOnly;
-  const v128ChangedMap=(v128ChangedOnly&&typeof window.__v128ChangedPnSet==='function')?window.__v128ChangedPnSet():null;
-  const base=currentFilteredProducts().filter(p=>!v128ChangedOnly||(v128ChangedMap&&v128ChangedMap[String(p&&p.pn||'').trim()]));
+  const v129ChangedOnly=!!window.__v129ProcessChangedOnly;
+  const v129ChangedMap=(v129ChangedOnly&&typeof window.__v129ChangedPnSet==='function')?window.__v129ChangedPnSet():null;
+  const base=currentFilteredProducts().filter(p=>!v129ChangedOnly||(v129ChangedMap&&v129ChangedMap[String(p&&p.pn||'').trim()]));
   let list=base.map(p=>({p,c:calc(p)}));
   const val=({p,c})=>({pn:p.pn,item:p.item,spec:p.spec,n:p.steps.length,mat:c.mat,proc:c.proc,ovh:c.ovh,cost:c.withDef,sale:c.sale}[SORT.key]);
   list.sort((a,b)=>{const va=val(a),vb=val(b);
@@ -3574,7 +3574,7 @@ if(document.readyState!=='loading') setTimeout(initApp,0); else document.addEven
   function markActive(){if(oldMarkActive)try{oldMarkActive();}catch(e){}['f-draw','f-usage'].forEach(function(id){var e=byId(id);if(e)e.classList.toggle('filter-active',!!e.value);});}
   window.markActiveFilters=markActive;
   window.renderCost=function(resetLimit){if(window.__DBF_SAFE_BOOT_PENDING)return 0;ensureDom();loadD();if(resetLimit!==false&&typeof VIEW_LIMIT!=='undefined')VIEW_LIMIT=60;if(typeof CURRENT_GROUP!=='undefined')CURRENT_GROUP='';var gp=byId('groupPanel'),pp=byId('productPanel'),gpath=byId('groupPath');if(gp){gp.classList.add('hidden');gp.innerHTML='';}if(pp)pp.classList.remove('hidden');if(gpath){gpath.classList.add('hidden');gpath.innerHTML='';}
-    var base=currentFiltered();if(window.__v128ProcessChangedOnly&&typeof window.__v128ChangedPnSet==='function'){var v128set=window.__v128ChangedPnSet();base=base.filter(function(p){return !!v128set[String(p&&p.pn||'').trim()]})}var list=base.map(function(p){return {p:p,c:calc(p)};});
+    var base=currentFiltered();if(window.__v129ProcessChangedOnly&&typeof window.__v129ChangedPnSet==='function'){var v129set=window.__v129ChangedPnSet();base=base.filter(function(p){return !!v129set[String(p&&p.pn||'').trim()]})}var list=base.map(function(p){return {p:p,c:calc(p)};});
     function val(o){var p=o.p,c=o.c;var m={pn:p.pn,item:p.item,spec:p.spec,n:(p.steps||[]).length,draw:hasDrawing(p)?1:0,usage:usageOf(p),mat:c.mat,proc:c.proc,ovh:c.ovh,cost:c.withDef,sale:c.sale};return m[SORT.key];}
     list.sort(function(a,b){var va=val(a),vb=val(b);if(typeof va==='string')return SORT.dir==='asc'?String(va).localeCompare(String(vb),'ko'):String(vb).localeCompare(String(va),'ko');return SORT.dir==='asc'?(va||0)-(vb||0):(vb||0)-(va||0);});
     if(typeof updateSortArrows==='function')updateSortArrows();var empty=byId('emptymsg');if(empty)empty.classList.toggle('hidden',list.length>0);var limit=Math.min(typeof VIEW_LIMIT==='undefined'?60:VIEW_LIMIT,list.length),view=list.slice(0,limit);var fc=byId('fcount');if(fc)fc.textContent=view.length.toLocaleString()+' / '+list.length.toLocaleString()+' 건 표시 · 전체 '+products().length.toLocaleString()+'건';var body=byId('tbody');if(body)body.innerHTML=view.map(function(o){var p=o.p,c=o.c,idx=products().indexOf(p),n=(p.steps||[]).length,bcnt=typeof bomCountForProduct==='function'?bomCountForProduct(p):0,flow=(p.steps||[]).map(function(s){return '<span class="chip proc-chip">'+escH(s.proc)+'</span>';}).join('<span class="arr">›</span>')||'<span class="muted">-</span>';var dcls=hasDrawing(p)?'draw-has':'draw-none';var bomCls=bcnt>0?'has-bom':'no-bom';var bomLabel=bcnt>0?'<span class="bom-status-chip has">있음</span>':'<span class="bom-status-chip none">없음</span>';return '<tr class="click prod-row '+bomCls+' '+dcls+'" data-pn="'+escH(p.pn)+'" onclick="openDetail('+idx+')"><td class="bomcol" onclick="event.stopPropagation()"><button class="bom-toggle" data-count="'+bcnt+'" onclick="toggleProductBom(event,'+idx+')">▸ BOM('+bcnt+')</button>'+bomLabel+'</td><td class="pncell"><span class="pn">'+escH(p.pn)+'</span>'+(c.custom?'<span class="chip tag-cust" title="개별수정됨">✎</span>':'')+'</td><td class="strong itemcell">'+escH(p.item)+usageChip(p)+'</td><td class="spec" title="'+escH(p.spec)+'">'+escH(p.spec)+'</td><td class="num proc-count"><span class="badge" style="background:'+(n>=4?'var(--warn)':n>=2?'var(--blue)':'var(--mut)')+'">'+n+'</span></td><td class="flowcell"><div class="flow">'+flow+'</div></td><td class="drawcell" onclick="event.stopPropagation()">'+drawButton(p)+'</td><td class="num matcell">'+(c.mat?won(c.mat):'<span class="muted">-</span>')+'</td><td class="num proccostcell">'+won(c.proc)+'</td><td class="num ovhcell">'+won(c.ovh)+'</td><td class="num cost costcell">'+won(c.withDef)+'</td><td class="num sale salecell">'+won(c.sale)+'</td><td class="act actioncell" onclick="event.stopPropagation()"><button onclick="openDetail('+idx+')">수정</button><button class="del" onclick="delProduct('+idx+')">삭제</button></td></tr>';}).join('');
@@ -8788,7 +8788,7 @@ header .brand #bomAppVer{display:none!important}
 <script id="sync-management-v37-script">
 (function(){
   'use strict';
-  var VER='v128', busy=false;
+  var VER='v129', busy=false;
   function q(s,r){return (r||document).querySelector(s)}
   function readState(){try{return JSON.parse(localStorage.getItem('dbfastec_bom_gsync_v1')||'{}')}catch(_){return {}}}
   function esc(s){return String(s==null?'':s).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})}
@@ -8885,7 +8885,7 @@ header .brand #bomAppVer{display:none!important}
 <script id="equipment-sync-v38-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x)}
   function readSyncState(){
     try{return JSON.parse(localStorage.getItem('dbfastec_bom_gsync_v1')||'{}')||{}}
@@ -9012,7 +9012,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="sync-history-v39-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   var STATE_KEY='dbfastec_bom_gsync_v1';
   var EDIT_KEY='dbfastec_bom_edit_log_v1';
   var SEEN_KEY='dbfastec_bom_edit_seen_v1';
@@ -9314,7 +9314,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="usage-nonstandard-v41-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x)}
   function repairLabels(){
     var tab=id('tab-usage');if(tab)tab.textContent='🏷 제품 구분별 분석';
@@ -9363,7 +9363,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="usage-card-filter-v42-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   var DRAW_KEY='dbfastec_cost_drawings_v1';
   var activeCard=null;
   var oldRender=null;
@@ -9468,7 +9468,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="sales-usage-stability-v43-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   var SALES_KEY='dbfastec_sales_link_v1';
   var DRAW_KEY='dbfastec_cost_drawings_v1';
   var importBusy=false;
@@ -9737,7 +9737,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="sales-usage-fix-v44-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x)}
   function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||'버전 '+VER).replace(/v\d+/,VER);window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER)}
   function usageCardCategory(card){var k=id('usageKpis');if(!k||!card)return null;var cards=[].slice.call(k.children),i=cards.indexOf(card);return i===0?'':i===1?'공용품':i===2?'전용품':i===3?'비규격':null}
@@ -9791,7 +9791,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="product-sales-ui-v45-script">
 (function(){
   'use strict';
-  var VER='v128', DRAW_KEY='dbfastec_cost_drawings_v1';
+  var VER='v129', DRAW_KEY='dbfastec_cost_drawings_v1';
   function id(x){return document.getElementById(x)}
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function readJson(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
@@ -9891,7 +9891,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="product-drawing-raw-layout-v46-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   var DRAW_KEY='dbfastec_cost_drawings_v1';
   var OWNER_KEY='dbfastec_owner_master_v1';
   function id(x){return document.getElementById(x)}
@@ -10225,7 +10225,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="cost-bom-drawing-edit-v48-script">
 (function(){
   'use strict';
-  var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
+  var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
   function id(x){return document.getElementById(x)}
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function clean(v){return String(v==null?'':v).trim().replace(/\s+/g,' ')}
@@ -10368,7 +10368,7 @@ header .hbtns #bomSyncBtn{order:10!important}
 <script id="equipment-column-order-v49-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x);}
   function setVersion(){
     var v=id('bomAppVer');
@@ -10540,7 +10540,7 @@ button[class*="reset" i]:hover{
 <script id="user-request-v50-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x);}
   function setVersion(){
     var v=id('bomAppVer');
@@ -10670,7 +10670,7 @@ button[class*="reset" i]:hover{
 <script id="user-request-v51-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x);}
   function setVersion(){
     var v=id('bomAppVer');
@@ -10790,7 +10790,7 @@ button[class*="reset" i]:hover{
 <script id="user-request-v52-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x);}
   function setVersion(){
     var v=id('bomAppVer');
@@ -10925,7 +10925,7 @@ button[class*="reset" i]:hover{
 <script id="user-request-v53-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   var BACKUP_SHEET='_DB_BACKUP_';
   var CORE_KEYS={
     products:'dbfastec_cost_products_v2',
@@ -11210,7 +11210,7 @@ button[class*="reset" i]:hover{
 <script id="forming-hour-quantity-v56-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x);}
   function num55(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,''));return isFinite(n)?n:0;}
   function fmt55(v,d){return Number(v||0).toLocaleString('ko-KR',{minimumFractionDigits:d,maximumFractionDigits:d});}
@@ -11263,7 +11263,7 @@ button[class*="reset" i]:hover{
 <script id="user-request-v57-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   var trendOpen=window.__materialTrendOpenV57||(window.__materialTrendOpenV57={});
   var extraOpen=window.__materialExtraOpenV57===true;
   function id(x){return document.getElementById(x);}
@@ -11421,7 +11421,7 @@ button[class*="reset" i]:hover{
 <script id="process-variable-pricing-v58-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x);}
   function n(v){var x=parseFloat(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0;}
   function h(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
@@ -11645,7 +11645,7 @@ button[class*="reset" i]:hover{
 <script id="process-plating-tab-order-v60-script">
 (function(){
   'use strict';
-  var VER='v128',busy=false,observer=null;
+  var VER='v129',busy=false,observer=null;
   function id(x){return document.getElementById(x);}
   function setVersion(){
     var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);
@@ -11751,7 +11751,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="product-attribute-price-menu-v61-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x);}
   function num(v){var n=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(n)?n:0;}
   function money(v){return Math.round(num(v)).toLocaleString('ko-KR')+' 원';}
@@ -11837,7 +11837,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="common-base-unit-price-v62-script">
 (function(){
   'use strict';
-  var VER='v128', applyTimer=null, savedTimer=null;
+  var VER='v129', applyTimer=null, savedTimer=null;
   function byId(x){return document.getElementById(x);}
   function n(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0;}
   function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -12008,7 +12008,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="usage-category-price-v64-script">
 (function(){
   'use strict';
-  var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1';
+  var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1';
   var CATS=['공용품','전용품','레이저','내부보강'];
   var selectedCats=new Set(),selectedGroup='',usageAll=true;
   function id(x){return document.getElementById(x)}
@@ -12170,7 +12170,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="process-cost-category-mode-v65-script">
 (function(){
   'use strict';
-  var VER='v128', DRAW_KEY='dbfastec_cost_drawings_v1';
+  var VER='v129', DRAW_KEY='dbfastec_cost_drawings_v1';
   var CATS=['공용품','전용품','레이저','내부보강'];
   var rateTimer=null, singleUsageValue='';
   function id(x){return document.getElementById(x)}
@@ -12400,7 +12400,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="v66-final-fixes-script">
 (function(){
   'use strict';
-  var VER='v128', CATS=['공용품','전용품','레이저','내부보강'];
+  var VER='v129', CATS=['공용품','전용품','레이저','내부보강'];
   var selectedCats=new Set(CATS), usageCategory='', selectedGroup='';
   var priorRenderCost=window.renderCost, priorRenderPrice=window.renderPrice, priceSaveTimer=null;
   function id(x){return document.getElementById(x)}
@@ -12510,7 +12510,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="v67-final-fixes-script">
 (function(){
   'use strict';
-  var VER='v128', CATS=['공용품','전용품','레이저','내부보강'];
+  var VER='v129', CATS=['공용품','전용품','레이저','내부보강'];
   function id(x){return document.getElementById(x)}
   function n(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
   function money(v){return Math.round(n(v)).toLocaleString('ko-KR')}
@@ -12647,7 +12647,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="v68-laser-filter-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   function id(x){return document.getElementById(x)}
   function num(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
   function fmt(v,d){return num(v).toLocaleString('ko-KR',{minimumFractionDigits:0,maximumFractionDigits:d==null?2:d})}
@@ -12940,7 +12940,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="v69-laser-multiplier-filter-script">
 (function(){
   'use strict';
-  var VER='v128', recalcTimer=null, moving=false;
+  var VER='v129', recalcTimer=null, moving=false;
   function id(x){return document.getElementById(x)}
   function num(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -13935,7 +13935,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="v75-owner-performance-script">
 (function(){
   'use strict';
-  var VER='v128';
+  var VER='v129';
   var DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
   var dataGeneration=0,lastRenderKey=null,calcCache=new WeakMap();
   function id(x){return document.getElementById(x)}
@@ -14138,7 +14138,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="v76-performance-script">
 (function(){
   'use strict';
-  var VER='v128', revision=0, lastRenderKey='', rendering=false, modalToken=0, renderTimer=0;
+  var VER='v129', revision=0, lastRenderKey='', rendering=false, modalToken=0, renderTimer=0;
   function id(x){return document.getElementById(x)}
   function clean(v){return String(v==null?'':v).trim()}
   function setVersion(){
@@ -14402,7 +14402,7 @@ header .tabs #tab-drawowner{order:130}
 <script id="v79-drive-drawing-script">
 (function(){
 'use strict';
-var VER='v128', DRAW_KEY='dbfastec_cost_drawings_v1', SYNC_KEY='dbfastec_bom_gsync_v1';
+var VER='v129', DRAW_KEY='dbfastec_cost_drawings_v1', SYNC_KEY='dbfastec_bom_gsync_v1';
 var MAX_FILE=8*1024*1024, activePn='', busy=false, lastRefresh=0, wrapped=false;
 var ALLOWED_EXT=/\.(pdf|dwg|dxf|step|stp|igs|iges|zip|jpg|jpeg|png)$/i;
 function id(x){return document.getElementById(x)}
@@ -14540,7 +14540,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script id="v83-final-performance-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
 var activeIdx=-1,openToken=0,rev=1,pageStamp=Object.create(null),legacySwitch=null,syncTimer=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
@@ -14687,7 +14687,7 @@ window.invalidatePerformanceCacheV83=bump;
 <script id="v84-modal-stable-header-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1';
 var activeIdx=-1,openToken=0,syncTimer=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
@@ -14790,7 +14790,7 @@ window.refreshCostModalHeaderV84=function(){if(activeIdx>=0)refreshHeader(active
 <script id="v85-drawing-account-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1';
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1';
 var accountDraft=[],accountConfig=null,accountBusy=false,refreshBusy=false,syncTimer=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
@@ -14862,7 +14862,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script id="v86-stable-performance-script">
 (function(){
 'use strict';
-var VER='v128',installCount=0;
+var VER='v129',installCount=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function setVersion(){var v=id('bomAppVer');if(v)v.textContent=(v.textContent||('버전 '+VER)).replace(/v\d+/,VER);if(window.__legacyDocumentTitleV99)window.__legacyDocumentTitleV99=/v\d+/.test(window.__legacyDocumentTitleV99)?window.__legacyDocumentTitleV99.replace(/v\d+/,VER):window.__legacyDocumentTitleV99+' '+VER}
@@ -14936,7 +14936,7 @@ window.stabilizeCostActionsV86=stabilizeActionButtons;
 <script id="v87-process-save-modal-script">
 (function(){
 'use strict';
-var VER='v128',saveSyncTimer=0,renderTimer=0;
+var VER='v129',saveSyncTimer=0,renderTimer=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})}
@@ -15055,7 +15055,7 @@ window.updateCostProcessRowV87=updateCostRow;
 <script id="v88-drawing-delete-group-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1';
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1';
 var deleting=Object.create(null),syncTimer=0,installTimer=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
@@ -15132,7 +15132,7 @@ window.refreshDrawingAggregatesV88=refreshAggregates;
 <script id="v89-quick-process-equipment-colors-script">
 (function(){
   'use strict';
-  var VER='v128', Q=[], multiplier=1, dragIndex=null, syncTimer=0;
+  var VER='v129', Q=[], multiplier=1, dragIndex=null, syncTimer=0;
   function id(x){return document.getElementById(x)}
   function n(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
   function clean(v){return String(v==null?'':v).trim()}
@@ -15219,7 +15219,7 @@ window.refreshDrawingAggregatesV88=refreshAggregates;
 <script id="v90-drawing-delete-final-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1';
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1';
 var deleting=Object.create(null),refreshing=false,syncTimer=0,installed=false;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
@@ -15319,7 +15319,7 @@ window.refreshDrawingFilesV90=refreshFiles;
 <script id="v91-drawing-action-layout-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',queued=false,installed=false;
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',queued=false,installed=false;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -15498,7 +15498,7 @@ window.refreshDrawingActionLayoutV91=function(){try{if(typeof window.decorateDra
 <script id="v93-drawing-delete-guard-script">
 (function(){
 'use strict';
-var VER='v128';
+var VER='v129';
 var DRAW_KEY='dbfastec_cost_drawings_v1';
 var GUARD_KEY='dbfastec_drawing_delete_guard_v1';
 var SYNC_KEY='dbfastec_bom_gsync_v1';
@@ -15614,7 +15614,7 @@ header .tabs button{pointer-events:auto!important}
 <script id="v98-drawing-dual-file-stable-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',MAX_FILE=8*1024*1024;
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',MAX_FILE=8*1024*1024;
 var refreshing=false,uploading={},deleting={},installed=false,lastRefresh=0,decorateQueued={};
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
@@ -15713,7 +15713,7 @@ setTimeout(apply,1500);
 <script id="v101-filter-drawing-cleanup-script">
 (function(){
 'use strict';
-var VER='v128';
+var VER='v129';
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
 
@@ -15893,7 +15893,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script id="v103-bom-raw-search-drawing-auto-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1';
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1';
 var observer=null,queued=false,activeInput=null;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
@@ -16269,7 +16269,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script id="v113-drawing-upload-modal-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',MAX_FILE=8*1024*1024,activeModal=null,uploadBusy=false;
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',MAX_FILE=8*1024*1024,activeModal=null,uploadBusy=false;
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
@@ -16406,7 +16406,7 @@ window.addEventListener('click',capture,true);document.addEventListener('keydown
 <script id="v115-cost-modal-title-line-script">
 (function(){
 'use strict';
-var VER='v128';
+var VER='v129';
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -16585,7 +16585,7 @@ try{new MutationObserver(function(){if(restoreQueued)return;restoreQueued=true;r
 <script id="v120-sync-drawing-process-history-script">
 (function(){
 'use strict';
-var VER='v128',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',HIST_KEY='dbfastec_process_history_v120',drawingRefreshTimer=0,deleteBusy={};
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',SYNC_KEY='dbfastec_bom_gsync_v1',HIST_KEY='dbfastec_process_history_v120',drawingRefreshTimer=0,deleteBusy={};
 function clean(v){return String(v==null?'':v).trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
@@ -16690,7 +16690,7 @@ install();if(document.readyState==='loading')document.addEventListener('DOMConte
 <script id="v121-product-material-history-script">
 (function(){
 'use strict';
-var VER='v128',SYNC_KEY='dbfastec_bom_gsync_v1';
+var VER='v129',SYNC_KEY='dbfastec_bom_gsync_v1';
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function num(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
@@ -16815,7 +16815,7 @@ html.v123-booting *,html.v123-booting *::before,html.v123-booting *::after{trans
 <script id="v123-performance-sync-script">
 (function(){
 'use strict';
-var VER='v128',openToken=0,recalcTimer=0,opening=false,pendingRecalc=false,openingRecalcDone=false,syncQueueTimer=0;
+var VER='v129',openToken=0,recalcTimer=0,opening=false,pendingRecalc=false,openingRecalcDone=false,syncQueueTimer=0;
 function id(x){return document.getElementById(x)}
 function ensureLoading(){var modal=document.querySelector('#overlay .modal'),el=id('v123ModalLoading');if(!modal)return null;if(!el){el=document.createElement('div');el.id='v123ModalLoading';el.textContent='제품 원가 정보를 불러오는 중입니다.';modal.appendChild(el)}return el}
 function setVersion(){var v=id('bomAppVer');if(v){var tail=(String(v.textContent||'').match(/(\s*·\s*.+)$/)||[])[1]||'';var wanted='버전 '+VER+tail;if(v.textContent!==wanted)v.textContent=wanted}var title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';if(document.title!==title)document.title=title;try{window.__legacyDocumentTitleV99=title}catch(e){}}
@@ -17018,7 +17018,7 @@ install();if(document.readyState==='loading')document.addEventListener('DOMConte
 <script id="v124-stability-sync-filter-script">
 (function(){
 'use strict';
-var VER='v128';
+var VER='v129';
 var KEYS={
  state:'dbfastec_bom_gsync_v1',clock:'dbfastec_sync_section_clock_v124',backup:'dbfastec_sync_backups_v124',
  products:'dbfastec_cost_products_v2',prices:'dbfastec_cost_prices_v2',base:'dbfastec_cost_base_v2',overrides:'dbfastec_cost_overrides_v2',
@@ -17190,7 +17190,7 @@ install();if(document.readyState==='loading')document.addEventListener('DOMConte
 <script id="v125-material-delete-fix-script">
 (function(){
 'use strict';
-var VER='v128',OV_KEY='dbfastec_cost_overrides_v2',SYNC_KEY='dbfastec_bom_gsync_v1',installCount=0;
+var VER='v129',OV_KEY='dbfastec_cost_overrides_v2',SYNC_KEY='dbfastec_bom_gsync_v1',installCount=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
 function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
@@ -17388,7 +17388,7 @@ window.addEventListener('load',function(){restore();setTimeout(restore,80);setTi
 <script id="v127-unified-search-filter-script">
 (function(){
 'use strict';
-var VER='v128';
+var VER='v129';
 var FILTERS={
   rawKind:'원자재 구분','mp-year':'기준연도',equipLocationFilter:'설비위치',equipTypeFilter:'설비구분',
   drawOwnerFilter:'담당자',drawStatusFilter:'관리상태',drawUsageFilter:'제품 구분',ownerDrawFilter:'도면 유무',
@@ -17484,7 +17484,7 @@ install();if(document.readyState==='loading')document.addEventListener('DOMConte
 <script id="v127-version-lock-script">
 (function(){
 'use strict';
-var VER='v128',busy=false;
+var VER='v129',busy=false;
 function lock(){
   if(busy)return;busy=true;
   try{
@@ -17508,7 +17508,7 @@ try{
 
 
 <!-- ===== V128: 도면 담당자 영역 고정 · 상부 상태 복원 · 공정수정 목록 토글 ===== -->
-<style id="v128-owner-header-process-style">
+<style id="v129-owner-header-process-style">
 /* 담당자 영역을 도면분석 내부에 고정: 부모 화면이 열리면 항상 표시 */
 #view-draw>#view-drawowner{
   display:block!important;visibility:visible!important;opacity:1!important;
@@ -17560,27 +17560,27 @@ header .hbtns{
 }
 #processChangedToggleV128:hover{background:#dfeeff;border-color:#78a2d2}
 #processChangedToggleV128.active{background:#285f99;color:#fff;border-color:#285f99}
-#processChangedToggleV128 .v128-count{
+#processChangedToggleV128 .v129-count{
   min-width:18px;height:18px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;
   border-radius:10px;background:rgba(40,95,153,.12);font-size:9.5px;font-weight:900;
 }
-#processChangedToggleV128.active .v128-count{background:rgba(255,255,255,.2)}
+#processChangedToggleV128.active .v129-count{background:rgba(255,255,255,.2)}
 #processChangedToggleV128:disabled{opacity:.48;cursor:not-allowed}
 @media(max-width:720px){
   #costSearchAdd{flex-wrap:wrap!important}
   #processChangedToggleV128{height:32px;padding:0 9px;font-size:10.8px}
 }
 </style>
-<script id="v128-owner-header-process-script">
+<script id="v129-owner-header-process-script">
 (function(){
 'use strict';
-var VER='v128',HIST_KEY='dbfastec_process_history_v120',active=false,savedScroll=0,refreshTimer=0;
+var VER='v129',HIST_KEY='dbfastec_process_history_v120',active=false,savedScroll=0,refreshTimer=0;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
-function read(key,def){try{var v=localStorage.getItem(key);return v==null?def:JSON.parse(v)}catch(e){try{var m=window.__v128MemoryStore||{},x=m[key];return x==null?def:(typeof x==='string'?JSON.parse(x):x)}catch(_){return def}}}
+function read(key,def){try{var v=localStorage.getItem(key);return v==null?def:JSON.parse(v)}catch(e){try{var m=window.__v129MemoryStore||{},x=m[key];return x==null?def:(typeof x==='string'?JSON.parse(x):x)}catch(_){return def}}}
 function processHistory(){var h=read(HIST_KEY,{});return h&&typeof h==='object'?h:{}}
 function changedSet(){var h=processHistory(),set={};Object.keys(h).forEach(function(k){if(Array.isArray(h[k])&&h[k].length)set[clean(k)]=1});return set}
-window.__v128ChangedPnSet=changedSet;
+window.__v129ChangedPnSet=changedSet;
 function currentUser(){var s=read('dbfastec_bom_gsync_v1',{});return clean(s&&s.user)||'사용자 미등록'}
 function versionDate(){var d=new Date(document.lastModified||Date.now());if(isNaN(d.getTime()))d=new Date();function p(n){return String(n).padStart(2,'0')}return d.getFullYear()+'.'+p(d.getMonth()+1)+'.'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
 
@@ -17590,7 +17590,7 @@ function integrateOwner(){
   if(!draw||!owner)return false;
   if(owner.parentNode!==draw)draw.appendChild(owner);
   if(owner.classList.contains('hidden'))owner.classList.remove('hidden');if(owner.style.getPropertyValue('display')!=='block'||owner.style.getPropertyPriority('display')!=='important')owner.style.setProperty('display','block','important');if(owner.style.getPropertyValue('visibility')!=='visible'||owner.style.getPropertyPriority('visibility')!=='important')owner.style.setProperty('visibility','visible','important');
-  owner.setAttribute('data-v128-integrated','1');
+  owner.setAttribute('data-v129-integrated','1');
   var title=owner.querySelector('.draw-card .dh');if(title&&title.firstChild)title.firstChild.nodeValue='👤 담당자별 도면 현황 ';
   return true;
 }
@@ -17602,9 +17602,9 @@ function refreshOwner(){
   }
 }
 function hookSwitchTab(){
-  var f=window.switchTab;if(typeof f!=='function'||f.__v128OwnerHook)return;
+  var f=window.switchTab;if(typeof f!=='function'||f.__v129OwnerHook)return;
   var g=function(t){if(t==='drawowner')t='draw';var r=f.call(this,t);integrateOwner();if(t==='draw')requestAnimationFrame(refreshOwner);return r};
-  g.__v128OwnerHook=true;g.__v128Raw=f;window.switchTab=g;
+  g.__v129OwnerHook=true;g.__v129Raw=f;window.switchTab=g;
 }
 
 function ensureHeader(){
@@ -17627,29 +17627,29 @@ function lockVersion(){
 
 function historyCount(){return Object.keys(changedSet()).length}
 function updateToggle(){
-  var b=id('processChangedToggleV128');if(!b)return;var n=historyCount(),c=b.querySelector('.v128-count');if(c)c.textContent=n.toLocaleString();
+  var b=id('processChangedToggleV128');if(!b)return;var n=historyCount(),c=b.querySelector('.v129-count');if(c)c.textContent=n.toLocaleString();
   b.classList.toggle('active',active);b.setAttribute('aria-pressed',active?'true':'false');b.title=active?'전체 제품 목록으로 돌아가기':'공정을 수정한 제품만 보기';
-  var label=b.querySelector('.v128-label');if(label)label.textContent=active?'전체 제품 보기':'공정 수정 목록';
+  var label=b.querySelector('.v129-label');if(label)label.textContent=active?'전체 제품 보기':'공정 수정 목록';
 }
 function ensureToggle(){
   var add=document.querySelector('#costSearchAdd .cost-add-product-btn,button.cost-add-product-btn');if(!add)return;
-  var b=id('processChangedToggleV128');if(!b){b=document.createElement('button');b.id='processChangedToggleV128';b.type='button';b.setAttribute('aria-pressed','false');b.innerHTML='<span aria-hidden="true">↺</span><span class="v128-label">공정 수정 목록</span><span class="v128-count">0</span>';b.onclick=toggleChanged;add.insertAdjacentElement('afterend',b)}else if(b.previousElementSibling!==add)add.insertAdjacentElement('afterend',b);
+  var b=id('processChangedToggleV128');if(!b){b=document.createElement('button');b.id='processChangedToggleV128';b.type='button';b.setAttribute('aria-pressed','false');b.innerHTML='<span aria-hidden="true">↺</span><span class="v129-label">공정 수정 목록</span><span class="v129-count">0</span>';b.onclick=toggleChanged;add.insertAdjacentElement('afterend',b)}else if(b.previousElementSibling!==add)add.insertAdjacentElement('afterend',b);
   updateToggle();
 }
 function toggleChanged(){
   var n=historyCount();if(!active&&!n){try{if(typeof window.toast==='function')window.toast('공정 수정이력이 있는 제품이 없습니다.')}catch(e){};return}
-  if(!active)savedScroll=window.scrollY||document.documentElement.scrollTop||0;active=!active;window.__v128ProcessChangedOnly=active;updateToggle();
+  if(!active)savedScroll=window.scrollY||document.documentElement.scrollTop||0;active=!active;window.__v129ProcessChangedOnly=active;updateToggle();
   try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){console.error(e)}
   requestAnimationFrame(function(){if(!active)window.scrollTo(0,savedScroll);else{var box=id('productPanel');if(box&&box.scrollIntoView)box.scrollIntoView({block:'start'})}})
 }
 function hookProductFilter(){
-  var f=window.currentFilteredProducts;if(typeof f!=='function'||f.__v128ChangedFilter)return;
+  var f=window.currentFilteredProducts;if(typeof f!=='function'||f.__v129ChangedFilter)return;
   var g=function(){var arr=f.apply(this,arguments);if(!active)return arr;var set=changedSet();return (arr||[]).filter(function(p){return !!set[clean(p&&p.pn)]})};
-  g.__v128ChangedFilter=true;g.__v128Raw=f;window.currentFilteredProducts=g;
+  g.__v129ChangedFilter=true;g.__v129Raw=f;window.currentFilteredProducts=g;
 }
 function hookRender(){
-  var f=window.renderCost;if(typeof f!=='function'||f.__v128ToggleHook)return;
-  var g=function(){var r=f.apply(this,arguments);ensureToggle();updateToggle();return r};g.__v128ToggleHook=true;g.__v128Raw=f;window.renderCost=g;
+  var f=window.renderCost;if(typeof f!=='function'||f.__v129ToggleHook)return;
+  var g=function(){var r=f.apply(this,arguments);ensureToggle();updateToggle();return r};g.__v129ToggleHook=true;g.__v129Raw=f;window.renderCost=g;
 }
 function scheduleRefresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(function(){ensureHeader();integrateOwner();ensureToggle();updateToggle()},40)}
 function install(){hookProductFilter();hookRender();hookSwitchTab();ensureHeader();integrateOwner();ensureToggle();lockVersion()}
@@ -17661,5 +17661,166 @@ window.addEventListener('load',function(){install();setTimeout(install,350);setT
 })();
 </script>
 
+
+<!-- ===== V129: 도면분석 담당자 영역 최종 고정/복원 ===== -->
+<style id="v129-owner-panel-final-style">
+/* 담당자별 도면 현황은 도면분석 안의 독립 영역으로 항상 표시 */
+#view-draw > #view-drawowner[data-v129-final-owner="1"]{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:180px!important;
+  margin:14px 0!important;
+  padding:0!important;
+  overflow:visible!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  z-index:2!important;
+}
+#view-draw > #view-drawowner[data-v129-final-owner="1"].hidden{display:block!important}
+#view-draw.hidden > #view-drawowner[data-v129-final-owner="1"]{display:none!important}
+#view-drawowner[data-v129-final-owner="1"] > .draw-card{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  margin:0!important;border:1px solid var(--line)!important;border-radius:11px!important;
+  box-shadow:0 1px 3px rgba(20,40,74,.06)!important;background:#fff!important;
+}
+#view-drawowner[data-v129-final-owner="1"] .dh{
+  display:flex!important;align-items:center!important;min-height:44px!important;
+  background:var(--navy)!important;color:#fff!important;padding:11px 15px!important;
+  border-radius:10px 10px 0 0!important;font-weight:900!important;
+}
+#view-drawowner[data-v129-final-owner="1"] .db{display:block!important;padding:13px 15px 15px!important}
+#view-drawowner[data-v129-final-owner="1"] #ownerKpis{
+  display:grid!important;grid-template-columns:repeat(auto-fit,minmax(145px,1fr))!important;
+  gap:9px!important;margin:0 0 11px!important;visibility:visible!important;opacity:1!important;
+}
+#view-drawowner[data-v129-final-owner="1"] #ownerSummary{
+  display:grid!important;grid-template-columns:repeat(auto-fit,minmax(145px,1fr))!important;
+  gap:9px!important;margin:0 0 11px!important;visibility:visible!important;opacity:1!important;
+}
+#view-drawowner[data-v129-final-owner="1"] #ownerKpis .kpi,
+#view-drawowner[data-v129-final-owner="1"] #ownerSummary .summary-box{
+  display:block!important;min-height:67px!important;background:#f8fafc!important;
+  border:1px solid #dce5f0!important;border-radius:9px!important;padding:9px 11px!important;
+}
+#view-drawowner[data-v129-final-owner="1"] #ownerKpis .k,
+#view-drawowner[data-v129-final-owner="1"] #ownerSummary .k{font-size:10.5px!important;color:var(--mut)!important;font-weight:800!important}
+#view-drawowner[data-v129-final-owner="1"] #ownerKpis .v,
+#view-drawowner[data-v129-final-owner="1"] #ownerSummary .v{font-size:18px!important;color:var(--navy)!important;font-weight:900!important;margin-top:3px!important}
+#view-drawowner[data-v129-final-owner="1"] .owner-tools{display:flex!important;gap:8px!important;align-items:center!important;flex-wrap:wrap!important;margin-bottom:10px!important}
+#view-drawowner[data-v129-final-owner="1"] .tablebox{display:block!important;visibility:visible!important;min-height:82px!important;overflow:auto!important}
+#view-drawowner[data-v129-final-owner="1"] .owner-table{display:table!important;width:100%!important;min-width:720px!important}
+#view-drawowner[data-v129-final-owner="1"] #ownerBody{display:table-row-group!important;visibility:visible!important}
+#view-drawowner[data-v129-final-owner="1"] .v129-owner-empty td{text-align:center!important;color:var(--mut)!important;padding:24px!important}
+#tab-drawowner{display:none!important}
+@media(max-width:760px){
+  #view-drawowner[data-v129-final-owner="1"] .db{padding:10px!important}
+  #view-drawowner[data-v129-final-owner="1"] #ownerKpis,
+  #view-drawowner[data-v129-final-owner="1"] #ownerSummary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #view-drawowner[data-v129-final-owner="1"] .owner-tools>*{flex:1 1 150px!important;min-width:0!important}
+}
+</style>
+<script id="v129-owner-panel-final-script">
+(function(){
+'use strict';
+var VER='v129',DRAW_KEY='dbfastec_cost_drawings_v1',PROD_KEY='dbfastec_cost_products_v2';
+var ownerObserver=null,drawObserver=null,refreshTimer=0,installTimer=0,lastDrawVisible=null;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function read(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}}
+function products(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}var p=read(PROD_KEY,[]);return Array.isArray(p)?p:[]}
+function drawings(){var d=read(DRAW_KEY,{});return d&&typeof d==='object'?d:{}}
+function ownerName(r){return clean(r&&r.owner)||'담당자 미지정'}
+function placeOwner(){
+  var draw=id('view-draw'),owner=id('view-drawowner'),tab=id('tab-drawowner');
+  if(tab){tab.style.setProperty('display','none','important');tab.setAttribute('aria-hidden','true');tab.tabIndex=-1}
+  if(!draw||!owner)return false;
+  /* 품목군별 도면 보유 현황 카드 바로 위에 배치 */
+  var anchor=null,children=Array.prototype.slice.call(draw.children||[]);
+  for(var i=0;i<children.length;i++){
+    var c=children[i];
+    if(c!==owner&&c.classList&&c.classList.contains('draw-card')){anchor=c;break}
+  }
+  if(owner.parentNode!==draw||owner.nextElementSibling!==anchor){
+    if(anchor)draw.insertBefore(owner,anchor);else draw.appendChild(owner)
+  }
+  owner.setAttribute('data-v129-final-owner','1');
+  owner.setAttribute('data-v129-integrated','1');
+  owner.classList.remove('hidden','v97-building');
+  owner.removeAttribute('aria-hidden');
+  owner.style.setProperty('display','block','important');
+  owner.style.setProperty('visibility','visible','important');
+  owner.style.setProperty('opacity','1','important');
+  owner.style.setProperty('height','auto','important');
+  owner.style.setProperty('pointer-events','auto','important');
+  var card=owner.querySelector('.draw-card');if(card){card.style.setProperty('display','block','important');card.style.setProperty('visibility','visible','important')}
+  var title=owner.querySelector('.draw-card .dh');if(title&&title.firstChild)title.firstChild.nodeValue='👤 담당자별 도면 현황 ';
+  return true
+}
+function filtered(){
+  var ps=products(),dm=drawings(),q=clean(id('ownerSearch')&&id('ownerSearch').value).toLowerCase(),fd=clean(id('ownerDrawFilter')&&id('ownerDrawFilter').value);
+  return ps.map(function(p){var pn=clean(p&&p.pn),r=dm[pn]||{};return {p:p||{},r:r,pn:pn,owner:ownerName(r),has:!!r.has}}).filter(function(x){
+    if(fd==='has'&&!x.has)return false;if(fd==='none'&&x.has)return false;
+    if(q){var t=[x.owner,x.pn,x.p.item,x.p.spec,x.r.docNo,x.r.status,x.r.note].join(' ').toLowerCase();var terms=q.split(/\s+/).filter(Boolean);for(var i=0;i<terms.length;i++)if(t.indexOf(terms[i])<0)return false}
+    return true
+  })
+}
+function groups(list){
+  var m={};list.forEach(function(x){var k=x.owner;if(!m[k])m[k]={owner:k,total:0,has:0,none:0};m[k].total++;if(x.has)m[k].has++;else m[k].none++});
+  return Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){if(a.owner==='담당자 미지정')return 1;if(b.owner==='담당자 미지정')return -1;return a.owner.localeCompare(b.owner,'ko')})
+}
+function renderSummary(){
+  var owner=id('view-drawowner');if(!owner)return;var list=filtered(),gs=groups(list),has=0;list.forEach(function(x){if(x.has)has++});var none=list.length-has,rate=list.length?has/list.length*100:0,unassigned=0;gs.forEach(function(g){if(g.owner==='담당자 미지정')unassigned+=g.total});
+  var k=id('ownerKpis');if(k)k.innerHTML=[['검색 제품',list.length,'개'],['도면 보유율',rate.toFixed(1),'%'],['담당자 수',gs.filter(function(g){return g.owner!=='담당자 미지정'}).length,'명'],['담당 미지정',unassigned,'개']].map(function(a){return '<div class="kpi"><div class="k">'+a[0]+'</div><div class="v">'+Number(a[1]).toLocaleString()+' <small>'+a[2]+'</small></div></div>'}).join('');
+  var s=id('ownerSummary');if(s)s.innerHTML=[['도면 있음',has,'개'],['도면 없음',none,'개'],['담당자 그룹',gs.length,'개']].map(function(a){return '<div class="summary-box"><div class="k">'+a[0]+'</div><div class="v">'+Number(a[1]).toLocaleString()+' <small>'+a[2]+'</small></div></div>'}).join('');
+  var meta=id('ownerMeta');if(meta)meta.textContent='담당자 '+gs.length.toLocaleString()+'개 그룹 · 제품 '+list.length.toLocaleString()+'개';
+  var body=id('ownerBody');
+  if(body&&!body.querySelector('tr')){
+    body.innerHTML=gs.length?gs.map(function(g){var r=g.total?g.has/g.total*100:0;return '<tr class="owner-row" data-v129-owner="'+encodeURIComponent(g.owner)+'"><td><b>'+esc(g.owner)+'</b></td><td class="num strong">'+g.total.toLocaleString()+'</td><td class="num">'+g.has.toLocaleString()+'</td><td class="num">'+g.none.toLocaleString()+'</td><td class="num strong">'+r.toFixed(1)+'%</td><td><div class="draw-mini-track"><div class="draw-mini-fill" style="width:'+Math.max(r,1)+'%"></div></div></td></tr>'}).join(''):'<tr class="v129-owner-empty"><td colspan="6">표시할 담당자 데이터가 없습니다.</td></tr>';
+    body.querySelectorAll('[data-v129-owner]').forEach(function(tr){tr.onclick=function(){var n=decodeURIComponent(this.getAttribute('data-v129-owner')||'');try{if(typeof window.renderOwnerAnalysis==='function')window.renderOwnerAnalysis(n)}catch(e){}}})
+  }
+}
+function makeVisible(render){
+  if(!placeOwner())return false;var draw=id('view-draw'),owner=id('view-drawowner');
+  if(draw.classList.contains('hidden'))return true;
+  owner.classList.remove('hidden','v97-building');owner.style.setProperty('display','block','important');owner.style.setProperty('visibility','visible','important');owner.style.setProperty('opacity','1','important');
+  if(render){try{if(typeof window.renderOwnerAnalysis==='function')window.renderOwnerAnalysis()}catch(e){console.error(e)}}
+  renderSummary();return true
+}
+function schedule(render){clearTimeout(refreshTimer);refreshTimer=setTimeout(function(){makeVisible(!!render)},35)}
+function hookRender(){
+  var f=window.renderOwnerAnalysis;if(typeof f!=='function'||f.__v129FinalOwner)return;
+  var g=function(){placeOwner();var r;try{r=f.apply(this,arguments)}finally{requestAnimationFrame(function(){placeOwner();renderSummary()})}return r};
+  g.__v129FinalOwner=true;g.__v129Raw=f;window.renderOwnerAnalysis=g
+}
+function hookSwitch(){
+  var f=window.switchTab;if(typeof f!=='function'||f.__v129FinalOwner)return;
+  var g=function(t){if(t==='drawowner')t='draw';var r=f.call(this,t);if(t==='draw')requestAnimationFrame(function(){hookRender();makeVisible(true)});else schedule(false);return r};
+  g.__v129FinalOwner=true;g.__v129Raw=f;window.switchTab=g
+}
+function observe(){
+  var draw=id('view-draw'),owner=id('view-drawowner');if(!draw||!owner)return;
+  if(!draw.__v129OwnerObserved){draw.__v129OwnerObserved=true;try{drawObserver=new MutationObserver(function(){var visible=!draw.classList.contains('hidden');if(visible!==lastDrawVisible){lastDrawVisible=visible;if(visible)schedule(true)}});drawObserver.observe(draw,{attributes:true,attributeFilter:['class']})}catch(e){}}
+  if(!owner.__v129OwnerObserved){owner.__v129OwnerObserved=true;try{ownerObserver=new MutationObserver(function(){if(!draw.classList.contains('hidden')&&(owner.classList.contains('hidden')||getComputedStyle(owner).display==='none'))schedule(false)});ownerObserver.observe(owner,{attributes:true,attributeFilter:['class','style']})}catch(e){}}
+}
+function setVersion(){
+  var title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';document.title=title;try{window.__legacyDocumentTitleV99=title}catch(e){}
+  var v=id('bomAppVer');if(v)v.textContent=String(v.textContent||'버전 '+VER).replace(/v\d+/i,VER)
+}
+function install(){clearTimeout(installTimer);hookRender();hookSwitch();placeOwner();observe();setVersion();var draw=id('view-draw');if(draw&&!draw.classList.contains('hidden'))makeVisible(true)}
+/* 기존 지연 초기화가 함수를 다시 감싸더라도 최종 훅을 재설치하되 상시 타이머는 사용하지 않음 */
+install();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+window.addEventListener('load',function(){install();setTimeout(install,250);setTimeout(install,900);setTimeout(install,2200)},{once:true});
+document.addEventListener('click',function(e){var t=e.target&&e.target.closest?e.target.closest('#tab-draw'):null;if(t)setTimeout(function(){install();makeVisible(true)},0)},true);
+window.addEventListener('bomDataChanged',function(e){if(!e.detail||e.detail.section==='drawings'||e.detail.section==='owners')schedule(true)});
+window.addEventListener('storage',function(e){if(e.key===DRAW_KEY||e.key===PROD_KEY)schedule(true)});
+})();
+</script>
 </body>
 </html>
