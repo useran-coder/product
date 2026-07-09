@@ -18977,5 +18977,136 @@ window.addEventListener('load',function(){init();setTimeout(init,250)},{once:tru
 })();
 </script>
 
+
+
+<!-- ===== V125.0: 공정변경 영구저장 · 변경이력 복구 · 도면담당자 입력유지 ===== -->
+<script id="v125-process-owner-persistence-fix">
+(function(){
+'use strict';
+var VER='v125.0';
+var PROD_KEY='dbfastec_cost_products_v2',HIST_KEY='dbfastec_process_history_v120',RECOVERY_KEY='dbfastec_process_latest_v125';
+var DRAW_KEY='dbfastec_cost_drawings_v1',OWNER_KEY='dbfastec_owner_master_v1',STATE_KEY='dbfastec_bom_gsync_v1';
+var saveBase=null,openBase=null,saveWrap=null,openWrap=null,installing=false;
+var ownerEditing=false,ownerDrafts={},pendingDrawRender=false,renderDrawBase=null,renderDrawWrap=null;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function read(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error('v125 저장 오류',e);return false}}
+function nowUser(){var s=read(STATE_KEY,{});return clean(s&&s.user)||'이름없음'}
+function products(){try{return typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
+function findProduct(pn){pn=clean(pn);var a=products();for(var i=0;i<a.length;i++)if(clean(a[i]&&a[i].pn)===pn)return a[i];return null}
+function plainStep(s){s=s||{};return {proc:clean(s.proc),gubun:clean(s.gubun),part:clean(s.part),equip:clean(s.equip),st:s.st==null?'':s.st,qty:s.qty==null?'':s.qty,costMode:clean(s.costMode)}}
+function sameSteps(a,b){a=Array.isArray(a)?a:[];b=Array.isArray(b)?b:[];if(a.length!==b.length)return false;for(var i=0;i<a.length;i++)if(JSON.stringify(plainStep(a[i]))!==JSON.stringify(plainStep(b[i])))return false;return true}
+function activeIndex(){var x=window.__v1249ActiveIndex;try{if(x==null||Number(x)<0)x=typeof curIdx!=='undefined'?curIdx:-1}catch(e){x=-1}x=Number(x);return Number.isInteger(x)?x:-1}
+function capturePopupSteps(){
+ var out=[];
+ document.querySelectorAll('#overlay #stepbody tr').forEach(function(tr){
+  var st=clean(tr.querySelector('.d-st')&&tr.querySelector('.d-st').value),orig=tr.getAttribute('data-orig'),s={proc:clean(tr.querySelector('.d-proc')&&tr.querySelector('.d-proc').value),gubun:clean(tr.querySelector('.d-gubun')&&tr.querySelector('.d-gubun').value),part:clean(tr.querySelector('.d-part')&&tr.querySelector('.d-part').value),equip:clean(tr.querySelector('.d-equip')&&tr.querySelector('.d-equip').value),st:st===''?'':(isNaN(Number(st))?st:Number(st))};
+  var q=tr.querySelector('.d-qty'),cm=tr.querySelector('.d-mode-select');if(q)s.qty=clean(q.value)===''?'':Number(q.value||0);if(cm)s.costMode=clean(cm.value);
+  if(s.proc||s.st!=='')out.push({step:s,orig:orig===''?-1:Number(orig)});
+ });
+ return out;
+}
+function mergeStepMeta(before,rows){
+ before=Array.isArray(before)?before:[];return rows.map(function(r,i){var base=(Number.isInteger(r.orig)&&r.orig>=0&&before[r.orig])?before[r.orig]:(before[i]||{});return Object.assign({},clone(base)||{},r.step)});
+}
+function writeProductsDirect(){var a=products();write(PROD_KEY,a);try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}}
+function latestHistory(pn){var h=read(HIST_KEY,{}),arr=Array.isArray(h[pn])?h[pn]:[];if(!arr.length)return null;return arr.slice().sort(function(a,b){return Number(b&&b.at||0)-Number(a&&a.at||0)})[0]||null}
+function storeRecovery(pn,steps,at,by){var m=read(RECOVERY_KEY,{});m[pn]={steps:clone(steps),at:Number(at)||Date.now(),by:clean(by)||nowUser()};write(RECOVERY_KEY,m)}
+function ensureHistory(pn,before,after,at,by){
+ var h=read(HIST_KEY,{}),arr=Array.isArray(h[pn])?h[pn]:[],top=arr[0];
+ if(top&&sameSteps(top.after,after))return false;
+ var rec={id:'ph_v125_'+String(at)+'_'+Math.random().toString(36).slice(2,8),at:Number(at)||Date.now(),by:clean(by)||nowUser(),before:clone(before||[]),after:clone(after||[])};
+ h[pn]=[rec].concat(arr).slice(0,30);write(HIST_KEY,h);return true;
+}
+function authoritativeRecord(pn,p){
+ var r=read(RECOVERY_KEY,{})[pn]||null,h=latestHistory(pn),best=null;
+ if(r&&Array.isArray(r.steps))best={steps:r.steps,at:Number(r.at)||0,by:r.by||''};
+ if(h&&Array.isArray(h.after)&&(!best||Number(h.at||0)>=best.at))best={steps:h.after,at:Number(h.at)||0,by:h.by||''};
+ if(!best)return null;
+ var pAt=Number(p&&p._processUpdatedAt||0);
+ if(!sameSteps(p&&p.steps,best.steps)&&(best.at>=pAt||!pAt))return best;
+ return null;
+}
+function repairProduct(pn,quiet){
+ var p=findProduct(pn);if(!p)return false;var best=authoritativeRecord(pn,p);if(!best)return false;
+ p.steps=clone(best.steps);p._processUpdatedAt=Math.max(Number(p._processUpdatedAt||0),Number(best.at||0));p._processUpdatedBy=clean(best.by)||p._processUpdatedBy||'이름없음';writeProductsDirect();
+ if(!quiet&&typeof window.toast==='function')window.toast('공정변경 이력을 제품 공정에 복구했습니다.');return true;
+}
+function repairAll(){var h=read(HIST_KEY,{}),r=read(RECOVERY_KEY,{}),keys={};Object.keys(h||{}).forEach(function(k){keys[k]=1});Object.keys(r||{}).forEach(function(k){keys[k]=1});var changed=0;Object.keys(keys).forEach(function(pn){if(repairProduct(pn,true))changed++});if(changed){try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',repaired:changed}}))}catch(e){}}return changed}
+function saveCaptured(pn,before,rows){
+ var p=findProduct(pn);if(!p)return false;var at=Date.now(),by=nowUser(),steps=mergeStepMeta(before,rows);
+ p.steps=steps;p._processUpdatedAt=at;p._processUpdatedBy=by;for(var i=0;i<p.steps.length;i++){p.steps[i]._order=i;if(!p.steps[i]._updatedAt)p.steps[i]._updatedAt=at;if(!p.steps[i]._updatedBy)p.steps[i]._updatedBy=by}
+ writeProductsDirect();storeRecovery(pn,steps,at,by);var added=ensureHistory(pn,before,steps,at,by);
+ try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',pn:pn,field:'steps'}}));if(added)window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'processHistory',pn:pn}}))}catch(e){}
+ try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false)}catch(e){}
+ return true;
+}
+function makeSaveWrap(){
+ saveWrap=function(){
+  var idx=activeIndex(),p=products()[idx],pn=p?clean(p.pn):'',before=p?clone(p.steps||[]):[],rows=capturePopupSteps(),result=true,err=null;
+  try{result=typeof saveBase==='function'?saveBase.apply(this,arguments):true}catch(e){err=e;console.error('기존 저장 오류를 v125에서 복구합니다.',e)}
+  try{if(pn)saveCaptured(pn,before,rows)}catch(e2){console.error('v125 공정 확정 저장 오류',e2);if(typeof window.toast==='function')window.toast('공정 저장 보강 중 오류: '+(e2.message||e2));return false}
+  if(err&&typeof window.toast==='function')window.toast('기존 저장 오류를 복구하여 공정변경을 저장했습니다.');
+  return result===false&&!pn?false:true;
+ };
+ saveWrap.__v125ProcessOwnerFix=true;saveWrap.__v12417FlowPosition=true;saveWrap.__v12414Fast=true;saveWrap.__v12410Concurrency=true;saveWrap.__v1249Stable=true;saveWrap.__v124Position=true;saveWrap.__v121MaterialHistory=true;saveWrap.__v120ProcessHistory=true;saveWrap.__v87ProcessSync=true;saveWrap.__v75OwnerSelect=true;saveWrap.__v69LaserMultiplier=true;
+}
+function makeOpenWrap(){
+ openWrap=function(idx){var p=products()[Number(idx)];if(p)repairProduct(clean(p.pn),true);return typeof openBase==='function'?openBase.apply(this,arguments):false};
+ openWrap.__v125ProcessOwnerFix=true;openWrap.__v12410Concurrency=true;openWrap.__v1249Stable=true;openWrap.__v1248ModalCombo=true;openWrap.__v1247Stable=true;openWrap.__v124Position=true;openWrap.__v123FastModal=true;openWrap.__v121MaterialHistory=true;openWrap.__v120ProcessHistory=true;openWrap.__v87StableModal=true;openWrap.__v84NoFlicker=true;openWrap.__v83Instant=true;openWrap.__v76ImmediateModal=true;openWrap.__v75OwnerSelect=true;
+}
+function installProcess(){
+ /* 저장/열기 함수는 누적 버전의 지연 래퍼와 순환될 수 있으므로 전역 함수를 교체하지 않는다.
+    기존 미반영 데이터는 repairAll, 신규 저장은 저장 버튼 캡처 이벤트로 확정한다. */
+ return true;
+}
+function captureSaveContext(){
+ var idx=activeIndex(),p=products()[idx];if(!p)return null;
+ return {pn:clean(p.pn),before:clone(p.steps||[]),rows:capturePopupSteps(),at:Date.now()};
+}
+function confirmCapturedSave(ctx){
+ if(!ctx||!ctx.pn)return false;
+ /* 기존 저장 함수가 팝업을 닫고 제품 배열을 갱신한 다음, 캡처한 공정을 최종 확정한다. */
+ return saveCaptured(ctx.pn,ctx.before,ctx.rows);
+}
+document.addEventListener('click',function(e){
+ var btn=e.target&&e.target.closest&&e.target.closest('#overlay .mfoot .save,#overlay button[onclick*="saveProduct"]');
+ if(!btn)return;var ctx=captureSaveContext();if(!ctx)return;
+ setTimeout(function(){try{var ov=id('overlay');if(ov&&!ov.classList.contains('hidden'))return;confirmCapturedSave(ctx)}catch(err){console.error('v125 저장 후 공정 확정 오류',err)}},0);
+},true);
+window.__v125PersistPopupProcess=function(){var ctx=captureSaveContext();return ctx?confirmCapturedSave(ctx):false};
+
+function ownerPn(el){var tr=el&&el.closest&&el.closest('tr');if(!tr)return '';var x=clean(tr.getAttribute('data-pn'));if(x)return x;var p=tr.querySelector('.pn');return clean(p&&p.textContent)}
+function addOwnerMaster(name){name=clean(name);if(!name)return;var a=read(OWNER_KEY,[]);if(!Array.isArray(a))a=[];if(a.indexOf(name)<0){a.push(name);a.sort(function(x,y){return String(x).localeCompare(String(y),'ko')});write(OWNER_KEY,a)}}
+function persistOwner(pn,name,commit){pn=clean(pn);name=clean(name);if(!pn)return false;var all=read(DRAW_KEY,{}),r=all[pn]&&typeof all[pn]==='object'?all[pn]:{};r.owner=name;r._modifiedAt=Date.now();r._modifiedBy=nowUser();all[pn]=r;write(DRAW_KEY,all);if(commit&&name)addOwnerMaster(name);ownerDrafts[pn]=name;return true}
+function reapplyOwnerDrafts(root){root=root||document;Object.keys(ownerDrafts).forEach(function(pn){root.querySelectorAll('tr').forEach(function(tr){var pe=tr.querySelector('.pn');if(clean(tr.getAttribute('data-pn'))!==pn&&clean(pe&&pe.textContent)!==pn)return;tr.querySelectorAll('.db-owner-field,.v98-owner-select,.v97-owner-select').forEach(function(el){if(el.value!==ownerDrafts[pn])el.value=ownerDrafts[pn]})})})}
+function refreshOwnerUiSafe(){patchOwnerRegister();reapplyOwnerDrafts(document)}
+function patchOwnerRegister(){
+ var safe=function(name){name=clean(name);if(name&&!ownerEditing)addOwnerMaster(name);return true};safe.__v125OwnerSafe=true;
+ if(!window.registerOwnerFromField||!window.registerOwnerFromField.__v125OwnerSafe)window.registerOwnerFromField=safe;
+}
+function installDrawGuard(){
+ /* 기존 도면분석 렌더 함수는 여러 버전에서 지연 래핑되므로 재래핑하지 않는다.
+    담당자 입력 중 재렌더 원인은 registerOwnerFromField의 목록 재생성이며 이를 안전 함수로 교체한다. */
+ return true;
+}
+document.addEventListener('focusin',function(e){var el=e.target&&e.target.closest&&e.target.closest('.db-owner-field,.v98-owner-select,.v97-owner-select');if(!el)return;ownerEditing=true;var pn=ownerPn(el);if(pn)ownerDrafts[pn]=clean(el.value)},true);
+document.addEventListener('input',function(e){var el=e.target&&e.target.closest&&e.target.closest('.db-owner-field,.v98-owner-select,.v97-owner-select');if(!el)return;var pn=ownerPn(el);if(pn)persistOwner(pn,el.value,false)},true);
+document.addEventListener('change',function(e){var el=e.target&&e.target.closest&&e.target.closest('.db-owner-field,.v98-owner-select,.v97-owner-select');if(!el)return;var pn=ownerPn(el);if(pn)persistOwner(pn,el.value,true);setTimeout(refreshOwnerUiSafe,0)},true);
+document.addEventListener('focusout',function(e){var el=e.target&&e.target.closest&&e.target.closest('.db-owner-field,.v98-owner-select,.v97-owner-select');if(!el)return;var pn=ownerPn(el);if(pn)persistOwner(pn,el.value,true);setTimeout(function(){ownerEditing=false;pendingDrawRender=false;refreshOwnerUiSafe()},30)},true);
+try{var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO==='function')new MO(function(){if(ownerEditing)reapplyOwnerDrafts(document)}).observe(document.body,{childList:true,subtree:true})}catch(e){}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent='버전 '+VER+' · 공정·담당자 저장 안정화';var title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';document.title=title;try{window.__legacyDocumentTitleV99=title}catch(e){}}
+function install(){repairAll();installProcess();patchOwnerRegister();installDrawGuard();setVersion()}
+window.__v125RepairProcessChanges=repairAll;
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();setTimeout(install,250)},{once:true});
+window.addEventListener('bomSyncApplied',function(){setTimeout(function(){repairAll();installProcess();installDrawGuard();reapplyOwnerDrafts(document)},0)});
+window.addEventListener('storage',function(e){if(!e.key||e.key===PROD_KEY||e.key===HIST_KEY||e.key===RECOVERY_KEY)setTimeout(repairAll,0)});
+[80,350,1200,3200,7200,13200,22000].forEach(function(ms){setTimeout(install,ms)});
+})();
+</script>
+
 </body>
 </html>
