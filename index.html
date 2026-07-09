@@ -19108,5 +19108,205 @@ window.addEventListener('storage',function(e){if(!e.key||e.key===PROD_KEY||e.key
 })();
 </script>
 
+
+<!-- ===== v126.0 공정변경 확정저장 · 동기화 덮어쓰기 방지 ===== -->
+<script id="v126-process-persistence-final">
+(function(){
+'use strict';
+var VER='v126.1';
+var PROD_KEY='dbfastec_cost_products_v2';
+var OV_KEY='dbfastec_cost_overrides_v2';
+var DRAW_KEY='dbfastec_cost_drawings_v1';
+var OWNER_KEY='dbfastec_owner_master_v1';
+var HIST_KEY='dbfastec_process_history_v120';
+var LATEST_KEY='dbfastec_process_latest_v126';
+var LEGACY_LATEST_KEY='dbfastec_process_latest_v125';
+var META_KEY='dbfastec_sync_meta_v1246';
+var STATE_KEY='dbfastec_bom_gsync_v1';
+var activePn='',lastSave=null,repairing=false,directSaving=false;
+
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+function num(v){var n=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(n)?n:0}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function read(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error('v126 저장 오류',k,e);return false}}
+function products(){try{return Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
+function findProduct(pn){pn=clean(pn);var a=products();for(var i=0;i<a.length;i++){if(clean(a[i]&&a[i].pn)===pn)return a[i]}return null}
+function user(){var s=read(STATE_KEY,{});return clean(s&&s.user)||'이름없음'}
+function toTime(v){if(typeof v==='number'&&isFinite(v))return v;if(v instanceof Date)return v.getTime();var n=Number(v);if(isFinite(n)&&n>0)return n;var d=Date.parse(String(v||''));return isFinite(d)?d:0}
+function hash(v){var s=String(v),h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+function plain(s){s=s||{};return {proc:clean(s.proc),gubun:clean(s.gubun),part:clean(s.part),equip:clean(s.equip),st:s.st==null?'':s.st,qty:s.qty==null?'':s.qty,costMode:clean(s.costMode)}}
+function same(a,b){a=Array.isArray(a)?a:[];b=Array.isArray(b)?b:[];if(a.length!==b.length)return false;for(var i=0;i<a.length;i++){if(JSON.stringify(plain(a[i]))!==JSON.stringify(plain(b[i])))return false}return true}
+function saveProducts(){var a=products();write(PROD_KEY,a);try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}try{if(typeof window.invalidatePerformanceCacheV83==='function')window.invalidatePerformanceCacheV83()}catch(e){}}
+function markSections(pn,sections,at){var m=read(META_KEY,{sections:{},records:{}});if(!m||typeof m!=='object')m={};if(!m.sections)m.sections={};if(!m.records)m.records={};sections.forEach(function(s){m.sections[s]=Math.max(toTime(m.sections[s]),at);if(['products','overrides','drawings'].indexOf(s)>=0){if(!m.records[s])m.records[s]={};m.records[s][pn]=Math.max(toTime(m.records[s][pn]),at)}});write(META_KEY,m)}
+function setLatest(pn,steps,at,by){var rec={steps:clone(steps||[]),at:at,by:clean(by)||user()};var a=read(LATEST_KEY,{});a[pn]=rec;write(LATEST_KEY,a);var b=read(LEGACY_LATEST_KEY,{});b[pn]=rec;write(LEGACY_LATEST_KEY,b)}
+function latestHistory(pn){var h=read(HIST_KEY,{}),arr=Array.isArray(h[pn])?h[pn]:[],best=null;arr.forEach(function(r){var t=toTime(r&&r.at);if(r&&Array.isArray(r.after)&&(!best||t>best.at))best={steps:r.after,at:t,by:r.by||'',source:'history'}});return best}
+function addHistory(pn,before,after,at,by){if(same(before,after))return false;var h=read(HIST_KEY,{}),arr=Array.isArray(h[pn])?h[pn]:[],top=arr[0];if(top&&same(top.after,after))return false;var rec={id:'ph_v126_'+at+'_'+Math.random().toString(36).slice(2,8),at:at,by:clean(by)||user(),before:clone(before||[]),after:clone(after||[])};h[pn]=[rec].concat(arr).slice(0,30);write(HIST_KEY,h);return true}
+function ensureOldIds(pn,before){return (before||[]).map(function(s,i){var x=clone(s)||{};x._syncId=x._syncId||('ps_'+hash(pn+'|'+i+'|'+JSON.stringify(plain(x))));return x})}
+function captureRows(pn,before,at,by){var old=ensureOldIds(pn,before),used={},out=[],ovs={};document.querySelectorAll('#overlay #stepbody tr').forEach(function(tr){var proc=clean(tr.querySelector('.d-proc')&&tr.querySelector('.d-proc').value),stRaw=clean(tr.querySelector('.d-st')&&tr.querySelector('.d-st').value);if(!proc&&stRaw==='')return;var oi=Number(tr.getAttribute('data-orig')),base=Number.isInteger(oi)&&oi>=0&&old[oi]?old[oi]:(old[out.length]||{}),s=Object.assign({},clone(base)||{});s.proc=proc;s.gubun=clean(tr.querySelector('.d-gubun')&&tr.querySelector('.d-gubun').value);s.part=clean(tr.querySelector('.d-part')&&tr.querySelector('.d-part').value);s.equip=clean(tr.querySelector('.d-equip')&&tr.querySelector('.d-equip').value);s.st=stRaw===''?'':(isNaN(Number(stRaw))?stRaw:Number(stRaw));var q=tr.querySelector('.d-qty'),cm=tr.querySelector('.d-mode-select');if(q)s.qty=clean(q.value)===''?'':num(q.value);if(cm)s.costMode=clean(cm.value);s._syncId=s._syncId||('ps_'+at.toString(36)+'_'+out.length+'_'+Math.random().toString(36).slice(2,7));s._updatedAt=at;s._updatedBy=by;s._order=out.length;used[s._syncId]=1;var ov=clean(tr.querySelector('.stepov')&&tr.querySelector('.stepov').value);if(ov!=='')ovs[out.length]=ov;out.push(s)});return {steps:out,old:old,used:used,overrides:ovs}}
+function resolvePn(){var p=activePn&&findProduct(activePn);if(p)return clean(p.pn);var idx=window.__v1249ActiveIndex;try{if(idx==null||Number(idx)<0)idx=typeof curIdx!=='undefined'?curIdx:-1}catch(e){idx=-1}idx=Number(idx);var a=products();if(Number.isInteger(idx)&&a[idx])return clean(a[idx].pn);var title=clean(id('m-title')&&id('m-title').textContent);for(var i=0;i<a.length;i++){var pn=clean(a[i]&&a[i].pn);if(pn&&title.endsWith(pn))return pn}return ''}
+function field(k){var e=id(k);return e?clean(e.value):''}
+function modalMode(){var b=id('m-mode-direct');return b&&b.classList.contains('on')?'direct':'dimension'}
+function captureMaterial(){var mult=id('laserMultiplierV69');return {mode:modalMode(),grade:field('m-grade')||'EGI',density:field('m-density'),unitPrice:field('m-matkg'),recoverWeight:field('m-recoverw'),thickness:field('m-thickness'),width:field('m-width'),length:field('m-length'),qty:field('m-useqty')||'1',allow:field('m-allow')||'auto',scrapW:field('m-scrapw'),scrapL:field('m-scrapl'),weight:field('m-matw'),ovh:field('m-ovh'),profit:field('m-profit'),laserMultiplier:mult?(num(mult.value)||1):1}}
+function hasMaterial(m){var gd=7.85;try{if(typeof gradeDensity==='function')gd=num(gradeDensity(m.grade||'EGI'))||7.85}catch(e){}return m.grade!=='EGI'||(m.density!==''&&Math.abs(num(m.density)-gd)>.000001)||m.unitPrice!==''||num(m.thickness)>0||num(m.width)>0||num(m.length)>0||num(m.recoverWeight)>0||num(m.scrapW)>0||num(m.scrapL)>0||num(m.qty)!==1||m.allow!=='auto'||num(m.laserMultiplier)!==1||(m.mode==='direct'&&m.weight!=='')}
+function materialSnapshot(ov){ov=ov||{};var m=ov.material||{};return {mode:m.mode||((ov.matw!==''&&ov.matw!=null)?'direct':'dimension'),grade:m.grade||'EGI',density:clean(m.density),unitPrice:clean(ov.matkg!==undefined?ov.matkg:m.unitPrice),recoverWeight:clean(m.recoverWeight),thickness:clean(m.thickness),width:clean(m.width),length:clean(m.length),qty:clean(m.qty||1),allow:m.allow||'auto',scrapW:clean(m.scrapW),scrapL:clean(m.scrapL),weight:clean(ov.matw!==undefined?ov.matw:m.weight),ovh:clean(ov.ovh),profit:clean(ov.profit),laserMultiplier:num(m.laserMultiplier)||1}}
+function editSummary(beforeSteps,afterSteps,b,a){var x=[];if(!same(beforeSteps,afterSteps))x.push('공정 내용 수정');[['grade','강종'],['unitPrice','재료단가'],['thickness','두께'],['width','재료폭'],['length','길이'],['qty','소재수량'],['allow','여유기준'],['recoverWeight','회수중량'],['weight','직접중량'],['ovh','제조경비율'],['profit','이윤율']].forEach(function(k){if(String(b[k[0]]||'')!==String(a[k[0]]||''))x.push(k[1]+' 수정')});return x.length?x.slice(0,4).join(' · ')+(x.length>4?' 외 '+(x.length-4)+'건':''):''}
+function persistOverrides(ctx,mat){var all=read(OV_KEY,{}),globalOv={};try{globalOv=(typeof OV!=='undefined'&&OV[ctx.pn])?OV[ctx.pn]:null}catch(e){}var old=clone(globalOv||all[ctx.pn]||{})||{},ov=clone(old)||{},beforeMat=materialSnapshot(old);if(Object.keys(ctx.captured.overrides).length)ov.steps=clone(ctx.captured.overrides);else delete ov.steps;if(hasMaterial(mat)){ov.material={mode:mat.mode,grade:mat.grade,density:mat.density,unitPrice:mat.unitPrice,thickness:mat.thickness,width:mat.width,length:mat.length,qty:mat.qty||1,allow:mat.allow||'auto',scrapW:mat.scrapW,scrapL:mat.scrapL,recoverWeight:mat.recoverWeight,laserMultiplier:mat.laserMultiplier||1};if(mat.unitPrice!=='')ov.matkg=mat.unitPrice;else delete ov.matkg;if(mat.mode==='direct'){if(mat.weight!=='')ov.matw=mat.weight;else delete ov.matw}else{try{var cm=typeof calculateMaterial==='function'?calculateMaterial(ctx.captured.steps,{material:ov.material,matkg:mat.unitPrice}):null;if(cm&&isFinite(cm.weight))ov.matw=cm.weight;else delete ov.matw}catch(e){delete ov.matw}}}else{delete ov.material;delete ov.matkg;delete ov.matw}if(mat.ovh!=='')ov.ovh=mat.ovh;else delete ov.ovh;if(mat.profit!=='')ov.profit=mat.profit;else delete ov.profit;ov._modifiedAt=ctx.at;ov._modifiedBy=ctx.by;var afterMat={mode:mat.mode,grade:mat.grade,density:mat.density,unitPrice:mat.unitPrice,recoverWeight:mat.recoverWeight,thickness:mat.thickness,width:mat.width,length:mat.length,qty:mat.qty,allow:mat.allow,scrapW:mat.scrapW,scrapL:mat.scrapL,weight:mat.weight,ovh:mat.ovh,profit:mat.profit,laserMultiplier:mat.laserMultiplier},sum=editSummary(ctx.before,ctx.captured.steps,beforeMat,afterMat);if(sum){var rec={at:ctx.at,by:ctx.by,summary:sum,before:{steps:clone(ctx.before),material:beforeMat},after:{steps:clone(ctx.captured.steps),material:afterMat}},hist=Array.isArray(ov._editHistory)?ov._editHistory:[];if(!hist[0]||hist[0].at!==ctx.at)ov._editHistory=[rec].concat(hist).slice(0,20);ov._editMeta=rec}var business=Object.keys(ov).filter(function(k){return !/^_/.test(k)});if(business.length||ov._editMeta||ov._editHistory){all[ctx.pn]=ov;try{OV[ctx.pn]=ov}catch(e){}}else{delete all[ctx.pn];try{delete OV[ctx.pn]}catch(e){}}write(OV_KEY,all);markSections(ctx.pn,['overrides'],ctx.at)}
+function persistOwner(ctx){var sel=id('v84-owner-select')||id('v83-owner-select')||id('m-owner-select-v75');if(!sel)return;var name=clean(sel.value),all=read(DRAW_KEY,{}),r=all[ctx.pn]&&typeof all[ctx.pn]==='object'?all[ctx.pn]:{};if(clean(r.owner)===name)return;r.owner=name;r._modifiedAt=ctx.at;r._modifiedBy=ctx.by;all[ctx.pn]=r;write(DRAW_KEY,all);if(name){var a=read(OWNER_KEY,[]);if(!Array.isArray(a))a=[];if(a.indexOf(name)<0){a.push(name);a.sort(function(x,y){return String(x).localeCompare(String(y),'ko')});write(OWNER_KEY,a)}}markSections(ctx.pn,['drawings'],ctx.at)}
+function authoritativeFor(pn,p){var cand=[],pAt=toTime(p&&p._processUpdatedAt);cand.push({steps:clone(p&&p.steps||[]),at:pAt,by:p&&p._processUpdatedBy||'',source:'product',priority:4});var a=read(LATEST_KEY,{})[pn];if(a&&Array.isArray(a.steps))cand.push({steps:a.steps,at:toTime(a.at),by:a.by||'',source:'latest',priority:3});var b=read(LEGACY_LATEST_KEY,{})[pn];if(b&&Array.isArray(b.steps))cand.push({steps:b.steps,at:toTime(b.at),by:b.by||'',source:'legacy',priority:2});var h=latestHistory(pn);if(h)cand.push(Object.assign(h,{priority:1}));cand.sort(function(x,y){return y.at-x.at||y.priority-x.priority});return cand[0]||null}
+function reconcilePn(pn,quiet){pn=clean(pn);var p=findProduct(pn);if(!p)return false;var a=read(LATEST_KEY,{})[pn],b=read(LEGACY_LATEST_KEY,{})[pn],h=latestHistory(pn);if(!(a&&Array.isArray(a.steps))&&!(b&&Array.isArray(b.steps))&&!h)return false;var best=authoritativeFor(pn,p);if(!best)return false;var pAt=toTime(p._processUpdatedAt),changed=false;if(best.source!=='product'&&(!same(p.steps,best.steps)||best.at>pAt)){p.steps=clone(best.steps);p._processUpdatedAt=best.at||Date.now();p._processUpdatedBy=clean(best.by)||p._processUpdatedBy||'이름없음';changed=true;saveProducts();setLatest(pn,p.steps,toTime(p._processUpdatedAt)||best.at||Date.now(),p._processUpdatedBy||best.by||user())}if(changed&&!quiet&&typeof window.toast==='function')window.toast('저장된 공정변경 내용을 복구했습니다.');return changed}
+function reconcileAll(){if(repairing)return 0;repairing=true;var changed=0;try{var keys={};Object.keys(read(LATEST_KEY,{})).forEach(function(k){keys[k]=1});Object.keys(read(LEGACY_LATEST_KEY,{})).forEach(function(k){keys[k]=1});Object.keys(read(HIST_KEY,{})).forEach(function(k){keys[k]=1});Object.keys(keys).forEach(function(pn){if(reconcilePn(pn,true))changed++});if(changed){saveProducts();try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}}}finally{repairing=false}return changed}
+function applyCaptured(ctx){var p=findProduct(ctx.pn);if(!p)return false;var old=ctx.captured.old,used=ctx.captured.used,del=clone(p._deletedStepIds||{})||{};old.forEach(function(s){if(s&&s._syncId&&!used[s._syncId])del[s._syncId]=ctx.at});p.steps=clone(ctx.captured.steps);p._deletedStepIds=del;p._processUpdatedAt=ctx.at;p._processUpdatedBy=ctx.by;p._processOrderUpdatedAt=ctx.at;saveProducts();setLatest(ctx.pn,p.steps,ctx.at,ctx.by);var histAdded=addHistory(ctx.pn,ctx.before,p.steps,ctx.at,ctx.by);markSections(ctx.pn,['products','processHistory'],ctx.at);try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',pn:ctx.pn,field:'steps',v126:true}}));if(histAdded)window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'processHistory',pn:ctx.pn,v126:true}}))}catch(e){}return true}
+function captureSave(){var pn=resolvePn(),p=findProduct(pn);if(!p)return null;var at=Date.now(),by=user(),before=clone(p.steps||[]),captured=captureRows(pn,before,at,by),ctx={pn:pn,at:at,by:by,before:before,captured:captured};activePn=pn;lastSave=ctx;applyCaptured(ctx);return ctx}
+function closeAndRefresh(ctx){window.__v12410PopupDirty=false;window.__v1249ActiveIndex=-1;try{if(typeof curIdx!=='undefined')curIdx=null}catch(e){}var ov=id('overlay');if(ov)ov.classList.add('hidden');try{if(typeof buildFilters==='function')buildFilters()}catch(e){}try{if(typeof renderCost==='function')renderCost(false)}catch(e){}try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',pn:ctx.pn,v126:true}}))}catch(e){}try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false)}catch(e){}if(typeof window.toast==='function')window.toast('제품 원가 및 공정변경이 저장되었습니다.')}
+function directSave(){if(directSaving)return false;directSaving=true;var btn=document.querySelector('#overlay .mfoot .save'),oldText=btn&&btn.textContent;try{if(btn){btn.disabled=true;btn.textContent='저장 중…'}var mat=captureMaterial(),ctx=captureSave();if(!ctx)throw new Error('저장할 제품을 찾을 수 없습니다. 제품을 다시 열어 주세요.');persistOverrides(ctx,mat);persistOwner(ctx);closeAndRefresh(ctx);[30,150,600].forEach(function(ms){setTimeout(function(){if(lastSave===ctx)applyCaptured(ctx)},ms)});return true}catch(e){console.error('v126 직접 저장 오류',e);if(typeof window.toast==='function')window.toast('저장 중 오류: '+(e.message||e));return false}finally{directSaving=false;if(btn){btn.disabled=false;btn.textContent=oldText||'저장'}}}
+directSave.__v126Direct=true;directSave.__v125ProcessOwnerFix=true;directSave.__v12417FlowPosition=true;directSave.__v12414Fast=true;directSave.__v12410Concurrency=true;directSave.__v1249Stable=true;directSave.__v124Position=true;directSave.__v121MaterialHistory=true;directSave.__v120ProcessHistory=true;directSave.__v87ProcessSync=true;directSave.__v75OwnerSelect=true;directSave.__v69LaserMultiplier=true;
+function installDirectSave(){if(window.saveProduct!==directSave)window.saveProduct=directSave}
+function pnFromEvent(e){var row=e.target&&e.target.closest&&e.target.closest('#view-cost tr.prod-row[data-pn]');return row?clean(row.getAttribute('data-pn')):''}
+function trackOpen(e){var pn=pnFromEvent(e);if(!pn)return;activePn=pn;reconcilePn(pn,true)}
+function isSaveButton(e){return e.target&&e.target.closest&&e.target.closest('#overlay .mfoot .save,#overlay button[onclick*="saveProduct"]')}
+document.addEventListener('pointerdown',trackOpen,true);
+document.addEventListener('click',function(e){trackOpen(e);if(!isSaveButton(e))return;e.preventDefault();e.stopImmediatePropagation();directSave()},true);
+function observeOverlay(){var ov=id('overlay');if(!ov||ov.__v126Observed)return;ov.__v126Observed=true;try{var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO==='function')new MO(function(){if(!ov.classList.contains('hidden')){var pn=resolvePn();if(pn){activePn=pn;reconcilePn(pn,true)}}}).observe(ov,{attributes:true,attributeFilter:['class']})}catch(e){}}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent='버전 '+VER+' · 공정변경 확정저장';var title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';document.title=title;try{window.__legacyDocumentTitleV99=title}catch(e){}}
+function init(){reconcileAll();observeOverlay();installDirectSave();setVersion()}
+window.__v126RepairProcessChanges=reconcileAll;
+window.__v126PersistCurrentProcess=directSave;
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+window.addEventListener('load',function(){init();setTimeout(init,300)},{once:true});
+window.addEventListener('bomSyncApplied',function(){[0,80,300,1000].forEach(function(ms){setTimeout(reconcileAll,ms)})});
+window.addEventListener('storage',function(e){if(!e.key||e.key===PROD_KEY||e.key===HIST_KEY||e.key===LATEST_KEY||e.key===LEGACY_LATEST_KEY)setTimeout(reconcileAll,0)});
+[100,500,1800,4000,7000,8000,12500,14000,22500,23500].forEach(function(ms){setTimeout(init,ms)});
+})();
+
+</script>
+
+
+<!-- ===== v127.0 변경이력 기준 팝업 공정 적용 · 저장 재검증 ===== -->
+<script id="v127-process-history-popup-authority">
+(function(){
+'use strict';
+var VER='v127.1';
+var PROD_KEY='dbfastec_cost_products_v2';
+var HIST_KEY='dbfastec_process_history_v120';
+var LATEST_KEY='dbfastec_process_latest_v126';
+var LEGACY_LATEST_KEY='dbfastec_process_latest_v125';
+var META_KEY='dbfastec_sync_meta_v1246';
+var activePn='',installing=false,applying=false,popupDirty=false,popupSession=0;
+
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function read(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error('v127 저장 오류',k,e);return false}}
+function toTime(v){if(typeof v==='number'&&isFinite(v))return v;var n=Number(v);if(isFinite(n)&&n>0)return n;var d=Date.parse(String(v||''));return isFinite(d)?d:0}
+function products(){try{return typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
+function productByPn(pn){pn=clean(pn);var a=products();for(var i=0;i<a.length;i++)if(clean(a[i]&&a[i].pn)===pn)return a[i];return null}
+function productAt(idx){idx=Number(idx);var a=products();return Number.isInteger(idx)&&idx>=0&&a[idx]?a[idx]:null}
+function plain(s){s=s||{};return {proc:clean(s.proc),gubun:clean(s.gubun),part:clean(s.part),equip:clean(s.equip),st:s.st==null?'':s.st,qty:s.qty==null?'':s.qty,costMode:clean(s.costMode||s.calcMode)}}
+function sameSteps(a,b){a=Array.isArray(a)?a:[];b=Array.isArray(b)?b:[];if(a.length!==b.length)return false;for(var i=0;i<a.length;i++)if(JSON.stringify(plain(a[i]))!==JSON.stringify(plain(b[i])))return false;return true}
+function extractSteps(r){
+  if(!r||typeof r!=='object')return null;
+  if(Array.isArray(r.after))return r.after;
+  if(r.after&&Array.isArray(r.after.steps))return r.after.steps;
+  if(Array.isArray(r.steps))return r.steps;
+  if(r.snapshot&&Array.isArray(r.snapshot.steps))return r.snapshot.steps;
+  if(r.data&&Array.isArray(r.data.after))return r.data.after;
+  if(r.data&&r.data.after&&Array.isArray(r.data.after.steps))return r.data.after.steps;
+  return null;
+}
+function latestHistory(pn){
+  var map=read(HIST_KEY,{}),arr=Array.isArray(map[pn])?map[pn]:[],best=null;
+  arr.forEach(function(r,i){var steps=extractSteps(r);if(!Array.isArray(steps))return;var at=toTime(r.at||r.updatedAt||r.modifiedAt||r.createdAt||r.date||r.time);var score=at>0?at:(arr.length-i);if(!best||score>best.score||(score===best.score&&i<best.index))best={steps:clone(steps),at:at,by:clean(r.by||r.user||r.modifiedBy),record:r,index:i,score:score}});
+  return best;
+}
+function saveProducts(){
+  write(PROD_KEY,products());
+  try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}
+  try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV83==='function')window.invalidatePerformanceCacheV83()}catch(e){}
+}
+function saveLatest(pn,rec,p){
+  var at=Math.max(toTime(rec&&rec.at),toTime(p&&p._processUpdatedAt))||Date.now(),item={steps:clone(rec.steps||[]),at:at,by:clean(rec.by)||clean(p&&p._processUpdatedBy)||'변경이력 복구'};
+  var a=read(LATEST_KEY,{});a[pn]=item;write(LATEST_KEY,a);
+  var b=read(LEGACY_LATEST_KEY,{});b[pn]=item;write(LEGACY_LATEST_KEY,b);
+  var m=read(META_KEY,{sections:{},records:{}});if(!m||typeof m!=='object')m={};m.sections=m.sections||{};m.records=m.records||{};m.records.products=m.records.products||{};m.sections.products=Math.max(toTime(m.sections.products),at);m.sections.processHistory=Math.max(toTime(m.sections.processHistory),at);m.records.products[pn]=Math.max(toTime(m.records.products[pn]),at);write(META_KEY,m);
+}
+function applyHistoryToProduct(pn,forceSave){
+  if(applying)return null;pn=clean(pn);var p=productByPn(pn),rec=latestHistory(pn);if(!p||!rec)return null;
+  applying=true;
+  try{
+    var changed=!sameSteps(p.steps,rec.steps),latest=read(LATEST_KEY,{})[pn],legacy=read(LEGACY_LATEST_KEY,{})[pn];
+    var latestMissing=!(latest&&Array.isArray(latest.steps)&&sameSteps(latest.steps,rec.steps))||!(legacy&&Array.isArray(legacy.steps)&&sameSteps(legacy.steps,rec.steps));
+    if(changed){p.steps=clone(rec.steps);var stamp=Math.max(toTime(rec.at),toTime(p._processUpdatedAt))||Date.now();p._processUpdatedAt=stamp;p._processUpdatedBy=clean(rec.by)||p._processUpdatedBy||'변경이력 복구';p._processOrderUpdatedAt=stamp;p._historyAppliedAtV127=Date.now();saveProducts()}
+    if(changed||latestMissing)saveLatest(pn,rec,p);
+    return {pn:pn,p:p,rec:rec,changed:changed};
+  }finally{applying=false}
+}
+function popupPn(){
+  if(activePn&&productByPn(activePn))return activePn;
+  var idx=-1;try{idx=Number(window.__v1249ActiveIndex);if(!Number.isInteger(idx)||idx<0)idx=typeof curIdx!=='undefined'?Number(curIdx):-1}catch(e){}
+  var p=productAt(idx);if(p)return clean(p.pn);
+  var title=clean(id('m-title')&&id('m-title').textContent),a=products();for(var i=0;i<a.length;i++){var pn=clean(a[i]&&a[i].pn);if(pn&&title.indexOf(pn)>=0)return pn}return '';
+}
+function domSteps(){
+  var out=[];document.querySelectorAll('#overlay #stepbody tr').forEach(function(tr){var proc=clean(tr.querySelector('.d-proc')&&tr.querySelector('.d-proc').value),st=clean(tr.querySelector('.d-st')&&tr.querySelector('.d-st').value);if(!proc&&st==='')return;var mode=tr.querySelector('.d-mode-select');out.push({proc:proc,gubun:clean(tr.querySelector('.d-gubun')&&tr.querySelector('.d-gubun').value),part:clean(tr.querySelector('.d-part')&&tr.querySelector('.d-part').value),equip:clean(tr.querySelector('.d-equip')&&tr.querySelector('.d-equip').value),st:st,qty:clean(tr.querySelector('.d-qty')&&tr.querySelector('.d-qty').value),costMode:clean(mode&&mode.value)})});return out;
+}
+function overrideFor(pn,i){try{var ov=(typeof OV!=='undefined'&&OV[pn])?OV[pn]:read('dbfastec_cost_overrides_v2',{})[pn];return ov&&ov.steps&&ov.steps[i]!=null?ov.steps[i]:''}catch(e){return ''}}
+function fallbackRow(s,i,ov){
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  return '<tr data-orig="'+i+'"><td class="drag">☷</td><td class="stepno">'+(i+1)+'</td><td><input class="d-proc" value="'+esc(s.proc||'')+'"></td><td><input class="d-gubun" value="'+esc(s.gubun||'')+'"></td><td><input class="d-part" value="'+esc(s.part||'')+'"></td><td><input class="d-equip" value="'+esc(s.equip||'')+'"></td><td><input class="d-st" value="'+esc(s.st==null?'':s.st)+'"></td><td><input class="d-qty" value="'+esc(s.qty==null?'':s.qty)+'"></td><td><input class="stepov" value="'+esc(ov)+'"></td><td><button type="button" onclick="delStep(this)">삭제</button></td></tr>';
+}
+function refreshRowFeatures(){
+  ['renumSteps','refreshProductModeRows','refreshModeDefaults','updateLaserRows','normalizeLaserAlias','placeFormulaRight','refreshCostModalHeaderV84'].forEach(function(n){try{if(typeof window[n]==='function')window[n]()}catch(e){}});
+  try{if(typeof window.recalcModal==='function')window.recalcModal()}catch(e){}
+}
+function renderHistoryRows(pn,rec){
+  var body=id('stepbody');if(!body||!rec)return false;
+  var html=(rec.steps||[]).map(function(s,i){try{if(typeof window.detailRow==='function')return window.detailRow(s,i,overrideFor(pn,i))}catch(e){}return fallbackRow(s,i,overrideFor(pn,i))}).join('');
+  body.innerHTML=html;body.setAttribute('data-v127-history-pn',pn);body.setAttribute('data-v127-history-at',String(rec.at||''));refreshRowFeatures();return true;
+}
+function ensurePopupHistory(pn){
+  var ov=id('overlay');if(!ov||ov.classList.contains('hidden'))return false;pn=clean(pn||popupPn());if(!pn)return false;activePn=pn;
+  var a=applyHistoryToProduct(pn,true),rec=a?a.rec:latestHistory(pn);if(!rec)return false;
+  if(popupDirty)return true;
+  if(!sameSteps(domSteps(),rec.steps))renderHistoryRows(pn,rec);
+  return true;
+}
+function beginPopupSession(pn){pn=clean(pn);if(activePn!==pn||!id('overlay')||id('overlay').classList.contains('hidden'))popupSession++;activePn=pn;popupDirty=false;return popupSession}
+function schedulePopup(pn){var token=popupSession;[0,16,60,160,420,900,1600].forEach(function(ms){setTimeout(function(){if(token!==popupSession||popupDirty)return;ensurePopupHistory(pn)},ms)})}
+function pnFromTarget(t){var row=t&&t.closest&&t.closest('#view-cost tr.prod-row[data-pn]');return row?clean(row.getAttribute('data-pn')):''}
+function beforeOpenTarget(e){var pn=pnFromTarget(e.target);if(!pn)return;beginPopupSession(pn);applyHistoryToProduct(pn,true)}
+document.addEventListener('pointerdown',beforeOpenTarget,true);
+document.addEventListener('mousedown',beforeOpenTarget,true);
+document.addEventListener('click',function(e){var pn=pnFromTarget(e.target);if(pn){if(activePn!==pn)beginPopupSession(pn);applyHistoryToProduct(pn,true);schedulePopup(pn)}},true);
+document.addEventListener('input',function(e){if(e.target&&e.target.closest&&e.target.closest('#overlay #stepbody'))popupDirty=true},true);
+document.addEventListener('change',function(e){if(e.target&&e.target.closest&&e.target.closest('#overlay #stepbody'))popupDirty=true},true);
+
+function copyFlags(from,to){try{Object.getOwnPropertyNames(from).forEach(function(k){if(k==='length'||k==='name'||k==='prototype'||k==='arguments'||k==='caller')return;try{to[k]=from[k]}catch(e){}})}catch(e){};['__v45Wrapped','__v46Wrapped','__v48DrawingEdit','__v69LaserMultiplier','__v75OwnerSelect','__v76ImmediateModal','__v83Instant','__v84NoFlicker','__v86Atomic','__v87StableModal','__v115TitleLine','__v120ProcessHistory','__v121MaterialHistory','__v123FastModal','__v124Position','__v1247Stable','__v1248ModalCombo','__v1249Stable','__v12410Concurrency'].forEach(function(k){to[k]=true})}
+function installOpen(){
+  if(installing)return;var base=window.openDetail;if(typeof base!=='function'||base.__v127HistoryAuthority)return;installing=true;
+  try{
+    var fn=function(idx){var p=productAt(idx),pn=clean(p&&p.pn);if(pn){beginPopupSession(pn);applyHistoryToProduct(pn,true)}var r=base.apply(this,arguments);if(pn)schedulePopup(pn);return r};
+    copyFlags(base,fn);fn.__v127HistoryAuthority=true;fn.__v127Raw=base;window.openDetail=fn;
+  }finally{installing=false}
+}
+function repairAll(){var h=read(HIST_KEY,{}),changed=0;Object.keys(h).forEach(function(pn){var r=applyHistoryToProduct(pn,false);if(r&&r.changed)changed++});if(changed){saveProducts();try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}}return changed}
+function observeOverlay(){var ov=id('overlay');if(!ov||ov.__v127HistoryObserved)return;ov.__v127HistoryObserved=true;try{var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO==='function')new MO(function(){if(!ov.classList.contains('hidden')){var pn=popupPn();if(pn)schedulePopup(pn)}}).observe(ov,{attributes:true,attributeFilter:['class']})}catch(e){}}
+function setVersion(){var v=id('bomAppVer');if(v)v.textContent='버전 '+VER+' · 변경이력 기준 공정적용';var title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';document.title=title;try{window.__legacyDocumentTitleV99=title}catch(e){}}
+function init(){repairAll();installOpen();observeOverlay();setVersion();var pn=popupPn();if(pn)ensurePopupHistory(pn)}
+window.__v127ApplyProcessHistory=applyHistoryToProduct;
+window.__v127RepairAllProcessHistory=repairAll;
+window.__v127EnsurePopupProcessHistory=ensurePopupHistory;
+window.__v127SetPopupDirty=function(v){popupDirty=!!v};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+window.addEventListener('load',function(){init();setTimeout(init,300)},{once:true});
+window.addEventListener('bomSyncApplied',function(){[0,80,300,1000].forEach(function(ms){setTimeout(init,ms)})});
+window.addEventListener('storage',function(e){if(!e.key||e.key===HIST_KEY||e.key===PROD_KEY||e.key===LATEST_KEY||e.key===LEGACY_LATEST_KEY)setTimeout(init,0)});
+[80,350,1200,3200].forEach(function(ms){setTimeout(init,ms)});
+})();
+</script>
 </body>
 </html>
