@@ -19934,7 +19934,7 @@ function lock(name,fn){try{Object.defineProperty(window,name,{configurable:true,
 function compatibility(){window.getMultiFilterValues=function(fid){var e=id(fid);return e&&e.value?[e.value]:[]};window.isMultiFilterAll=function(fid){var e=id(fid);return !e||!e.value};window.setMultiFilterSingle=function(fid,value){var e=id(fid);if(!e)return false;e.value=String(value||'');markActive();return true};window.getUsageMultiValues=function(){var e=id('f-usage');return e&&e.value?[e.value]:[]};window.setUsageMultiFilter=function(values,apply){var e=id('f-usage'),v=Array.isArray(values)&&values.length===1?values[0]:'';if(e)e.value=CATS.indexOf(v)>-1?v:'';markActive();if(apply!==false)renderCostV135(false);return true}}
 function setVersion(){var v=id('bomAppVer');if(v)v.textContent='버전 '+VER+' · 표폭/도면업로드 개선';document.title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍';try{window.__legacyDocumentTitleV99=document.title}catch(e){}}
 function reinforceCore(){lock('currentFilteredProducts',function(){return filteredRows().map(function(x){return x.p})});lock('buildFilters',buildFiltersCore);lock('clearF',clearFiltersV135);lock('renderCost',renderCostV135)}
-function init(){if(window.__v135CostFilterReady)return;window.__v135CostFilterReady=true;installStorageRevision();detachLegacyObservers();replaceToolbar();compatibility();reinforceCore();window.resetViewLimit=function(){try{VIEW_LIMIT=40}catch(e){}};window.moreRows=function(){try{VIEW_LIMIT=(Number(VIEW_LIMIT)||40)+180}catch(e){}lastRenderKey='';renderCostV135(false)};setVersion();renderCostV135(true);setTimeout(function(){var f=document.querySelector('#view-cost>.filters');if(!f||!f.classList.contains('v135-filters'))replaceToolbar();buildFiltersCore();renderCostV135(false);setVersion()},7600);[9000,15000,23500].forEach(function(ms){setTimeout(function(){reinforceCore();var f=document.querySelector('#view-cost>.filters');if(!f||!f.classList.contains('v135-filters'))replaceToolbar();lastRenderKey='';renderCostV135(false)},ms)})}
+function init(){if(window.__v135CostFilterReady)return;window.__v135CostFilterReady=true;installStorageRevision();detachLegacyObservers();replaceToolbar();compatibility();reinforceCore();window.resetViewLimit=function(){try{VIEW_LIMIT=40}catch(e){}};window.moreRows=function(){try{VIEW_LIMIT=(Number(VIEW_LIMIT)||40)+180}catch(e){}lastRenderKey='';renderCostV135(false)};setVersion();renderCostV135(true)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,0)},{once:true});else setTimeout(init,0);
 })();
 </script>
@@ -19953,5 +19953,377 @@ function keepWidth(){var p=document.querySelector('#view-cost #productPanel'),b=
 keepWidth();window.addEventListener('load',keepWidth,{once:true});window.addEventListener('resize',keepWidth,{passive:true});[100,500,1200,3000,7500,15500,24000].forEach(function(ms){setTimeout(keepWidth,ms)});
 })();
 </script>
+
+
+<!-- ===== v137.0 필터 검색란 원상복구 · 단일 이벤트/렌더링 안정화 ===== -->
+<style id="v137-filter-layout-stable-style">
+/* v129 제품별원가 표 기준 레이아웃만 적용 — 필터 기능/데이터 로직은 변경하지 않음 */
+#view-cost>.filters.v135-filters.v129-cost-filter-layout{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:8px!important;
+  position:relative!important;
+  top:auto!important;
+  z-index:20!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:0!important;
+  margin:0 0 14px!important;
+  padding:0 0 14px!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+  contain:none!important;
+}
+/* 1행: 구분 · 파트 · 품목군 · 설비 · 공정 · 도면 · BOM · 제품 구분 */
+#view-cost>.filters.v135-filters.v129-cost-filter-layout>select{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  order:1!important;
+  flex:1 1 120px!important;
+  width:auto!important;
+  min-width:108px!important;
+  max-width:none!important;
+  height:36px!important;
+  margin:0!important;
+  padding:7px 9px!important;
+  border:1px solid var(--line)!important;
+  border-radius:7px!important;
+  background:#fff!important;
+  color:var(--txt)!important;
+  font:400 12.5px 'Malgun Gothic','맑은 고딕',sans-serif!important;
+  box-shadow:none!important;
+}
+#view-cost>.filters.v135-filters.v129-cost-filter-layout>select.filter-active,
+#view-cost>.filters.v135-filters.v129-cost-filter-layout #q.filter-active{
+  background:#eaf4ff!important;
+  border-color:#9ec5fe!important;
+  box-shadow:0 0 0 2px rgba(47,111,176,.08)!important;
+}
+#view-cost>.filters.v135-filters.v129-cost-filter-layout>.fclear{
+  order:2!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  height:36px!important;
+  margin:0!important;
+  padding:7px 11px!important;
+  white-space:nowrap!important;
+}
+#view-cost>.filters.v135-filters.v129-cost-filter-layout>.fcount{
+  order:3!important;
+  flex:0 0 auto!important;
+  margin:0 0 0 auto!important;
+  white-space:nowrap!important;
+  font-size:12px!important;
+}
+/* 2행: 공정변경 → 숨김제품 → 품목추가 → 검색창(남는 폭 전체) */
+#view-cost>.filters.v135-filters.v129-cost-filter-layout>#costSearchAdd,
+#view-cost>.filters.v135-filters.v129-cost-filter-layout>.v135-search-actions{
+  order:1000!important;
+  flex:1 0 100%!important;
+  display:flex!important;
+  grid-template-columns:none!important;
+  align-items:center!important;
+  gap:8px!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:36px!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  contain:layout style!important;
+}
+#view-cost #costSearchAdd>#processChangedFilterBtn{order:1!important}
+#view-cost #costSearchAdd>#hiddenProductListBtn{order:2!important}
+#view-cost #costSearchAdd>.cost-add-product-btn,
+#view-cost #costSearchAdd>button[onclick*="openAdd("]{order:3!important}
+#view-cost #costSearchAdd>#q{
+  order:1000!important;
+  flex:1 1 auto!important;
+  display:block!important;
+  width:auto!important;
+  min-width:180px!important;
+  max-width:none!important;
+  height:38px!important;
+  margin:0!important;
+  padding:9px 12px!important;
+  border:1px solid #d8dee8!important;
+  border-radius:8px!important;
+  background:#f3f4f6!important;
+  color:var(--txt)!important;
+  font:400 13.5px 'Malgun Gothic','맑은 고딕',sans-serif!important;
+  box-shadow:none!important;
+}
+#view-cost #costSearchAdd>button{
+  flex:0 0 auto!important;
+  height:36px!important;
+  min-height:36px!important;
+  margin:0!important;
+  white-space:nowrap!important;
+  box-sizing:border-box!important;
+}
+/* v135에서 숨긴 구형 중복 필터는 그대로 숨김 유지 */
+#view-cost .filters .excel-multi-wrap,
+#view-cost .filters .v76-fast-select,
+#view-cost .filters #usageMultiWrapV66,
+#view-cost .filters [id^="multi-f-"]{
+  display:none!important;
+  pointer-events:none!important;
+}
+@media(max-width:1450px){
+  #view-cost>.filters.v135-filters.v129-cost-filter-layout>select{
+    flex:1 1 calc(25% - 8px)!important;
+    min-width:150px!important;
+  }
+  #view-cost>.filters.v135-filters.v129-cost-filter-layout>.fcount{margin-left:0!important}
+}
+@media(max-width:900px){
+  #view-cost>.filters.v135-filters.v129-cost-filter-layout>select{
+    flex:1 1 calc(50% - 8px)!important;
+    min-width:120px!important;
+  }
+  #view-cost #costSearchAdd{flex-wrap:wrap!important}
+  #view-cost #costSearchAdd>#q{flex:1 0 100%!important;order:0!important}
+}
+</style>
+<script id="v137-filter-layout-stable-script">
+(function(){
+'use strict';
+/* 레이아웃 표식과 검색행 ID만 부여한다. 필터 이벤트/렌더링 함수는 수정하지 않는다. */
+function applyV129Layout(){
+  var box=document.querySelector('#view-cost>.filters.v135-filters')||document.querySelector('#view-cost>.filters');
+  if(!box)return false;
+  box.classList.remove('v137-stable-filters');
+  box.classList.add('v129-cost-filter-layout');
+  var actions=box.querySelector('.v135-search-actions')||box.querySelector('#costSearchAdd');
+  if(actions){
+    actions.id='costSearchAdd';
+    actions.classList.add('cost-search-add');
+  }
+  return true;
+}
+function init(){
+  applyV129Layout();
+  requestAnimationFrame(applyV129Layout);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,0)},{once:true});
+else setTimeout(init,0);
+window.addEventListener('load',applyV129Layout,{once:true});
+})();
+</script>
+
+
+
+<!-- ===== v139 레이아웃 미세조정: 검색행 간격 축소 · 우측선 정렬 ===== -->
+<style id="v139-cost-layout-spacing-align-only">
+/* 레이아웃만 조정: 기능·데이터·필터 이벤트는 변경하지 않음 */
+#view-cost{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+#view-cost>.filters.v135-filters.v129-cost-filter-layout{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  column-gap:8px!important;
+  row-gap:4px!important;
+  margin:0 0 5px!important;
+  padding:0!important;
+  border-right:0!important;
+}
+#view-cost>.filters.v135-filters.v129-cost-filter-layout>#costSearchAdd,
+#view-cost>.filters.v135-filters.v129-cost-filter-layout>.v135-search-actions{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:0!important;
+}
+#view-cost #costSearchAdd>#q{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+#view-cost #productPanel,
+#view-cost #productPanel>.tablebox,
+#view-cost #productPanel>.tablebox>table.cost-table{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box!important;
+}
+#view-cost #productPanel>.tablebox{
+  margin-top:0!important;
+}
+</style>
+
+
+<!-- ===== v140.0 공정변경 이력 정밀검증 · 안전복원 ===== -->
+<script id="v140-process-history-audit-restore">
+(function(){
+'use strict';
+var VER='v141.0';
+var PROD_KEY='dbfastec_cost_products_v2';
+var HIST_KEY='dbfastec_process_history_v120';
+var REC_KEYS=['dbfastec_process_latest_v127','dbfastec_process_latest_v125'];
+var AUDIT_KEY='dbfastec_process_restore_audit_v140';
+var BACKUP_KEY='dbfastec_process_restore_backup_v140';
+var STATE_KEY='dbfastec_bom_gsync_v1';
+function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error(e);return false}}
+function time(v){if(v==null||v==='')return 0;if(typeof v==='number')return isFinite(v)?v:0;var n=Number(v);if(isFinite(n)&&n>0)return n;var d=Date.parse(v);return isNaN(d)?0:d}
+function products(){try{return typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
+function user(){var s=read(STATE_KEY,{});return clean(s&&s.user)||'이름없음'}
+function plainStep(s){s=s||{};return {proc:clean(s.proc),gubun:clean(s.gubun),part:clean(s.part),equip:clean(s.equip),st:s.st==null?'':String(s.st),qty:s.qty==null?'':String(s.qty),costMode:clean(s.costMode||s.calcMode)}}
+function normalizeSteps(a){return (Array.isArray(a)?a:[]).map(function(s){return Object.assign({},clone(s)||{},plainStep(s))}).filter(function(s){return clean(s.proc)||clean(s.gubun)||clean(s.part)||clean(s.equip)||String(s.st||'').trim()!==''})}
+function same(a,b){a=normalizeSteps(a);b=normalizeSteps(b);if(a.length!==b.length)return false;for(var i=0;i<a.length;i++)if(JSON.stringify(plainStep(a[i]))!==JSON.stringify(plainStep(b[i])))return false;return true}
+function extract(r){if(!r||typeof r!=='object')return null;if(Array.isArray(r.after))return r.after;if(r.after&&Array.isArray(r.after.steps))return r.after.steps;if(Array.isArray(r.steps))return r.steps;if(r.snapshot&&Array.isArray(r.snapshot.steps))return r.snapshot.steps;if(r.data&&Array.isArray(r.data.after))return r.data.after;if(r.data&&r.data.after&&Array.isArray(r.data.after.steps))return r.data.after.steps;return null}
+function candidateScore(c){var valid=c.steps.length>0?1000000000000000:0;return valid+(c.at||0)+(c.source==='history'?1000:0)}
+function candidatesFor(pn){var out=[],h=read(HIST_KEY,{}),arr=Array.isArray(h[pn])?h[pn]:[];
+ arr.forEach(function(r,i){var st=normalizeSteps(extract(r));if(extract(r)!==null)out.push({source:'history',index:i,steps:st,at:time(r.at||r.updatedAt||r.modifiedAt||r.createdAt||r.date||r.time),by:clean(r.by||r.user||r.modifiedBy),raw:r})});
+ REC_KEYS.forEach(function(k){var m=read(k,{}),r=m&&m[pn];if(r&&Array.isArray(r.steps))out.push({source:k,steps:normalizeSteps(r.steps),at:time(r.at),by:clean(r.by),raw:r})});
+ return out.sort(function(a,b){return candidateScore(b)-candidateScore(a)})
+}
+function bestFor(pn,p){var list=candidatesFor(pn);if(!list.length)return null;var nonEmpty=list.filter(function(x){return x.steps.length>0});var best=nonEmpty[0]||list[0];var pAt=time(p&&p._processUpdatedAt);if(pAt>best.at&&normalizeSteps(p&&p.steps).length>0)return null;return best}
+function saveProducts(){write(PROD_KEY,products());try{if(typeof saveProd==='function')saveProd()}catch(e){}try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}}
+function auditAndRestore(manual){var ps=products(),backup={},changes=[],review=[];ps.forEach(function(p){var pn=clean(p&&p.pn);if(!pn)return;var cand=bestFor(pn,p);if(!cand)return;var cur=normalizeSteps(p.steps),need=!same(cur,cand.steps);if(!need)return;backup[pn]={steps:clone(p.steps||[]),at:time(p._processUpdatedAt),by:clean(p._processUpdatedBy)};p.steps=clone(cand.steps);p._processUpdatedAt=Math.max(time(p._processUpdatedAt),cand.at||Date.now());p._processUpdatedBy=cand.by||'수정이력 복원';p._processOrderUpdatedAt=p._processUpdatedAt;p._restoredByV140={at:Date.now(),source:cand.source};changes.push({pn:pn,item:clean(p.item),beforeCount:cur.length,afterCount:cand.steps.length,source:cand.source,historyAt:cand.at,by:cand.by});});
+ if(changes.length){write(BACKUP_KEY,{at:Date.now(),by:user(),products:backup});saveProducts();try{if(typeof buildFilters==='function')buildFilters()}catch(e){}try{if(typeof renderCost==='function')renderCost(false)}catch(e){}try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',processRestored:changes.length}}))}catch(e){}}
+ var result={at:Date.now(),by:user(),manual:!!manual,restored:changes.length,changes:changes,review:review};write(AUDIT_KEY,result);return result}
+function toastMsg(t){try{if(typeof toast==='function')return toast(t)}catch(e){}alert(t)}
+function addButton(){var row=document.getElementById('costSearchAdd');if(!row||document.getElementById('processRestoreBtn'))return;var b=document.createElement('button');b.id='processRestoreBtn';b.type='button';b.className='bghost';b.textContent='↩ 공정복원';b.title='저장된 공정 변경이력과 복구본을 비교하여 누락된 공정을 복원합니다.';b.onclick=function(){var r=auditAndRestore(true);toastMsg(r.restored?r.restored+'개 제품의 공정을 수정이력 기준으로 복원했습니다.':'복원할 공정 누락이 없습니다.')};var q=row.querySelector('#q');row.insertBefore(b,q||null)}
+function setVersion(){var e=document.getElementById('bomAppVer');if(e)e.textContent=VER;document.title='제품별 제조원가 프로그램 '+VER+' | (주)동방파스텍'}
+function init(){setVersion();var r=auditAndRestore(false);addButton();if(r.restored)console.info('v140 공정복원',r)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,0)},{once:true});else setTimeout(init,0);
+window.addEventListener('load',function(){addButton();setVersion()},{once:true});
+window.addEventListener('bomSyncApplied',function(){setTimeout(function(){auditAndRestore(false);addButton()},50)});
+[200,800,2200,6000].forEach(function(ms){setTimeout(addButton,ms)});
+})();
+</script>
+
+
+<!-- ===== v141 제품별원가 필터 순서 최종정리 ===== -->
+
+
+
+<!-- ===== v148.0 제품별원가 필터 배치 단일화 ===== -->
+<style id="v148-cost-filter-one-layout">
+/*
+  v144~v147의 중복 배치 규칙을 제거하고 이 규칙 하나만 사용한다.
+  1행: 구분/파트/품목군/설비/공정/도면/BOM/제품/초기화/건수
+  2행: 검색 및 제품 관련 버튼
+*/
+#view-cost > div.filters{
+  display:grid!important;
+  grid-template-columns:
+    minmax(0,1fr) minmax(0,1fr) minmax(0,1.08fr) minmax(0,1fr)
+    minmax(0,1fr) minmax(0,1.08fr) minmax(0,1.08fr) minmax(0,1.08fr)
+    104px 220px!important;
+  grid-template-rows:36px auto!important;
+  gap:8px!important;
+  align-items:center!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  padding:10px 12px!important;
+  margin:0 0 14px!important;
+  overflow:visible!important;
+}
+#view-cost > div.filters > #f-gubun{grid-column:1!important;grid-row:1!important}
+#view-cost > div.filters > #f-part{grid-column:2!important;grid-row:1!important}
+#view-cost > div.filters > #f-item{grid-column:3!important;grid-row:1!important}
+#view-cost > div.filters > #f-equip{grid-column:4!important;grid-row:1!important}
+#view-cost > div.filters > #f-proc{grid-column:5!important;grid-row:1!important}
+#view-cost > div.filters > #f-draw{grid-column:6!important;grid-row:1!important}
+#view-cost > div.filters > #f-bom{grid-column:7!important;grid-row:1!important}
+#view-cost > div.filters > #f-usage{grid-column:8!important;grid-row:1!important}
+#view-cost > div.filters > .fclear{
+  grid-column:9!important;grid-row:1!important;
+  width:104px!important;min-width:104px!important;height:36px!important;
+  margin:0!important;padding:0 10px!important;
+  justify-self:stretch!important;align-self:stretch!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  white-space:nowrap!important;
+}
+#view-cost > div.filters > #fcount{
+  grid-column:10!important;grid-row:1!important;
+  width:220px!important;min-width:220px!important;
+  margin:0!important;padding:0!important;
+  justify-self:end!important;align-self:center!important;
+  text-align:right!important;white-space:nowrap!important;
+  display:block!important;
+}
+#view-cost > div.filters > #f-gubun,
+#view-cost > div.filters > #f-part,
+#view-cost > div.filters > #f-item,
+#view-cost > div.filters > #f-equip,
+#view-cost > div.filters > #f-proc,
+#view-cost > div.filters > #f-draw,
+#view-cost > div.filters > #f-bom,
+#view-cost > div.filters > #f-usage{
+  display:block!important;width:100%!important;min-width:0!important;max-width:none!important;
+  height:36px!important;margin:0!important;position:relative!important;
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+  order:initial!important;
+}
+#view-cost > div.filters > .v135-search-actions,
+#view-cost > div.filters > #costSearchAdd{
+  grid-column:1 / 11!important;grid-row:2!important;
+  width:100%!important;min-width:0!important;margin:0!important;
+  display:flex!important;align-items:center!important;gap:8px!important;
+}
+#view-cost > div.filters > #usageMultiWrapV66,
+#view-cost > div.filters > [id^="multi-f-"],
+#view-cost > div.filters > .excel-multi-wrap,
+#view-cost > div.filters > .v76-fast-select{display:none!important}
+
+/* 1280px 이하에서는 필터 영역만 가로 스크롤하여 순서와 우측 끝 배치를 보존한다. */
+@media(max-width:1280px){
+  #view-cost > div.filters{
+    grid-template-columns:repeat(8,120px) 104px 220px!important;
+    overflow-x:auto!important;
+    overflow-y:visible!important;
+  }
+}
+</style>
+<script id="v148-cost-filter-one-layout-script">
+(function(){
+'use strict';
+var ORDER=['f-gubun','f-part','f-item','f-equip','f-proc','f-draw','f-bom','f-usage'];
+function arrange(){
+  var box=document.querySelector('#view-cost > div.filters');
+  if(!box||box.dataset.v148Arranged==='1')return;
+  var anchor=box.querySelector('.fclear');
+  ORDER.forEach(function(k){var el=document.getElementById(k);if(el&&el.parentNode===box)box.insertBefore(el,anchor)});
+  var reset=box.querySelector('.fclear'),count=document.getElementById('fcount'),search=box.querySelector('.v135-search-actions')||document.getElementById('costSearchAdd');
+  if(reset&&reset.parentNode===box)box.appendChild(reset);
+  if(count&&count.parentNode===box)box.appendChild(count);
+  if(search&&search.parentNode===box)box.appendChild(search);
+  box.dataset.v148Arranged='1';
+}
+function setVersion(){
+  var v=document.getElementById('bomAppVer');if(v)v.textContent='v148.0';
+  document.title='제품별 제조원가 프로그램 v148.0 | (주)동방파스텍';
+}
+function init(){arrange();setVersion()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,0)},{once:true});else setTimeout(init,0);
+window.addEventListener('load',function(){setTimeout(init,0)},{once:true});
+[120,500,1200,2500].forEach(function(ms){setTimeout(init,ms)});
+})();
+</script>
+
 </body>
 </html>
