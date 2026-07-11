@@ -22660,5 +22660,190 @@ window.addEventListener('load',function(){init();setTimeout(init,150);setTimeout
 </script>
 <!-- ===== /V131.5 ===== -->
 
+<!-- ===== V131.6 ASSEMBLY BOM COST ROLLUP ===== -->
+<style id="v1316-assembly-bom-cost-style">
+#overlay #m-bom-rollup-v1316{
+  display:none;margin:12px 0 10px;padding:11px 12px;border:1px solid #b9cde7;
+  border-left:4px solid #2f6fb0;border-radius:10px;background:#f3f8ff;
+  box-shadow:0 1px 3px rgba(20,40,74,.06)
+}
+#overlay #m-bom-rollup-v1316.on{display:block}
+#overlay #m-bom-rollup-v1316 .v1316-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+#overlay #m-bom-rollup-v1316 .v1316-head b{font-size:13px;color:#16284a}
+#overlay #m-bom-rollup-v1316 .v1316-head span{margin-left:auto;font-size:10.5px;color:#60718a;font-weight:700}
+#overlay #m-bom-rollup-v1316 .v1316-grid{display:grid;grid-template-columns:repeat(4,minmax(110px,1fr));gap:7px}
+#overlay #m-bom-rollup-v1316 .v1316-cell{padding:8px 9px;border:1px solid #d9e5f3;border-radius:8px;background:#fff;text-align:right}
+#overlay #m-bom-rollup-v1316 .v1316-cell small{display:block;font-size:10px;color:#6b7890;font-weight:800}
+#overlay #m-bom-rollup-v1316 .v1316-cell b{display:block;margin-top:2px;font-size:13px;color:#1b2435}
+#overlay #m-bom-rollup-v1316 .v1316-cell.total b{color:#0b6b43;font-size:14px}
+#overlay #m-summary .v1316-bom-line{background:#f3f8ff;margin-left:-7px;margin-right:-7px;padding-left:7px;padding-right:7px}
+#overlay #m-summary .v1316-bom-line .lab{color:#315d94;font-weight:800}
+#overlay #m-summary .v1316-bom-total{border-top:1px solid #bfd1e7;margin-top:2px;padding-top:7px}
+@media(max-width:900px){#overlay #m-bom-rollup-v1316 .v1316-grid{grid-template-columns:1fr 1fr}}
+</style>
+<script id="v1316-assembly-bom-cost-script">
+(function(){
+  'use strict';
+  if(window.__v1316AssemblyBomInstalled)return;
+  window.__v1316AssemblyBomInstalled=true;
+  var PURCHASE_KEY='dbfastec_bom_purchase_prices_v1';
+  var baseCalc=window.calc;
+  if(typeof baseCalc!=='function')return;
+  var cache=new Map(),cacheTime=0;
+
+  function n(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
+  function clean(v){return String(v==null?'':v).trim()}
+  function money(v){return Math.round(n(v)).toLocaleString('ko-KR')}
+  function esc(v){return clean(v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})}
+  function products(){try{return Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
+  function purchaseMap(){try{return JSON.parse(localStorage.getItem(PURCHASE_KEY)||'{}')||{}}catch(e){return {}}}
+  function purchaseCode(ch){return clean(ch&&ch.code)||[clean(ch&&ch.name),clean(ch&&ch.spec)].join('§')}
+  function isPurchase(ch){var k=clean(ch&&ch.kind);return k==='부자재'||k==='구매품'||k.indexOf('구매')>=0}
+  function qty(ch){var q=n(ch&&ch.qty);return q>0?q:1}
+  function hasAssembly(steps){return (steps||[]).some(function(s){return /조립/.test(clean(s&&s.proc))})}
+  function productFor(ch){try{return typeof window.productForBomCode==='function'?window.productForBomCode(ch&&ch.code,ch&&ch.name,ch&&ch.spec):null}catch(e){return null}}
+  function children(p){
+    try{
+      var root=typeof window.productBomRoot==='function'?window.productBomRoot(p):clean(p&&p.pn);
+      return root&&typeof window.bomKids==='function'?(window.bomKids(root)||[]):[];
+    }catch(e){return []}
+  }
+  function resetCache(){cache.clear();cacheTime=Date.now()}
+  window.__v1316ClearBomCostCache=resetCache;
+  function freshCache(){if(Date.now()-cacheTime>1500)resetCache()}
+  function cloneBase(c){var o={};Object.keys(c||{}).forEach(function(k){o[k]=c[k]});return o}
+  function emptyBom(){return {mat:0,proc:0,ovh:0,base:0,count:0,lines:0}}
+
+  function bomRollup(p,stack){
+    var total=emptyBom(),kids=children(p),pm=purchaseMap();
+    (kids||[]).forEach(function(ch){
+      var q=qty(ch),child=productFor(ch),unit=null,pp=n(pm[purchaseCode(ch)]);
+      /* 구매품/부자재는 연결 제품이 있어도 제조원가 대신 등록 매입가를 사용 */
+      if(isPurchase(ch)){
+        total.mat+=pp*q;total.count+=q;total.lines++;return;
+      }
+      if(child){
+        var pn=clean(child.pn);
+        if(stack.has(pn))return;
+        var next=new Set(stack);next.add(pn);
+        unit=rolledCalc(child,next);
+        total.mat+=n(unit.mat)*q;total.proc+=n(unit.proc)*q;total.ovh+=n(unit.ovh)*q;
+        total.count+=q;total.lines++;
+      }else if(pp>0){
+        total.mat+=pp*q;total.count+=q;total.lines++;
+      }
+    });
+    total.base=total.mat+total.proc+total.ovh;
+    return total;
+  }
+
+  function combine(own,bom){
+    own=own||{};bom=bom||emptyBom();
+    var out=cloneBase(own),defect=n(typeof BASE!=='undefined'&&BASE.defect),prof=n(own.profR);
+    out.ownMat=n(own.mat);out.ownProc=n(own.proc);out.ownOvh=n(own.ovh);out.ownBase=n(own.base);
+    out.bom={mat:n(bom.mat),proc:n(bom.proc),ovh:n(bom.ovh),base:n(bom.base),count:n(bom.count),lines:n(bom.lines)};
+    out.mat=out.ownMat+out.bom.mat;
+    out.proc=out.ownProc+out.bom.proc;
+    out.ovh=out.ownOvh+out.bom.ovh;
+    out.base=out.mat+out.proc+out.ovh;
+    out.withDef=defect>0?out.base/(1-defect/100):out.base;
+    out.sale=out.withDef*(1+prof/100);
+    out.hasAssemblyBom=out.bom.lines>0;
+    return out;
+  }
+
+  function rolledCalc(p,stack){
+    if(!p)return {};
+    freshCache();
+    var pn=clean(p.pn),top=!stack,ck=pn;
+    if(!top&&cache.has(ck))return cache.get(ck);
+    var own=baseCalc(p)||{};
+    if(!hasAssembly(p.steps||[])){if(!top)cache.set(ck,own);return own}
+    var st=stack||new Set([pn]);
+    var bom=bomRollup(p,st),out=combine(own,bom);
+    if(!top)cache.set(ck,out);
+    return out;
+  }
+  rolledCalc.__v1316AssemblyBom=true;
+  rolledCalc.__v1316Base=baseCalc;
+  window.calc=rolledCalc;
+  try{calc=rolledCalc}catch(e){}
+  window.getAssemblyBomRollupV1316=function(p){
+    if(!p||!hasAssembly(p.steps||[]))return emptyBom();
+    return bomRollup(p,new Set([clean(p.pn)]));
+  };
+
+  function ensureBox(){
+    var editor=document.querySelector('#overlay .material-editor');if(!editor)return null;
+    var box=document.getElementById('m-bom-rollup-v1316');
+    if(!box){box=document.createElement('div');box.id='m-bom-rollup-v1316';editor.insertAdjacentElement('beforebegin',box)}
+    return box;
+  }
+  function modalMode(){var b=document.getElementById('m-mode-direct');return b&&b.classList.contains('on')?'direct':'dimension'}
+  function val(id){var e=document.getElementById(id);return e?e.value:''}
+  function modalOwnCost(){
+    var rs=typeof window.readModalSteps==='function'?window.readModalSteps():{steps:[],ovs:{}};
+    var md={mode:modalMode(),grade:val('m-grade')||'EGI',density:val('m-density'),unitPrice:val('m-matkg'),recoverWeight:val('m-recoverw'),thickness:val('m-thickness'),width:val('m-width'),length:val('m-length'),qty:val('m-useqty')||1,allow:val('m-allow')||'auto',scrapW:val('m-scrapw'),scrapL:val('m-scrapl'),weight:val('m-matw')};
+    var ov={steps:rs.ovs||{},material:md,matw:modalMode()==='direct'?val('m-matw'):'',matkg:val('m-matkg'),ovh:val('m-ovh'),profit:val('m-profit')};
+    var own=typeof window.computeCost==='function'?window.computeCost(rs.steps||[],ov):computeCost(rs.steps||[],ov);
+    return {steps:rs.steps||[],own:own};
+  }
+  function summaryHtml(own,combined,bom){
+    var m=own.material||{},def=n(typeof BASE!=='undefined'&&BASE.defect),prof=n(combined.profR);
+    return '<div class="srow"><span class="lab">본제품 재료비'+(m.grade?' ('+esc(m.grade)+(m.weight!=null?' · '+Number(n(m.weight).toFixed(4))+'kg':'')+')':'')+'</span><span class="val">'+money(own.mat)+' 원</span></div>'+ 
+      '<div class="srow v1316-bom-line"><span class="lab">BOM 재료비</span><span class="val">+ '+money(bom.mat)+' 원</span></div>'+ 
+      '<div class="srow v1316-bom-total"><span class="lab">재료비 합계</span><span class="val">'+money(combined.mat)+' 원</span></div>'+ 
+      '<div class="srow"><span class="lab">본제품 가공비</span><span class="val">'+money(own.proc)+' 원</span></div>'+ 
+      '<div class="srow v1316-bom-line"><span class="lab">BOM 가공비</span><span class="val">+ '+money(bom.proc)+' 원</span></div>'+ 
+      '<div class="srow v1316-bom-total"><span class="lab">가공비 합계</span><span class="val">'+money(combined.proc)+' 원</span></div>'+ 
+      '<div class="srow"><span class="lab">본제품 제조경비</span><span class="val">'+money(own.ovh)+' 원</span></div>'+ 
+      '<div class="srow v1316-bom-line"><span class="lab">BOM 제조경비</span><span class="val">+ '+money(bom.ovh)+' 원</span></div>'+ 
+      '<div class="srow v1316-bom-total"><span class="lab">제조경비 합계</span><span class="val">'+money(combined.ovh)+' 원</span></div>'+ 
+      '<div class="srow"><span class="lab">소계</span><span class="val">'+money(combined.base)+' 원</span></div>'+ 
+      '<div class="srow"><span class="lab">불량반영 ('+Number(def.toFixed(1))+'%)</span><span class="val">'+money(combined.withDef)+' 원</span></div>'+ 
+      '<div class="srow total"><span class="lab">제조원가 (개당 · BOM 포함)</span><span class="val">'+money(combined.withDef)+' 원</span></div>'+ 
+      '<div class="srow saleline"><span class="lab">판매가 참고 (이윤 '+Number(prof.toFixed(1))+'%)</span><span class="val">'+money(combined.sale)+' 원</span></div>';
+  }
+  function updateModal(){
+    var box=ensureBox(),p=null;try{p=products()[Number(curIdx)]}catch(e){}
+    if(!box||!p)return;
+    var mc=modalOwnCost(),active=hasAssembly(mc.steps),bom=active?bomRollup(p,new Set([clean(p.pn)])):emptyBom();
+    if(!active||!bom.lines){box.classList.remove('on');box.innerHTML='';return}
+    var combined=combine(mc.own,bom);
+    box.classList.add('on');
+    box.innerHTML='<div class="v1316-head"><b>📦 BOM 원가 합산</b><span>조립 공정 · 하위 BOM '+bom.lines.toLocaleString()+'종 · 소요량 반영</span></div><div class="v1316-grid">'+
+      '<div class="v1316-cell"><small>BOM 재료비</small><b>'+money(bom.mat)+' 원</b></div>'+ 
+      '<div class="v1316-cell"><small>BOM 가공비</small><b>'+money(bom.proc)+' 원</b></div>'+ 
+      '<div class="v1316-cell"><small>BOM 제조경비</small><b>'+money(bom.ovh)+' 원</b></div>'+ 
+      '<div class="v1316-cell total"><small>BOM 원가 소계</small><b>'+money(bom.base)+' 원</b></div></div>';
+    var sum=document.getElementById('m-summary');if(sum)sum.innerHTML=summaryHtml(mc.own,combined,bom);
+    var ps=document.getElementById('m-procsum');if(ps)ps.textContent=money(combined.proc);
+    var unit=document.getElementById('m-unit-cost-v61');if(unit)unit.textContent=money(combined.withDef)+' 원';
+    var proc=document.getElementById('m-process-total-v61');if(proc)proc.textContent=money(combined.proc)+' 원';
+  }
+
+  var baseRecalc=window.recalcModal;
+  if(typeof baseRecalc==='function'){
+    var recalc=function(){resetCache();var r=baseRecalc.apply(this,arguments);try{updateModal()}catch(e){console.error('BOM 합산 표시 오류',e)}return r};
+    recalc.__v1316AssemblyBom=true;recalc.__v1316Base=baseRecalc;window.recalcModal=recalc;try{recalcModal=recalc}catch(e){}
+  }
+  var baseOpen=window.openDetail;
+  if(typeof baseOpen==='function'){
+    var open=function(){resetCache();var r=baseOpen.apply(this,arguments);setTimeout(updateModal,0);return r};
+    open.__v1316AssemblyBom=true;open.__v1316Base=baseOpen;window.openDetail=open;try{openDetail=open}catch(e){}
+  }
+  var baseRender=window.renderCost;
+  if(typeof baseRender==='function'){
+    var render=function(){resetCache();return baseRender.apply(this,arguments)};
+    render.__v1316AssemblyBom=true;render.__v1316Base=baseRender;window.renderCost=render;try{renderCost=render}catch(e){}
+  }
+  var oldPurchase=window.setBomPurchasePrice;
+  if(typeof oldPurchase==='function')window.setBomPurchasePrice=function(){resetCache();var r=oldPurchase.apply(this,arguments);try{window.renderCost(false)}catch(e){}return r};
+  ['bomDataChanged','bomSyncApplied','storage'].forEach(function(ev){window.addEventListener(ev,resetCache)});
+  try{document.title='제품별 제조원가 통합관리 v131.6 | (주)동방파스텍'}catch(e){}
+})();
+</script>
+<!-- ===== /V131.6 ===== -->
+
 </body>
 </html>
