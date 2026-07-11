@@ -3761,7 +3761,7 @@ else document.addEventListener('DOMContentLoaded',initApp,{once:true});
     var base=currentFiltered();if(window.__v124ProcessChangedOnly){var __ph={};try{__ph=JSON.parse(localStorage.getItem('dbfastec_process_history_v120')||'{}')||{}}catch(__e){__ph={}}base=base.filter(function(p){var __pn=String(p&&p.pn||'').trim(),__rows=__ph[__pn];return Array.isArray(__rows)&&__rows.length>0})}var list=base.map(function(p){return {p:p,c:calc(p)};});
     function val(o){var p=o.p,c=o.c;var m={pn:p.pn,item:p.item,spec:p.spec,n:(p.steps||[]).length,draw:hasDrawing(p)?1:0,usage:usageOf(p),mat:c.mat,proc:c.proc,ovh:c.ovh,cost:c.withDef,sale:c.sale};return m[SORT.key];}
     list.sort(function(a,b){var va=val(a),vb=val(b);if(typeof va==='string')return SORT.dir==='asc'?String(va).localeCompare(String(vb),'ko'):String(vb).localeCompare(String(va),'ko');return SORT.dir==='asc'?(va||0)-(vb||0):(vb||0)-(va||0);});if(Array.isArray(window.__v124PinnedOrder)&&window.__v124PinnedOrder.length){var rank={};window.__v124PinnedOrder.forEach(function(pn,i){rank[String(pn)]=i});list.sort(function(a,b){var aa=Object.prototype.hasOwnProperty.call(rank,String(a.p.pn))?rank[String(a.p.pn)]:Number.MAX_SAFE_INTEGER,bb=Object.prototype.hasOwnProperty.call(rank,String(b.p.pn))?rank[String(b.p.pn)]:Number.MAX_SAFE_INTEGER;return aa-bb})}window.__v124LastFullOrder=list.map(function(x){return String(x.p.pn||'')});
-    if(typeof updateSortArrows==='function')updateSortArrows();var empty=byId('emptymsg');if(empty)empty.classList.toggle('hidden',list.length>0);var limit=Math.min(typeof VIEW_LIMIT==='undefined'?60:VIEW_LIMIT,list.length),view=list.slice(0,limit);var fc=byId('fcount');if(fc)fc.textContent=view.length.toLocaleString()+' / '+list.length.toLocaleString()+' 건 표시 · 전체 '+products().length.toLocaleString()+'건';var body=byId('tbody');if(body)body.innerHTML=view.map(function(o){var p=o.p,c=o.c,idx=products().indexOf(p),n=(p.steps||[]).length,bcnt=typeof bomCountForProduct==='function'?bomCountForProduct(p):0,flow=(p.steps||[]).map(function(s){return '<span class="chip proc-chip">'+escH(s.proc)+'</span>';}).join('<span class="arr">›</span>')||'<span class="muted">-</span>';var dcls=hasDrawing(p)?'draw-has':'draw-none';var bomCls=bcnt>0?'has-bom':'no-bom';var bomLabel=bcnt>0?'<span class="bom-status-chip has">있음</span>':'<span class="bom-status-chip none">없음</span>';return '<tr class="click prod-row '+bomCls+' '+dcls+'" data-pn="'+escH(p.pn)+'" onclick="openDetail('+idx+')"><td class="bomcol" onclick="event.stopPropagation()"><button class="bom-toggle" data-count="'+bcnt+'" onclick="toggleProductBom(event,'+idx+')">▸ BOM('+bcnt+')</button>'+bomLabel+'</td><td class="pncell"><span class="pn">'+escH(p.pn)+'</span>'+(c.custom?'<span class="chip tag-cust" title="개별수정됨">✎</span>':'')+'</td><td class="strong itemcell">'+escH(p.item)+usageChip(p)+'</td><td class="spec" title="'+escH(p.spec)+'">'+escH(p.spec)+'</td><td class="num proc-count"><span class="badge" style="background:'+(n>=4?'var(--warn)':n>=2?'var(--blue)':'var(--mut)')+'">'+n+'</span></td><td class="flowcell"><div class="flow">'+flow+'</div></td><td class="drawcell" onclick="event.stopPropagation()">'+drawButton(p)+'</td><td class="num matcell">'+(c.mat?won(c.mat):'<span class="muted">-</span>')+'</td><td class="num proccostcell">'+won(c.proc)+'</td><td class="num ovhcell">'+won(c.ovh)+'</td><td class="num cost costcell">'+won(c.withDef)+'</td><td class="num sale salecell">'+won(c.sale)+'</td><td class="act actioncell" onclick="event.stopPropagation()"><button onclick="openDetail('+idx+')">수정</button><button class="hide-product-btn" type="button" title="제품 숨김" aria-label="제품 숨김" onclick="event.stopPropagation();hideProductByPn(this.closest(&amp;quot;tr&amp;quot;).dataset.pn)">🙈</button><button class="del" onclick="delProduct('+idx+')">삭제</button></td></tr>';}).join('');
+    if(typeof updateSortArrows==='function')updateSortArrows();var empty=byId('emptymsg');if(empty)empty.classList.toggle('hidden',list.length>0);var limit=Math.min(typeof VIEW_LIMIT==='undefined'?60:VIEW_LIMIT,list.length),view=list.slice(0,limit);var fc=byId('fcount');if(fc)fc.textContent=view.length.toLocaleString()+' / '+list.length.toLocaleString()+' 건 표시 · 전체 '+products().length.toLocaleString()+'건';var body=byId('tbody');if(body)body.innerHTML=view.map(function(o){var p=o.p,c=o.c,idx=products().indexOf(p),n=(p.steps||[]).length,bcnt=typeof bomCountForProduct==='function'?bomCountForProduct(p):0,flow=(p.steps||[]).map(function(s){return '<span class="chip proc-chip">'+escH(s.proc)+'</span>';}).join('<span class="arr">›</span>')||'<span class="muted">-</span>';var dcls=hasDrawing(p)?'draw-has':'draw-none';var bomCls=bcnt>0?'has-bom':'no-bom';var bomLabel=bcnt>0?'<span class="bom-status-chip has">있음</span>':'<span class="bom-status-chip none">없음</span>';return '<tr class="click prod-row '+bomCls+' '+dcls+'" data-pn="'+escH(p.pn)+'" onclick="openDetail('+idx+')"><td class="bomcol" onclick="event.stopPropagation()"><button class="bom-toggle" data-count="'+bcnt+'" onclick="toggleProductBom(event,'+idx+')">▸ BOM('+bcnt+')</button>'+bomLabel+'</td><td class="pncell"><span class="pn">'+escH(p.pn)+'</span>'+(c.custom?'<span class="chip tag-cust" title="개별수정됨">✎</span>':'')+'</td><td class="strong itemcell">'+escH(p.item)+usageChip(p)+'</td><td class="spec" title="'+escH(p.spec)+'">'+escH(p.spec)+'</td><td class="num proc-count"><span class="badge" style="background:'+(n>=4?'var(--warn)':n>=2?'var(--blue)':'var(--mut)')+'">'+n+'</span></td><td class="flowcell"><div class="flow">'+flow+'</div></td><td class="drawcell" onclick="event.stopPropagation()">'+drawButton(p)+'</td><td class="num matcell">'+(c.mat?won(c.mat):'<span class="muted">-</span>')+'</td><td class="num proccostcell">'+won(c.proc)+'</td><td class="num ovhcell">'+won(c.ovh)+'</td><td class="num cost costcell">'+won(c.withDef)+'</td><td class="num sale salecell">'+won(c.sale)+'</td><td class="act actioncell" onclick="event.stopPropagation()"><button onclick="openDetail('+idx+')">수정</button><button class="hide-product-btn" type="button" title="제품 숨김" aria-label="제품 숨김">숨김</button><button class="del" onclick="delProduct('+idx+')">삭제</button></td></tr>';}).join('');
     var more=byId('moreRows');if(more){var remain=list.length-view.length;more.classList.toggle('hidden',remain<=0);if(remain>0)more.innerHTML='<span>성능을 위해 '+view.length.toLocaleString()+'건만 먼저 표시 중입니다.</span><button onclick="moreRows()">더 보기 +180</button><span>남은 '+remain.toLocaleString()+'건</span>';}
     renderKpisLight(list);buildDrawingFilter();buildUsageFilter();markActive();};
   function renderKpisLight(list){var n=list.length||1,costSum=0,procSum=0,custN=0,has=0;list.forEach(function(o){costSum+=o.c.withDef;procSum+=o.c.proc;if(o.c.custom)custN++;if(hasDrawing(o.p))has++;});var rate=(typeof BASE!=='undefined'&&BASE.wage?BASE.wage:0)/3600;var html=[['대상 제품',list.length.toLocaleString(),'개'],['도면 보유율',(list.length?has/list.length*100:0).toFixed(1),'%'],['평균 제조원가',won(costSum/n),'원'],['평균 가공비',won(procSum/n),'원'],['기본 임률',f1(rate),'원/초'],['개별수정 제품',custN.toLocaleString(),'개']].map(function(a){return '<div class="kpi"><div class="k">'+a[0]+'</div><div class="v">'+a[1]+' <small>'+a[2]+'</small></div></div>';}).join('');var k=byId('kpis');if(k)k.innerHTML=html;}
@@ -19815,7 +19815,7 @@ function fastRender(resetLimit){
   var lim=Math.min(typeof VIEW_LIMIT==='undefined'?60:VIEW_LIMIT,items.length),view=items.slice(0,lim),fc=id('fcount');if(fc)fc.textContent=view.length.toLocaleString()+' / '+items.length.toLocaleString()+' 건 표시 · 전체 '+list().length.toLocaleString()+'건';
   var html=new Array(view.length);
   for(var j=0;j<view.length;j++){var o=view[j],p=o.p,r=o.r,c=o.c,idx=Number.isInteger(o.idx)?o.idx:0,steps=p.steps||[],n=steps.length,bc=bomCount(p),flow=steps.map(function(st){return '<span class="chip proc-chip">'+escH(st.proc)+'</span>'}).join('<span class="arr">›</span>')||'<span class="muted">-</span>',bomCls=bc>0?'has-bom':'no-bom',dcls=r.has?'draw-has':'draw-none',bomLabel=bc>0?'<span class="bom-status-chip has">있음</span>':'<span class="bom-status-chip none">없음</span>';
-    html[j]='<tr class="click prod-row '+bomCls+' '+dcls+'" data-pn="'+escH(p.pn)+'" onclick="openDetail('+idx+')"><td class="bomcol" onclick="event.stopPropagation()"><button class="bom-toggle" data-count="'+bc+'" onclick="toggleProductBom(event,'+idx+')">▸ BOM('+bc+')</button>'+bomLabel+'</td><td class="pncell"><span class="pn">'+escH(p.pn)+'</span>'+(c.custom?'<span class="chip tag-cust" title="개별수정됨">✎</span>':'')+'</td><td class="strong itemcell">'+escH(p.item)+usageChipFast(p,r)+'</td><td class="spec" title="'+escH(p.spec)+'">'+escH(p.spec)+'</td><td class="num proc-count"><span class="badge" style="background:'+(n>=4?'var(--warn)':n>=2?'var(--blue)':'var(--mut)')+'">'+n+'</span></td><td class="flowcell"><div class="flow">'+flow+'</div></td><td class="drawcell" onclick="event.stopPropagation()">'+drawCell(p,r,idx)+'</td><td class="num matcell">'+(c.mat?won(c.mat):'<span class="muted">-</span>')+'</td><td class="num proccostcell">'+won(c.proc)+'</td><td class="num ovhcell">'+won(c.ovh)+'</td><td class="num cost costcell">'+won(c.withDef)+'</td><td class="num sale salecell">'+won(c.sale)+'</td><td class="act actioncell" onclick="event.stopPropagation()"><button onclick="openDetail('+idx+')">수정</button><button class="hide-product-btn" type="button" title="제품 숨김" aria-label="제품 숨김" onclick="event.stopPropagation();hideProductByPn(this.closest(&amp;quot;tr&amp;quot;).dataset.pn)">🙈</button><button class="del" onclick="delProduct('+idx+')">삭제</button></td></tr>'}
+    html[j]='<tr class="click prod-row '+bomCls+' '+dcls+'" data-pn="'+escH(p.pn)+'" onclick="openDetail('+idx+')"><td class="bomcol" onclick="event.stopPropagation()"><button class="bom-toggle" data-count="'+bc+'" onclick="toggleProductBom(event,'+idx+')">▸ BOM('+bc+')</button>'+bomLabel+'</td><td class="pncell"><span class="pn">'+escH(p.pn)+'</span>'+(c.custom?'<span class="chip tag-cust" title="개별수정됨">✎</span>':'')+'</td><td class="strong itemcell">'+escH(p.item)+usageChipFast(p,r)+'</td><td class="spec" title="'+escH(p.spec)+'">'+escH(p.spec)+'</td><td class="num proc-count"><span class="badge" style="background:'+(n>=4?'var(--warn)':n>=2?'var(--blue)':'var(--mut)')+'">'+n+'</span></td><td class="flowcell"><div class="flow">'+flow+'</div></td><td class="drawcell" onclick="event.stopPropagation()">'+drawCell(p,r,idx)+'</td><td class="num matcell">'+(c.mat?won(c.mat):'<span class="muted">-</span>')+'</td><td class="num proccostcell">'+won(c.proc)+'</td><td class="num ovhcell">'+won(c.ovh)+'</td><td class="num cost costcell">'+won(c.withDef)+'</td><td class="num sale salecell">'+won(c.sale)+'</td><td class="act actioncell" onclick="event.stopPropagation()"><button onclick="openDetail('+idx+')">수정</button><button class="hide-product-btn" type="button" title="제품 숨김" aria-label="제품 숨김">숨김</button><button class="del" onclick="delProduct('+idx+')">삭제</button></td></tr>'}
   var body=id('tbody');if(body&&mySeq===renderSeq)body.innerHTML=html.join('');
   var more=id('moreRows');if(more){var remain=items.length-view.length;more.classList.toggle('hidden',remain<=0);if(remain>0)more.innerHTML='<span>성능을 위해 '+view.length.toLocaleString()+'건만 먼저 표시 중입니다.</span><button onclick="moreRows()">더 보기 +180</button><span>남은 '+remain.toLocaleString()+'건</span>'}
   renderKpisFast(items);
@@ -22540,7 +22540,7 @@ window.addEventListener('load',function(){init();setTimeout(init,150);setTimeout
       var btn=document.createElement('button');
       btn.type='button';
       btn.className='hide-product-btn';
-      btn.textContent='🙈';
+      btn.textContent='숨김';
       btn.title='제품 숨김';
       btn.setAttribute('aria-label','제품 숨김');
       btn.addEventListener('click',function(e){
@@ -22573,5 +22573,92 @@ window.addEventListener('load',function(){init();setTimeout(init,150);setTimeout
   window.addEventListener('bomDataChanged',ensureHideIcons);
 })();
 </script>
+
+<!-- ===== V131.5: 숨김 아이콘을 글자 버튼으로 변경 + 클릭 연동 안정화 ===== -->
+<style id="v1315-hide-text-button-style">
+#view-cost table.cost-table td.actioncell .hide-product-btn{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  min-width:42px!important;
+  max-width:none!important;
+  height:26px!important;
+  padding:4px 8px!important;
+  margin:0 2px!important;
+  border:1px solid #edc472!important;
+  border-radius:6px!important;
+  background:#fff4df!important;
+  color:#8a5a00!important;
+  font-size:10.5px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  cursor:pointer!important;
+  white-space:nowrap!important;
+  transform:none!important;
+}
+#view-cost table.cost-table td.actioncell .hide-product-btn:hover{
+  background:#d98b00!important;
+  border-color:#d98b00!important;
+  color:#fff!important;
+  transform:translateY(-1px)!important;
+  box-shadow:0 3px 8px rgba(217,139,0,.2)!important;
+}
+</style>
+<script id="v1315-hide-text-button-script">
+(function(){
+  'use strict';
+  function normalizeHideButtons(){
+    document.querySelectorAll('#tbody tr.prod-row[data-pn] .hide-product-btn').forEach(function(btn){
+      btn.textContent='숨김';
+      btn.title='제품 숨김';
+      btn.setAttribute('aria-label','제품 숨김');
+      /* 누적 버전의 잘못된 inline onclick을 제거하고 아래 위임 이벤트 하나만 사용 */
+      btn.removeAttribute('onclick');
+      btn.onclick=null;
+      btn.setAttribute('data-v1315-hide','1');
+    });
+  }
+
+  /* 캡처 단계에서 처리하여 이전 버전의 깨진 inline onclick/중복 리스너보다 먼저 실행 */
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest?e.target.closest('#view-cost .hide-product-btn'):null;
+    if(!btn)return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();
+    var tr=btn.closest('tr.prod-row[data-pn]');
+    var pn=tr?(tr.getAttribute('data-pn')||''):'';
+    if(!pn)return;
+    if(typeof window.hideProductByPn==='function'){
+      window.hideProductByPn(pn);
+    }else{
+      alert('숨김 기능을 불러오지 못했습니다. 화면을 새로고침한 후 다시 시도해 주세요.');
+    }
+  },true);
+
+  var rawRender=window.renderCost;
+  if(typeof rawRender==='function'&&!rawRender.__v1315HideTextButton){
+    var wrapped=function(){
+      var result=rawRender.apply(this,arguments);
+      normalizeHideButtons();
+      setTimeout(normalizeHideButtons,0);
+      return result;
+    };
+    wrapped.__v1315HideTextButton=true;
+    wrapped.__v1315Raw=rawRender;
+    window.renderCost=wrapped;
+    try{renderCost=wrapped}catch(_e){}
+  }
+
+  function init(){normalizeHideButtons();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+  window.addEventListener('load',function(){normalizeHideButtons();setTimeout(normalizeHideButtons,120);},{once:true});
+  window.addEventListener('bomSyncApplied',normalizeHideButtons);
+  window.addEventListener('bomDataChanged',normalizeHideButtons);
+})();
+</script>
+<!-- ===== /V131.5 ===== -->
+
 </body>
 </html>
