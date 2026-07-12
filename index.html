@@ -23473,5 +23473,151 @@ setTimeout(install,450);setTimeout(install,1900);
 }
 </style>
 <!-- ===== /V132.0 ===== -->
+
+
+<!-- ===== V132.1 제품별원가 팝업 DWG·PDF 다운로드 근본수정 ===== -->
+<style id="v1321-cost-modal-drawing-download-style">
+#overlay .v1317-drawing-download-bar{display:none!important}
+#overlay .v1321-drawing-download-bar{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:9px 20px;border-bottom:1px solid #dbe3ed;background:#f7faff;
+}
+#overlay .v1321-drawing-download-label{
+  display:inline-flex;align-items:center;gap:5px;margin-right:2px;
+  color:#42546d;font-size:11.5px;font-weight:900;white-space:nowrap;
+}
+#overlay .v1321-drawing-download-link{
+  display:inline-flex;align-items:center;gap:6px;max-width:390px;min-height:30px;
+  padding:5px 10px;border:1px solid #aac8e9;border-radius:7px;
+  background:#eaf4ff;color:#174f86!important;text-decoration:none!important;
+  font-family:inherit;font-size:11px;font-weight:900;line-height:1;
+  cursor:pointer;box-shadow:0 1px 2px rgba(23,79,134,.08);
+  transition:background .14s,border-color .14s,transform .08s,box-shadow .14s;
+}
+#overlay .v1321-drawing-download-link.pdf{border-color:#efb8ae;background:#fff0ed;color:#a33f31!important}
+#overlay .v1321-drawing-download-link:hover{background:#d9ebff;border-color:#82b5e8;box-shadow:0 3px 8px rgba(23,79,134,.16);transform:translateY(-1px)}
+#overlay .v1321-drawing-download-link.pdf:hover{background:#ffe3dd;border-color:#e89a8d}
+#overlay .v1321-drawing-download-link:active{transform:translateY(0) scale(.98)}
+#overlay .v1321-drawing-download-link .kind{font-size:10px;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.75)}
+#overlay .v1321-drawing-download-link .filename{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#overlay .v1321-drawing-download-note{font-size:10.5px;color:#708094;font-weight:700}
+@media(max-width:720px){
+  #overlay .v1321-drawing-download-bar{padding:8px 12px;gap:6px}
+  #overlay .v1321-drawing-download-label{width:100%}
+  #overlay .v1321-drawing-download-link{max-width:100%;flex:1 1 220px}
+}
+</style>
+<script id="v1321-cost-modal-drawing-download-script">
+(function(){
+'use strict';
+if(window.__v1321CostModalDrawingDownload)return;
+window.__v1321CostModalDrawingDownload=true;
+var DRAW_KEY='dbfastec_cost_drawings_v1',pendingPn='',openHookBase=null;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return clean(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function products(){try{return Array.isArray(window.PRODUCTS)?window.PRODUCTS:((typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:[])}catch(e){return []}}
+function productAt(idx){idx=Number(idx);var a=products();return Number.isInteger(idx)&&idx>=0&&a[idx]?a[idx]:null}
+function readMap(){try{var x=JSON.parse(localStorage.getItem(DRAW_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch(e){return {}}}
+function extractId(v){
+  v=clean(v);if(!v)return '';
+  var m=v.match(/\/d\/([A-Za-z0-9_-]{10,})/)||v.match(/[?&]id=([A-Za-z0-9_-]{10,})/)||v.match(/\/download\/([A-Za-z0-9_-]{10,})/);
+  return m?m[1]:'';
+}
+function directDriveUrl(fileId){return fileId?'https://drive.usercontent.google.com/download?id='+encodeURIComponent(fileId)+'&export=download&confirm=t':''}
+function normalizeUrl(url,fileId){
+  url=clean(url);fileId=clean(fileId)||extractId(url);
+  if(fileId)return directDriveUrl(fileId);
+  return url;
+}
+function kindFrom(name,mime,kind){
+  name=clean(name);mime=clean(mime).toLowerCase();kind=clean(kind).toUpperCase();
+  if(kind==='DWG'||kind==='PDF')return kind;
+  if(/\.pdf$/i.test(name)||mime.indexOf('pdf')>=0)return 'PDF';
+  if(/\.dwg$/i.test(name)||mime.indexOf('dwg')>=0||mime.indexOf('acad')>=0)return 'DWG';
+  return '';
+}
+function candidate(kind,fileId,fileName,mime,url,download){
+  kind=kindFrom(fileName,mime,kind);if(!kind)return null;
+  fileId=clean(fileId)||extractId(download)||extractId(url);
+  var href=normalizeUrl(download||url,fileId);
+  if(!href)return null;
+  return {kind:kind,fileId:fileId,fileName:clean(fileName)||kind+' 도면',href:href};
+}
+function recordFiles(r){
+  r=r&&typeof r==='object'?r:{};var out=[];
+  function add(x){if(!x)return;for(var i=0;i<out.length;i++)if(out[i].kind===x.kind){if(!out[i].fileId&&x.fileId)out[i]=x;return}out.push(x)}
+  add(candidate('DWG',r.dwgFileId,r.dwgFileName,r.dwgFileMime,r.dwgFileUrl,r.dwgDownloadUrl));
+  add(candidate('PDF',r.pdfFileId,r.pdfFileName,r.pdfFileMime,r.pdfFileUrl,r.pdfDownloadUrl));
+  add(candidate('',r.fileId,r.fileName,r.fileMime,r.fileUrl,r.downloadUrl));
+  ['files','attachments','drawings'].forEach(function(k){
+    var a=r[k];if(!Array.isArray(a))return;a.forEach(function(f){f=f||{};add(candidate(f.kind||f.fileKind||f.type,f.fileId||f.id,f.fileName||f.name,f.mimeType||f.mime,f.downloadUrl||f.url,f.downloadUrl||f.download))})
+  });
+  ['dwg','pdf'].forEach(function(k){var f=r[k];if(f&&typeof f==='object')add(candidate(k.toUpperCase(),f.fileId||f.id,f.fileName||f.name,f.mimeType||f.mime,f.viewUrl||f.url,f.downloadUrl||f.download))});
+  return out.sort(function(a,b){return a.kind==='DWG'?-1:b.kind==='DWG'?1:0});
+}
+function pnFromTitle(){
+  var t=clean(id('m-title')&&id('m-title').textContent),a=products();if(!t)return '';
+  for(var i=0;i<a.length;i++){var pn=clean(a[i]&&a[i].pn);if(pn&&t.indexOf(pn)>=0)return pn}
+  var parts=t.split('·');return parts.length>1?clean(parts[parts.length-1]):'';
+}
+function currentPn(idxOrPn){
+  if(typeof idxOrPn==='string'&&clean(idxOrPn))return clean(idxOrPn);
+  var p=productAt(idxOrPn);if(p&&clean(p.pn))return clean(p.pn);
+  try{p=productAt(typeof curIdx!=='undefined'?curIdx:null);if(p&&clean(p.pn))return clean(p.pn)}catch(e){}
+  return pendingPn||pnFromTitle();
+}
+function render(idxOrPn){
+  var overlay=id('overlay'),modal=overlay&&overlay.querySelector('.modal'),head=modal&&modal.querySelector('.mhead');
+  if(!modal||!head||overlay.classList.contains('hidden'))return false;
+  modal.querySelectorAll('.v1321-drawing-download-bar').forEach(function(e){e.remove()});
+  var pn=currentPn(idxOrPn);if(!pn)return false;
+  var r=readMap()[pn]||{},files=recordFiles(r);
+  if(!files.length){
+    if(!(r&&r.has))return false;
+    var empty=document.createElement('div');empty.className='v1321-drawing-download-bar';empty.setAttribute('data-pn',pn);
+    empty.innerHTML='<span class="v1321-drawing-download-label">📐 도면 다운로드</span><span class="v1321-drawing-download-note">도면 있음으로 표시되어 있지만 실제 DWG·PDF 업로드 파일 정보가 없습니다. 도면분석에서 파일을 업로드하거나 도면파일 새로고침을 실행해 주세요.</span>';
+    head.insertAdjacentElement('afterend',empty);return true;
+  }
+  var bar=document.createElement('div');bar.className='v1321-drawing-download-bar';bar.setAttribute('data-pn',pn);
+  bar.innerHTML='<span class="v1321-drawing-download-label">📐 도면 다운로드</span>'+files.map(function(f){
+    return '<a class="v1321-drawing-download-link '+(f.kind==='PDF'?'pdf':'')+'" data-v1321-kind="'+f.kind+'" href="'+esc(f.href)+'" target="_blank" rel="noopener noreferrer" title="'+esc(f.fileName)+' 다운로드"><span class="kind">'+f.kind+'</span><span class="filename">'+esc(f.fileName)+'</span><span aria-hidden="true">⇩</span></a>';
+  }).join('')+'<span class="v1321-drawing-download-note">버튼을 누르면 등록된 원본 파일을 엽니다.</span>';
+  head.insertAdjacentElement('afterend',bar);
+  return true;
+}
+function schedule(idxOrPn){
+  var pn=currentPn(idxOrPn);if(pn)pendingPn=pn;
+  var run=function(){try{render(idxOrPn)}catch(e){console.error('DWG·PDF 다운로드 표시 오류',e)}};
+  if(typeof queueMicrotask==='function')queueMicrotask(run);else Promise.resolve().then(run);
+  requestAnimationFrame(function(){requestAnimationFrame(run)});
+  [40,140,360].forEach(function(ms){setTimeout(run,ms)});
+}
+function installOpenHook(){
+  var current=window.openDetail;if(typeof current!=='function'||current.__v1321DrawingDownload)return;
+  openHookBase=current;
+  var fn=function(idx){var p=productAt(idx);pendingPn=p?clean(p.pn):'';var result=current.apply(this,arguments);schedule(idx);return result};
+  fn.__v1321DrawingDownload=true;fn.__v1321Base=current;window.openDetail=fn;try{openDetail=fn}catch(e){}
+}
+window.refreshCostModalDrawingDownloadsV1321=function(){schedule(typeof curIdx!=='undefined'?curIdx:pendingPn)};
+document.addEventListener('pointerdown',function(e){
+  var tr=e.target&&e.target.closest?e.target.closest('#tbody tr[data-pn],#tbody tr.prod-row'):null;if(!tr)return;
+  pendingPn=clean(tr.getAttribute('data-pn'))||clean(tr.querySelector('.pn')&&tr.querySelector('.pn').textContent);if(pendingPn)schedule(pendingPn);
+},true);
+document.addEventListener('click',function(e){
+  var a=e.target&&e.target.closest?e.target.closest('.v1321-drawing-download-link'):null;if(!a)return;
+  /* 실제 사용자 클릭의 기본 링크 이동을 그대로 사용해 팝업 차단을 피함 */
+  try{if(typeof window.toast==='function')window.toast(a.getAttribute('data-v1321-kind')+' 도면 다운로드를 시작합니다.')}catch(_){}
+},true);
+window.addEventListener('storage',function(e){if(e&&e.key===DRAW_KEY)schedule()});
+['drawingDataChanged','drawingFilesChanged','drawingSyncApplied'].forEach(function(ev){window.addEventListener(ev,function(){schedule()})});
+installOpenHook();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){installOpenHook();schedule()},{once:true});
+window.addEventListener('load',function(){installOpenHook();schedule()},{once:true});
+setTimeout(installOpenHook,500);setTimeout(installOpenHook,1800);
+try{document.title='제품별 제조원가 통합관리 v132.1 | (주)동방파스텍'}catch(e){}
+})();
+</script>
+<!-- ===== /V132.1 ===== -->
 </body>
 </html>
