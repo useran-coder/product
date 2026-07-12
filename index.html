@@ -23649,7 +23649,7 @@ try{document.title='제품별 제조원가 통합관리 v132.1 | (주)동방파�
 var VER='v132.2';
 var PRICE_KEY='dbfastec_cost_prices_v2';
 var DELETED_PRICE_KEY='dbfastec_deleted_price_procs_v1322';
-var rawIndexCache=null,rawListBase=null;
+var rawIndexCache=null,rawListBase=null,renderBaseV1322=null,saveBaseV1322=null,changeBaseV1322=null,storagePatched=false,cleanupBusy=false;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -23668,15 +23668,49 @@ function rememberDeleted(proc){
   proc=clean(proc);if(!proc)return;
   var d=deletedMap();d[proc]={at:Date.now()};saveDeleted(d);
 }
-function applyDeletedToPrices(map){
+function isDeleted(proc){return !!deletedMap()[clean(proc)]}
+function applyDeletedToPrices(map,persist){
   map=map||priceMap();var del=deletedMap(),used=usedProcMap(),changed=false,delChanged=false;
   Object.keys(del).forEach(function(proc){
     if(used[proc]){delete del[proc];delChanged=true;return}
     if(Object.prototype.hasOwnProperty.call(map,proc)){delete map[proc];changed=true}
   });
   if(delChanged)saveDeleted(del);
-  if(changed)savePricesMap(map);
+  if(changed&&persist!==false)savePricesMap(map);
   return map;
+}
+function filteredPriceJson(value){
+  var parsed=null;
+  try{parsed=JSON.parse(String(value))}catch(e){return value}
+  if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))return value;
+  var before=JSON.stringify(parsed),after=JSON.stringify(applyDeletedToPrices(parsed,false));
+  return before===after?value:after;
+}
+function patchPriceStorage(){
+  if(storagePatched||!window.Storage||!Storage.prototype)return;
+  storagePatched=true;
+  var rawSet=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(k,v){
+    if(this===localStorage&&String(k)===PRICE_KEY)v=filteredPriceJson(v);
+    return rawSet.call(this,k,v);
+  };
+}
+function cleanupPriceDom(){
+  if(cleanupBusy)return;
+  cleanupBusy=true;
+  try{
+    applyDeletedToPrices(priceMap());
+    var used=usedProcMap(),del=deletedMap();
+    document.querySelectorAll('#pricebody tr[data-proc]').forEach(function(tr){
+      var proc=clean(tr.getAttribute('data-proc')||tr.dataset.proc);
+      if(del[proc]&&!used[proc])tr.remove();
+    });
+    var meta=id('priceMeta');
+    if(meta&&Object.keys(del).length){
+      var visible=document.querySelectorAll('#pricebody tr[data-proc]').length;
+      meta.textContent=String(meta.textContent||'').replace(/공정\s+[0-9,]+종/,'공정 '+visible.toLocaleString('ko-KR')+'종');
+    }
+  }finally{cleanupBusy=false}
 }
 function wrapSeedPrices(){
   var fn=window.seedPrices||((typeof seedPrices==='function')?seedPrices:null);
@@ -23686,7 +23720,28 @@ function wrapSeedPrices(){
   window.seedPrices=wrapped;try{seedPrices=wrapped}catch(e){}
 }
 function installPriceDelete(){
-  wrapSeedPrices();applyDeletedToPrices(priceMap());
+  patchPriceStorage();wrapSeedPrices();applyDeletedToPrices(priceMap());
+  var rp=window.renderPrice||((typeof renderPrice==='function')?renderPrice:null);
+  if(typeof rp==='function'&&!rp.__v1322DeletedRender){
+    renderBaseV1322=rp;
+    var renderWrap=function(){var r=renderBaseV1322.apply(this,arguments);cleanupPriceDom();return r};
+    renderWrap.__v1322DeletedRender=true;renderWrap.__v1322Base=renderBaseV1322;
+    window.renderPrice=renderWrap;try{renderPrice=renderWrap}catch(e){}
+  }
+  var sp=window.savePrices||((typeof savePrices==='function')?savePrices:null);
+  if(typeof sp==='function'&&!sp.__v1322DeletedSave){
+    saveBaseV1322=sp;
+    var saveWrap=function(){var r=saveBaseV1322.apply(this,arguments);applyDeletedToPrices(priceMap());cleanupPriceDom();return r};
+    saveWrap.__v1322DeletedSave=true;saveWrap.__v1322Base=saveBaseV1322;
+    window.savePrices=saveWrap;try{savePrices=saveWrap}catch(e){}
+  }
+  var oc=window.onPriceChange||((typeof onPriceChange==='function')?onPriceChange:null);
+  if(typeof oc==='function'&&!oc.__v1322DeletedChange){
+    changeBaseV1322=oc;
+    var changeWrap=function(){var r=changeBaseV1322.apply(this,arguments);applyDeletedToPrices(priceMap());cleanupPriceDom();return r};
+    changeWrap.__v1322DeletedChange=true;changeWrap.__v1322Base=changeBaseV1322;
+    window.onPriceChange=changeWrap;try{onPriceChange=changeWrap}catch(e){}
+  }
   var del=function(proc){
     proc=clean(proc);if(!proc)return;
     var used=usedProcMap();
@@ -23695,6 +23750,7 @@ function installPriceDelete(){
     rememberDeleted(proc);
     var map=priceMap();delete map[proc];savePricesMap(map);
     try{if(typeof renderPrice==='function')renderPrice()}catch(e){}
+    cleanupPriceDom();
     try{if(typeof renderCost==='function')renderCost(false)}catch(e){}
     try{if(typeof toast==='function')toast('미사용 공정을 삭제했습니다. 다시 열어도 삭제 상태가 유지됩니다.')}catch(e){}
   };
