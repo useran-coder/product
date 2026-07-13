@@ -3714,7 +3714,7 @@ else document.addEventListener('DOMContentLoaded',initApp,{once:true});
   function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   function productByPn(pn){pn=String(pn||'');var list=products();for(var i=0;i<list.length;i++){if(String(list[i].pn||'')===pn)return list[i];}return null;}
   function isNonstandardProduct(p){if(!p)return false;var item=String(p.item||'').trim(),spec=String(p.spec||'').trim(),all=item+' '+spec;return /상하보강|이너프레임/i.test(all)||/\(L\)\s*$/i.test(item);}
-  function normalizeUsage(v){return v==='전용품'||v==='비규격'?v:'공용품';}
+  function normalizeUsage(v){v=String(v||'').trim();if(v==='비규격')return '기타';return ['공용품','전용품','레이저','내부보강','기타'].indexOf(v)>=0?v:'공용품';}
   function defaultRec(p){return {has:false,docNo:'',rev:'',owner:'',date:'',status:'미등록',note:'',usage:isNonstandardProduct(p)?'비규격':'공용품',usageManual:false,customer:'',usageNote:''};}
   function keyOf(p){return String((p&&p.pn)||'');}
   function recByPn(pn){pn=String(pn);var raw=loadD()[pn]||{},p=productByPn(pn),u=normalizeUsage(raw.usage);if(raw.usageManual!==true&&isNonstandardProduct(p)&&u!=='전용품')u='비규격';return Object.assign(defaultRec(p),raw,{has:!!raw.has,usage:u,status:raw.status||(raw.has?'보유':'미등록')});}
@@ -3722,7 +3722,7 @@ else document.addEventListener('DOMContentLoaded',initApp,{once:true});
   function writeRec(pn){var d=loadD();pn=String(pn);if(!d[pn])d[pn]=defaultRec(productByPn(pn));return d[pn];}
   function hasDrawing(p){return !!rec(p).has;}
   function ownerOf(p){return String(rec(p).owner||'').trim()||'담당자 미지정';}
-  function usageOf(p){var r=rec(p)||{},u=String(r.usage||'').trim(),cats=['공용품','전용품','레이저','내부보강'],item=String((p&&p.item)||'').trim();if(r.usageManual===true&&cats.indexOf(u)>-1)return u;if(/\(L\)/i.test(item))return '레이저';if(/상하보강|이너프레임/i.test(item))return '내부보강';return u==='전용품'?'전용품':'공용품';}
+  function usageOf(p){var r=rec(p)||{},u=String(r.usage||'').trim(),cats=['공용품','전용품','레이저','내부보강','기타'],item=String((p&&p.item)||'').trim();if(u==='비규격')u='기타';if(r.usageManual===true&&cats.indexOf(u)>-1)return u;if(/\(L\)/i.test(item))return '레이저';if(/상하보강|이너프레임/i.test(item))return '내부보강';if(u==='전용품')return '전용품';if(u==='기타')return '기타';return '공용품';}
   function customerOf(p){return String(rec(p).customer||'').trim();}
   function usageChip(p){var u=usageOf(p),c=customerOf(p),cl=u==='전용품'?'dedicated':u==='레이저'?'laser':u==='내부보강'?'internal':'common',tx=u==='전용품'?'전용':u==='레이저'?'레이저':u==='내부보강'?'내부보강':'공용';return '<span class="usage-chip '+cl+'">'+tx+'</span>'+(u==='전용품'&&c?'<span class="usage-customer" title="'+escH(c)+'">'+escH(c)+'</span>':'');}
   function drawButton(p){var h=hasDrawing(p),idx=products().indexOf(p);return '<button class="draw-toggle '+(h?'has':'none')+'" type="button" title="클릭하면 도면 있음/없음 전환" onclick="toggleDrawing(event,'+idx+')">'+(h?'있음':'없음')+'</button>';}
@@ -3748,7 +3748,7 @@ else document.addEventListener('DOMContentLoaded',initApp,{once:true});
     var table=document.querySelector('#view-cost table.cost-table');
     if(table&&!table.getAttribute('data-draw-light')){var cg=table.querySelector('colgroup');if(cg){var col=document.createElement('col');col.className='draw-col';var cols=cg.querySelectorAll('col');if(cols[6])cg.insertBefore(col,cols[6]);else cg.appendChild(col);}var tr=table.querySelector('thead tr');if(tr){var th=document.createElement('th');th.className='sortable draw-head';th.setAttribute('data-key','draw');th.setAttribute('onclick',"setSort('draw')");th.innerHTML='도면<span class="sar"></span>';var ths=tr.children;if(ths[6])tr.insertBefore(th,ths[6]);else tr.appendChild(th);}table.setAttribute('data-draw-light','1');}
     var wrap=document.querySelector('.wrap');
-    if(wrap&&!byId('view-draw')){var vd=document.createElement('div');vd.id='view-draw';vd.className='hidden';vd.innerHTML='<div class="kpis" id="drawKpis"></div><div class="draw-hero"><div class="draw-card"><div class="dh">📊 전체 도면 유무</div><div class="db"><div id="drawOverallBars" class="draw-barbox"></div></div></div><div class="draw-card"><div class="dh">🧾 도면 관리 기준</div><div class="db"><div class="note" style="margin:0">도면 상태는 제품별로 저장됩니다. 품목군을 클릭하면 바로 아래에 품번/품목/규격 제품 리스트가 펼쳐지고, 담당자·수정일·관리상태를 관리할 수 있습니다.</div></div></div></div><div class="draw-card"><div class="dh">📁 품목군별 도면 보유 현황 <span id="drawGroupMeta" style="margin-left:auto;font-size:12px;font-weight:600"></span></div><div class="db"><div class="draw-tools draw-analysis-tools"><select id="drawOwnerFilter" onchange="renderDrawingAnalysis()"><option value="">담당 전체</option></select><select id="drawStatusFilter" onchange="renderDrawingAnalysis()"><option value="">관리상태 전체</option></select><select id="drawUsageFilter" onchange="renderDrawingAnalysis()"><option value="">공용/전용/비규격 전체</option></select><button id="drawViewToggle" type="button" onclick="toggleDrawViewMode()">품목/규격으로 보기</button><button type="button" onclick="resetDrawAnalysisFilters()">필터 초기화</button><div class="draw-search-row"><span class="draw-search-icon" aria-hidden="true">🔎</span><input id="drawGroupSearch" type="search" placeholder="품목군·품번·품목·규격 검색" autocomplete="off" oninput="onDrawGroupSearchInput()"><button id="drawSearchClear" type="button" onclick="clearDrawGroupSearch()">검색 지우기</button></div></div><div class="tablebox" style="box-shadow:none;border-radius:9px"><table class="draw-groups"><colgroup><col style="width:260px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col></colgroup><thead><tr><th id="drawGroupFirstTh">품목군</th><th class="num">제품수</th><th class="num">도면 있음</th><th class="num">도면 없음</th><th class="num">보유율</th><th>보유율 그래프</th></tr></thead><tbody id="drawGroupBody"></tbody></table></div></div></div>';var ana=byId('view-ana');wrap.insertBefore(vd,ana||wrap.firstChild);}
+    if(wrap&&!byId('view-draw')){var vd=document.createElement('div');vd.id='view-draw';vd.className='hidden';vd.innerHTML='<div class="kpis" id="drawKpis"></div><div class="draw-hero"><div class="draw-card"><div class="dh">📊 전체 도면 유무</div><div class="db"><div id="drawOverallBars" class="draw-barbox"></div></div></div><div class="draw-card"><div class="dh">🧾 도면 관리 기준</div><div class="db"><div class="note" style="margin:0">도면 상태는 제품별로 저장됩니다. 품목군을 클릭하면 바로 아래에 품번/품목/규격 제품 리스트가 펼쳐지고, 담당자·수정일·관리상태를 관리할 수 있습니다.</div></div></div></div><div class="draw-card"><div class="dh">📁 품목군별 도면 보유 현황 <span id="drawGroupMeta" style="margin-left:auto;font-size:12px;font-weight:600"></span></div><div class="db"><div class="draw-tools draw-analysis-tools"><select id="drawOwnerFilter" onchange="renderDrawingAnalysis()"><option value="">담당 전체</option></select><select id="drawStatusFilter" onchange="renderDrawingAnalysis()"><option value="">관리상태 전체</option></select><select id="drawUsageFilter" onchange="renderDrawingAnalysis()"><option value="">제품구분</option><option value="공용품">공용품</option><option value="전용품">전용품</option><option value="레이저">레이저</option><option value="내부보강">내부보강</option><option value="기타">기타</option></select><button id="drawViewToggle" type="button" onclick="toggleDrawViewMode()">품목/규격으로 보기</button><button type="button" onclick="resetDrawAnalysisFilters()">필터 초기화</button><div class="draw-search-row"><span class="draw-search-icon" aria-hidden="true">🔎</span><input id="drawGroupSearch" type="search" placeholder="품목군·품번·품목·규격 검색" autocomplete="off" oninput="onDrawGroupSearchInput()"><button id="drawSearchClear" type="button" onclick="clearDrawGroupSearch()">검색 지우기</button></div></div><div class="tablebox" style="box-shadow:none;border-radius:9px"><table class="draw-groups"><colgroup><col style="width:260px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col></colgroup><thead><tr><th id="drawGroupFirstTh">품목군</th><th class="num">제품수</th><th class="num">도면 있음</th><th class="num">도면 없음</th><th class="num">보유율</th><th>보유율 그래프</th></tr></thead><tbody id="drawGroupBody"></tbody></table></div></div></div>';var ana=byId('view-ana');wrap.insertBefore(vd,ana||wrap.firstChild);}
     if(wrap&&!byId('view-drawowner')){var vo=document.createElement('div');vo.id='view-drawowner';vo.className='hidden';vo.innerHTML='<div class="kpis" id="ownerKpis"></div><div class="draw-card"><div class="dh">👤 담당자별 도면 확인 분석 <span id="ownerMeta" style="margin-left:auto;font-size:12px;font-weight:600"></span></div><div class="db"><div class="owner-tools"><button type="button" onclick="closeOwnerGroup()">접기</button></div><div class="summary-grid" id="ownerSummary"></div><div class="tablebox" style="margin-top:10px"><table class="owner-table"><colgroup><col><col style="width:105px"><col style="width:105px"><col style="width:105px"><col style="width:105px"><col></colgroup><thead><tr><th>담당자</th><th class="num">제품수</th><th class="num">도면 있음</th><th class="num">도면 없음</th><th class="num">보유율</th><th>그래프</th></tr></thead><tbody id="ownerBody"></tbody></table></div></div></div>';var price=byId('view-price');wrap.insertBefore(vo,price||wrap.appendChild(vo));}
     if(wrap&&!byId('view-usage')){var vu=document.createElement('div');vu.id='view-usage';vu.className='hidden';vu.innerHTML='<div class="kpis" id="usageKpis"></div><div class="draw-card"><div class="dh">🏷 공용품 / 전용품 / 비규격 비중 <span id="usageMeta" style="margin-left:auto;font-size:12px;font-weight:600"></span></div><div class="db"><div id="usageBars"></div></div></div><div class="draw-card"><div class="dh">📁 품목군별 공용/전용품/비규격 관리</div><div class="db"><div class="usage-tools"><input id="usageSearch" placeholder="품번 · 품목 · 규격 · 특정업체 검색" oninput="renderUsageAnalysis()"><select id="usageFilter" onchange="renderUsageAnalysis()"><option value="">공용/전용/비규격 전체</option><option value="공용품">공용품</option><option value="전용품">전용품</option><option value="비규격">비규격</option></select><button type="button" onclick="closeUsageGroup()">접기</button></div><div class="usage-rule-note"><b>비규격 자동판정</b> · 상하보강 · 이너프레임 · 품목명 끝 <b>(L)</b> 제품 / 품목군을 펼친 뒤 구분 선택에서 직접 변경할 수 있습니다.</div><div class="tablebox"><table class="usage-table"><colgroup><col><col style="width:92px"><col style="width:92px"><col style="width:92px"><col style="width:92px"><col style="width:105px"><col></colgroup><thead><tr><th>품목군</th><th class="num">제품수</th><th class="num">공용품</th><th class="num">전용품</th><th class="num">비규격</th><th class="num">비규격비중</th><th>그래프</th></tr></thead><tbody id="usageBody"></tbody></table></div></div></div>';var raw=byId('view-raw');wrap.insertBefore(vu,raw||wrap.appendChild(vu));}
   }
@@ -3776,7 +3776,7 @@ else document.addEventListener('DOMContentLoaded',initApp,{once:true});
   window.openDrawGroup=function(group){selectedDrawGroup=(selectedDrawGroup===group)?'':group;renderDrawingAnalysis();};
   window.closeDrawGroup=function(){selectedDrawGroup='';renderDrawingAnalysis();};
   function setSelectOptions(el,items,allLabel,cur){if(!el)return;var html='<option value="">'+allLabel+'</option>'+items.map(function(v){return '<option value="'+escH(v)+'">'+escH(v)+'</option>';}).join('');el.innerHTML=html;if(items.indexOf(cur)>-1)el.value=cur;else el.value='';el.classList.toggle('filter-active',!!el.value);}
-  function fillDrawAnalysisFilters(all){var ow=byId('drawOwnerFilter'),st=byId('drawStatusFilter'),us=byId('drawUsageFilter');var oc=ow?ow.value:'',sc=st?st.value:'',uc=us?us.value:'';var owners={},statuses={},usages={};all.forEach(function(p){owners[ownerOf(p)]=1;statuses[statusOf(p)]=1;usages[usageOf(p)]=1;});var ownerList=Object.keys(owners);if(typeof window.getOwnerMasterList==='function')window.getOwnerMasterList().forEach(function(n){if(n&&ownerList.indexOf(n)<0)ownerList.push(n);});ownerList.sort(function(a,b){if(a==='담당자 미지정')return 1;if(b==='담당자 미지정')return -1;return a.localeCompare(b,'ko');});var statusBase=['미등록','검토중','보유','개정필요','폐기'];var statusList=statusBase.filter(function(s){return statuses[s];});Object.keys(statuses).forEach(function(s){if(statusList.indexOf(s)<0)statusList.push(s);});setSelectOptions(ow,ownerList,'담당 전체',oc);setSelectOptions(st,statusList,'관리상태 전체',sc);setSelectOptions(us,['공용품','전용품','비규격'].filter(function(s){return usages[s];}),'공용/전용/비규격 전체',uc);}
+  function fillDrawAnalysisFilters(all){var ow=byId('drawOwnerFilter'),st=byId('drawStatusFilter'),us=byId('drawUsageFilter');var oc=ow?ow.value:'',sc=st?st.value:'',uc=us?us.value:'';var owners={},statuses={},usages={};all.forEach(function(p){owners[ownerOf(p)]=1;statuses[statusOf(p)]=1;usages[usageOf(p)]=1;});var ownerList=Object.keys(owners);if(typeof window.getOwnerMasterList==='function')window.getOwnerMasterList().forEach(function(n){if(n&&ownerList.indexOf(n)<0)ownerList.push(n);});ownerList.sort(function(a,b){if(a==='담당자 미지정')return 1;if(b==='담당자 미지정')return -1;return a.localeCompare(b,'ko');});var statusBase=['미등록','검토중','보유','개정필요','폐기'];var statusList=statusBase.filter(function(s){return statuses[s];});Object.keys(statuses).forEach(function(s){if(statusList.indexOf(s)<0)statusList.push(s);});setSelectOptions(ow,ownerList,'담당 전체',oc);setSelectOptions(st,statusList,'관리상태 전체',sc);setSelectOptions(us,['공용품','전용품','레이저','내부보강','기타'],'제품구분',uc==='비규격'?'기타':uc);}
   var drawSearchTimer=0;
   window.onDrawGroupSearchInput=function(){drawItemPage=1;clearTimeout(drawSearchTimer);drawSearchTimer=setTimeout(function(){if(typeof window.renderDrawingAnalysis==='function')window.renderDrawingAnalysis();},120);};
   window.clearDrawGroupSearch=function(){var e=byId('drawGroupSearch');if(e){e.value='';e.focus();}clearTimeout(drawSearchTimer);if(typeof window.renderDrawingAnalysis==='function')window.renderDrawingAnalysis();};
@@ -7881,7 +7881,7 @@ async function syncSave(silent){readSyncInputs();if(!syncState.url||syncBusy)ret
 function scheduleAutoSync(){if(!syncState.auto||!syncState.url||syncBusy)return;syncPending=true;clearTimeout(syncTimer);syncTimer=setTimeout(function(){syncTimer=null;syncSave(true)},5000)}
 function monitorChanges(){var h;try{h=JSON.stringify(collectSync(false))}catch(e){return}if(!syncSnapshot){syncSnapshot=h;return}if(h!==syncSnapshot){syncSnapshot=h;scheduleAutoSync();updateSyncBtn('변경 저장 대기')}}
 function updateSyncBtn(extra){var b=id('bomSyncBtn');if(!b)return;var label=(extra&&extra!=='동기화')?String(extra):'동기화',tm='',d=new Date(syncState.lastSync||'');if(!isNaN(d.getTime())){var p=function(n){return String(n).padStart(2,'0')};tm=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())}b.innerHTML='<span class="sync-main">🔄 '+label+'</span><span class="sync-time"> · '+(tm?'완료 '+tm:'미실행')+'</span>';b.classList.toggle('sync-configured',!!syncState.url);b.style.background=syncState.url?'#eef2ff':'';b.style.color=syncState.url?'#4338ca':'';b.style.borderColor=syncState.url?'#c7d2fe':''}
-function openSyncModal(){var old=id('bomSyncOverlay');if(old)old.remove();var ov=document.createElement('div');ov.id='bomSyncOverlay';ov.className='sync-overlay';ov.innerHTML='<div class="sync-modal"><div class="sync-head"><h3>🔄 구글시트 동기화</h3><span style="font-size:11px;opacity:.78">sales_analyzer와 같은 Apps Script 방식</span><button type="button" onclick="closeBomSync()">×</button></div><div class="sync-body"><div class="sync-grid"><input id="bomGsUrl" placeholder="Apps Script 웹앱 URL (…/exec)" value="'+eh(syncState.url||'')+'"><input id="bomGsKey" placeholder="비밀키" value="'+eh(syncState.key||'')+'"><input id="bomGsUser" placeholder="내 이름(작성자)" value="'+eh(syncState.user||'')+'"></div><div class="sync-actions"><button class="load" type="button" onclick="bomSyncLoad(false)">⬇ 불러오기</button><button class="save" type="button" onclick="bomSyncSave(false)">⬆ 저장(병합)</button><button class="test" type="button" onclick="bomSyncTest()">🔌 연결 테스트</button><label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;margin-left:5px"><input id="bomGsAuto" type="checkbox" '+(syncState.auto?'checked':'')+' onchange="saveBomSyncInputs()"> 자동 동기화</label></div><div id="bomSyncStatus" class="sync-status">URL과 비밀키는 이 브라우저에만 저장됩니다. 동기화 대상: 제품 수정·추가, 공정단가, 원가기준, BOM, 도면·담당자, 원자재단가, 설비정보, 숨김제품, 매출 연동정보.</div><div class="sync-help"><b>사용법</b> · sales_analyzer에서 사용한 동일한 웹앱 URL과 비밀키를 입력할 수 있습니다. <b>저장(병합)</b>은 현재 BOM 변경을 서버 자료와 합쳐 저장하며, 자동 동기화는 수정 후 약 5초 뒤 저장하고 60초마다 다른 사용자의 변경을 확인합니다.<br>원본 제품 900여 건 전체를 매번 보내지 않고, 기본 데이터와 달라진 제품만 전송해 동기화 용량을 줄였습니다.</div><div id="bomSyncHistory" class="sync-history"></div></div></div>';document.body.appendChild(ov);ov.addEventListener('click',function(e){if(e.target===ov)closeBomSync()});renderHistory()}
+function openSyncModal(){var old=id('bomSyncOverlay');if(old)old.remove();var ov=document.createElement('div');ov.id='bomSyncOverlay';ov.className='sync-overlay';ov.innerHTML='<div class="sync-modal"><div class="sync-head"><h3>🔄 구글시트 동기화</h3><span style="font-size:11px;opacity:.78">sales_analyzer와 같은 Apps Script 방식</span><button type="button" onclick="closeBomSync()">×</button></div><div class="sync-body"><div class="sync-grid"><input id="bomGsUrl" placeholder="Apps Script 웹앱 URL (…/exec)" value="'+eh(syncState.url||'')+'"><input id="bomGsKey" placeholder="비밀키" value="'+eh(syncState.key||'')+'"><input id="bomGsUser" placeholder="내 이름(작성자)" value="'+eh(syncState.user||'')+'"></div><div class="sync-actions"><button class="load" type="button" onclick="bomSyncLoad(false)">⬇ 불러오기</button><button class="save" type="button" onclick="bomSyncSave(false)">⬆ 저장(병합)</button><button class="test" type="button" onclick="bomSyncTest()">🔌 연결 테스트</button><label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;margin-left:5px"><input id="bomGsAuto" type="checkbox" '+(syncState.auto?'checked':'')+' onchange="saveBomSyncInputs()"> 자동 동기화</label></div><div id="bomSyncStatus" class="sync-status">URL과 비밀키는 이 브라우저에만 저장됩니다. 동기화 대상: 제품 수정·추가, 공정단가, 원가기준, BOM, 도면·담당자, 원자재단가, 설비정보, 숨김제품, 매출 연동정보.</div><div class="sync-help"><b>사용법</b> · sales_analyzer에서 사용한 동일한 웹앱 URL과 비밀키를 입력할 수 있습니다. <b>저장(병합)</b>은 현재 BOM 변경을 서버 자료와 합쳐 저장하며, 자동 동기화는 수정 후 약 5초 뒤 저장하고 30초마다 다른 사용자의 변경을 확인합니다.<br>원본 제품 900여 건 전체를 매번 보내지 않고, 기본 데이터와 달라진 제품만 전송해 동기화 용량을 줄였습니다.</div><div id="bomSyncHistory" class="sync-history"></div></div></div>';document.body.appendChild(ov);ov.addEventListener('click',function(e){if(e.target===ov)closeBomSync()});renderHistory()}
 window.openBomSync=openSyncModal;window.closeBomSync=function(){var e=id('bomSyncOverlay');if(e)e.remove()};window.saveBomSyncInputs=readSyncInputs;window.bomSyncTest=syncTest;window.bomSyncLoad=syncLoad;window.bomSyncSave=syncSave;
 async function init(){ensureUi();await loadSalesState();ensureUi();syncSnapshot=JSON.stringify(collectSync(false));/* v40: legacy 3초 전체 데이터 검사 및 중복 60초 폴링 제거 — 최신 동기화 컨트롤러가 담당 */var skip=sessionStorage.getItem('bom_sync_applied');if(skip)sessionStorage.removeItem('bom_sync_applied');else if(false&&syncState.auto&&syncState.url)setTimeout(function(){syncLoad(true)},1300);if(sessionStorage.getItem('saleslink_reopen')){sessionStorage.removeItem('saleslink_reopen');setTimeout(function(){switchTab('saleslink')},300)}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -9378,11 +9378,27 @@ header .hbtns #bomSyncBtn{order:10!important}
   }
   window.__v12410MergeMaterialDb=mergeMaterialDb;window.__v12410MergeProductsByStamp=mergeProductsByStamp;
   function normalizeStepOverrideMap(ov,product,recordStamp){var map=clone(ov&&ov._stepOverridesById||{})||{},steps=normalizeProductSteps(product||{},String(product&&product.pn||''),recordStamp),legacy=ov&&ov.steps&&typeof ov.steps==='object'?ov.steps:{};Object.keys(legacy).forEach(function(i){var st=steps[Number(i)];if(st&&!map[st._syncId])map[st._syncId]={value:legacy[i],updatedAt:recordStamp||0}});return map}
+  function mergeProductEditHistory(a,b){
+    var seen={},out=[];
+    [].concat(Array.isArray(a)?a:[],Array.isArray(b)?b:[]).forEach(function(r,i){
+      if(!r)return;
+      var at=Number(r.at||r.t||0),by=String(r.by||r.u||'이름없음'),summary=String(r.summary||r.d||r.detail||'수정');
+      var key=String(r.id||'')||[at,by,summary,JSON.stringify(r.before||null),JSON.stringify(r.after||null)].join('|');
+      if(seen[key])return;
+      seen[key]=1;
+      var x=clone(r)||{};x.at=at||Date.now();x.by=by;x.summary=summary;out.push(x);
+    });
+    return out.sort(function(x,y){return Number(y.at||0)-Number(x.at||0)}).slice(0,20);
+  }
   function mergeOverridesByField(remote,local,mergedProducts,preferLocal){var rm=normalizeSyncMeta(remote&&remote._syncMeta),lm=normalizeSyncMeta(local&&local._syncMeta),r=remote&&remote.overrides&&typeof remote.overrides==='object'?remote.overrides:{},l=local&&local.overrides&&typeof local.overrides==='object'?local.overrides:{},out={},keys={};Object.keys(r).concat(Object.keys(l),Object.keys(rm.records.overrides||{}),Object.keys(lm.records.overrides||{})).forEach(function(k){keys[k]=1});
     Object.keys(keys).forEach(function(pn){var rt=Number(rm.records.overrides&&rm.records.overrides[pn]||0),lt=Number(lm.records.overrides&&lm.records.overrides[pn]||0),rv=r[pn],lv=l[pn],side=lt>rt?'local':rt>lt?'remote':preferLocal?'local':'remote';if(!rv||!lv){var src=side==='local'?lv:rv,ts=side==='local'?lt:rt;if(!src&&ts>0)return;src=src||(side==='local'?rv:lv);if(src)out[pn]=clone(src);return}
-      var nr={},rf=rv._fieldUpdated||{},lf=lv._fieldUpdated||{},fields={};Object.keys(rv).concat(Object.keys(lv)).forEach(function(f){if(f!=='_fieldUpdated'&&f!=='_stepOverridesById'&&f!=='steps')fields[f]=1});Object.keys(fields).forEach(function(f){var rft=Number(rf[f]||rt||0),lft=Number(lf[f]||lt||0),pick=lft>rft?'local':rft>lft?'remote':preferLocal?'local':'remote',src=pick==='local'?lv:rv,ts=pick==='local'?lft:rft;if(Object.prototype.hasOwnProperty.call(src,f))nr[f]=clone(src[f]);else if(ts<=0){var other=pick==='local'?rv:lv;if(Object.prototype.hasOwnProperty.call(other,f))nr[f]=clone(other[f])}});
-      nr._fieldUpdated=mergeMaxMap(rf,lf);var rp=(remote.products&&remote.products.patches||{})[pn]||{},lp=(local.products&&local.products.patches||{})[pn]||{},rmap=normalizeStepOverrideMap(rv,rp,rt),lmap=normalizeStepOverrideMap(lv,lp,lt),omap={},ids={};Object.keys(rmap).concat(Object.keys(lmap)).forEach(function(k){ids[k]=1});Object.keys(ids).forEach(function(k){var a=rmap[k],b=lmap[k],at=Number(a&&a.updatedAt||0),bt=Number(b&&b.updatedAt||0),x=bt>at?b:at>bt?a:preferLocal?(b||a):(a||b);if(x)omap[k]=clone(x)});nr._stepOverridesById=omap;
-      var prod=(mergedProducts&&mergedProducts.patches||{})[pn]||lp||rp;if(!prod||!Array.isArray(prod.steps)){try{prod=(SEED_PRODUCTS||[]).find(function(x){return String(x.pn)===String(pn)})||prod}catch(_){}}var steps=normalizeProductSteps(prod,pn,Math.max(rt,lt)),legacy={};steps.forEach(function(st,i){var x=omap[st._syncId];if(x&&!x.deleted&&x.value!==''&&x.value!=null)legacy[i]=x.value});if(Object.keys(legacy).length)nr.steps=legacy;else delete nr.steps;var business=Object.keys(nr).filter(function(k){return !/^_/.test(k)});if(business.length||Object.keys(omap).length)out[pn]=nr});return out}
+      var nr={},rf=rv._fieldUpdated||{},lf=lv._fieldUpdated||{},fields={};Object.keys(rv).concat(Object.keys(lv)).forEach(function(f){if(f!=='_fieldUpdated'&&f!=='_stepOverridesById'&&f!=='steps'&&f!=='_editHistory'&&f!=='_editMeta')fields[f]=1});Object.keys(fields).forEach(function(f){var rft=Number(rf[f]||rt||0),lft=Number(lf[f]||lt||0),pick=lft>rft?'local':rft>lft?'remote':preferLocal?'local':'remote',src=pick==='local'?lv:rv,ts=pick==='local'?lft:rft;if(Object.prototype.hasOwnProperty.call(src,f))nr[f]=clone(src[f]);else if(ts<=0){var other=pick==='local'?rv:lv;if(Object.prototype.hasOwnProperty.call(other,f))nr[f]=clone(other[f])}});
+      nr._fieldUpdated=mergeMaxMap(rf,lf);
+      var mergedEditHistory=mergeProductEditHistory(rv._editHistory,lv._editHistory);
+      if(mergedEditHistory.length){nr._editHistory=mergedEditHistory;nr._editMeta=clone(mergedEditHistory[0])}
+      else{var rem=rv._editMeta,lem=lv._editMeta,remAt=Number(rem&&rem.at||0),lemAt=Number(lem&&lem.at||0),pickedMeta=lemAt>remAt?lem:remAt>lemAt?rem:(preferLocal?(lem||rem):(rem||lem));if(pickedMeta)nr._editMeta=clone(pickedMeta)}
+      var rp=(remote.products&&remote.products.patches||{})[pn]||{},lp=(local.products&&local.products.patches||{})[pn]||{},rmap=normalizeStepOverrideMap(rv,rp,rt),lmap=normalizeStepOverrideMap(lv,lp,lt),omap={},ids={};Object.keys(rmap).concat(Object.keys(lmap)).forEach(function(k){ids[k]=1});Object.keys(ids).forEach(function(k){var a=rmap[k],b=lmap[k],at=Number(a&&a.updatedAt||0),bt=Number(b&&b.updatedAt||0),x=bt>at?b:at>bt?a:preferLocal?(b||a):(a||b);if(x)omap[k]=clone(x)});nr._stepOverridesById=omap;
+      var prod=(mergedProducts&&mergedProducts.patches||{})[pn]||lp||rp;if(!prod||!Array.isArray(prod.steps)){try{prod=(SEED_PRODUCTS||[]).find(function(x){return String(x.pn)===String(pn)})||prod}catch(_){}}var steps=normalizeProductSteps(prod,pn,Math.max(rt,lt)),legacy={};steps.forEach(function(st,i){var x=omap[st._syncId];if(x&&!x.deleted&&x.value!==''&&x.value!=null)legacy[i]=x.value});if(Object.keys(legacy).length)nr.steps=legacy;else delete nr.steps;var business=Object.keys(nr).filter(function(k){return !/^_/.test(k)});if(business.length||Object.keys(omap).length||mergedEditHistory.length||nr._editMeta)out[pn]=nr});return out}
   function mergePayload(remote,local,options){
     remote=remote||{};local=local||{};options=options||{};var only=options.onlySections||null,out=clone(remote)||{};function use(k){return !only||!!only[k]}function prefer(k){return !!(only&&only[k])}
     if(use('products'))out.products=mergeProductsByStamp(remote,local,prefer('products'));
@@ -9394,6 +9410,29 @@ header .hbtns #bomSyncBtn{order:10!important}
     if(use('processHistory'))out.processHistory=mergeHistoryMap(remote.processHistory,local.processHistory);
     out._syncMeta=mergeSyncMeta(remote._syncMeta,local._syncMeta);
     out.editLog=mergeLogs(remote.editLog,local.editLog);out.schema=Math.max(Number(remote.schema)||0,Number(local.schema)||0,4);out.updatedAt=local.updatedAt||nowIso();out.updatedBy=local.updatedBy||'';out.updatedClient=local.updatedClient||'';return out
+  }
+  function mergeSharedHistoryOnly(remote,local){
+    remote=clone(remote||{})||{};local=local||{};var needs={},a,b,merged;
+    a=mergeLogs(remote.editLog,[]);merged=mergeLogs(remote.editLog,local.editLog);
+    if(JSON.stringify(a)!==JSON.stringify(merged))needs.editLog=true;
+    remote.editLog=merged;
+    a=remote.processHistory||{};merged=mergeHistoryMap(a,local.processHistory||{});
+    if(JSON.stringify(a)!==JSON.stringify(merged))needs.processHistory=true;
+    remote.processHistory=merged;
+    var ro=clone(remote.overrides||{})||{},lo=local.overrides&&typeof local.overrides==='object'?local.overrides:{},pns={};
+    Object.keys(ro).concat(Object.keys(lo)).forEach(function(pn){pns[pn]=1});
+    Object.keys(pns).forEach(function(pn){
+      var rr=ro[pn]&&typeof ro[pn]==='object'?clone(ro[pn]):{},lr=lo[pn]&&typeof lo[pn]==='object'?lo[pn]:{};
+      var before=Array.isArray(rr._editHistory)?rr._editHistory:[],mh=mergeProductEditHistory(before,lr._editHistory);
+      if(JSON.stringify(before)!==JSON.stringify(mh)){needs.overrides=true;rr._editHistory=mh;if(mh.length)rr._editMeta=clone(mh[0]);ro[pn]=rr}
+    });
+    remote.overrides=ro;
+    return {payload:remote,sections:needs};
+  }
+  function queueSharedHistoryPush(sections){
+    var keys=Object.keys(sections||{});if(!keys.length)return;
+    keys.forEach(function(k){dirtySections[k]=true});dirty=true;persistDirty();
+    setTimeout(function(){if(!busy)scheduleAutoSave();else setTimeout(function(){if(!busy)scheduleAutoSave()},350)},160);
   }
   async function applyPayload(d){
     if(!d)return;applying=true;saveRecovery();
@@ -9411,7 +9450,7 @@ header .hbtns #bomSyncBtn{order:10!important}
       if(d._syncMeta!==undefined)saveSyncMeta(d._syncMeta);
       if(d.salesLink!==undefined){if(typeof window.__bomReplaceSalesState==='function')await window.__bomReplaceSalesState(d.salesLink);else saveJson(SALES_KEY,d.salesLink)}
       if(d.editLog!==undefined)setLogs(mergeLogs(getLogs(),d.editLog));
-      lastDigests=makeDigests();lastPayloadSnapshot=collect(false,false);
+      lastDigests=makeDigests();lastPayloadSnapshot=collect(false,true);
     }finally{applying=false}
   }
 
@@ -9496,7 +9535,8 @@ header .hbtns #bomSyncBtn{order:10!important}
       trackChanges(true);var remote=await fetchRoot(s);trackChanges(true);var identity=syncIdentity(s),first=s.initialSyncIdentity!==identity,hasRemote=!!(remote&&Object.keys(remote).length);
       /* 새 브라우저/새 로그인은 서버자료를 먼저 받아 기본값이 기존 자료를 덮지 않도록 한다. */
       if(first&&hasRemote&&!dirty&&!Object.keys(dirtySections).length){
-        await applyPayload(remote);refreshAfterSync();clearDirty();s=getState();s.initialSyncIdentity=identity;s.lastSync=nowIso();s.lastRemoteAt=remote.updatedAt||'';s.syncCount=(s.syncCount||0)+1;setState(s);lastDigests=makeDigests();lastPayloadSnapshot=collect(false,false);setStatus('✓ 최초 동기화 완료 · 서버 자료를 먼저 불러왔습니다.','ok');finishButton('ok');renderHeader();renderInlineHistory();if(!silent)toast('새 로그인 사용자에게 서버 자료를 안전하게 불러왔습니다.');return true;
+        var firstHistoryMerge=mergeSharedHistoryOnly(remote,collect(false,true));remote=firstHistoryMerge.payload;
+        await applyPayload(remote);refreshAfterSync();clearDirty();queueSharedHistoryPush(firstHistoryMerge.sections);s=getState();s.initialSyncIdentity=identity;s.lastSync=nowIso();s.lastRemoteAt=remote.updatedAt||'';s.syncCount=(s.syncCount||0)+1;setState(s);lastDigests=makeDigests();lastPayloadSnapshot=collect(false,true);setStatus('✓ 최초 동기화 완료 · 서버 자료와 공용 수정이력을 불러왔습니다.','ok');finishButton('ok');renderHeader();renderInlineHistory();if(!silent)toast('서버 자료와 다른 PC의 수정이력을 안전하게 불러왔습니다.');return true;
       }
       var mergeOptions=hasRemote?{onlySections:dirtySections}:null,saved=null,payload=null,sentDigest='',stable=false;
       /* 네트워크 처리 중에도 사용자가 입력할 수 있으므로 최대 3회까지 최신 로컬값을 다시 병합한다. */
@@ -9512,7 +9552,7 @@ header .hbtns #bomSyncBtn{order:10!important}
       }
       if(!stable){dirty=true;persistDirty();setStatus('입력 중 변경사항이 계속 감지되어 화면 덮어쓰기를 중단했습니다. 잠시 후 자동으로 다시 저장합니다.','bad');finishButton('bad');setTimeout(function(){if(!busy)scheduleAutoSave()},120);return false}
       if(saved.editLog!==undefined)setLogs(mergeLogs(getLogs(),saved.editLog));await applyPayload(saved);refreshAfterSync();clearDirty();
-      s=getState();s.initialSyncIdentity=identity;s.lastSync=nowIso();s.lastRemoteAt=saved.updatedAt||payload.updatedAt;s.syncCount=(s.syncCount||0)+1;setState(s);lastDigests=makeDigests();lastPayloadSnapshot=collect(false,false);setStatus('✓ 동기화 완료 · '+fmtFull(s.lastSync),'ok');finishButton('ok');renderHeader();renderInlineHistory();if(!silent)toast('구글시트 동기화가 완료되었습니다.');return true;
+      s=getState();s.initialSyncIdentity=identity;s.lastSync=nowIso();s.lastRemoteAt=saved.updatedAt||payload.updatedAt;s.syncCount=(s.syncCount||0)+1;setState(s);lastDigests=makeDigests();lastPayloadSnapshot=collect(false,true);setStatus('✓ 동기화 완료 · '+fmtFull(s.lastSync),'ok');finishButton('ok');renderHeader();renderInlineHistory();if(!silent)toast('구글시트 동기화가 완료되었습니다.');return true;
     }catch(e){dirty=true;persistDirty();setStatus('저장 실패: '+e.message,'bad');finishButton('bad');if(!silent)toast('동기화 실패: '+e.message);return false}finally{busy=false}
   }
   async function syncLoad(silent){
@@ -9523,15 +9563,17 @@ header .hbtns #bomSyncBtn{order:10!important}
     /* 로컬 변경이 있는 상태에서 불러오기로 덮어쓰지 않는다. 먼저 병합 저장하도록 안내한다. */
     if(dirty||autoTimer||changeTrackTimer){if(silent){scheduleAutoSave();finishButton('idle');return true}setStatus('로컬 변경사항이 있어 불러오기를 중단했습니다. 먼저 저장(병합)을 실행하세요.','bad');toast('로컬 변경사항을 먼저 저장(병합)해 주세요.');return false}
     busy=true;setButton('working','불러오는 중…');if(!silent)setStatus('구글시트 자료를 불러오는 중…');
-    try{var remote=await fetchRoot(s);if(!remote)throw new Error('저장된 BOM 데이터가 없습니다.');if(silent&&remote.updatedAt&&remote.updatedAt===s.lastRemoteAt&&s.initialSyncIdentity===syncIdentity(s)){finishButton('idle');return true}await applyPayload(remote);refreshAfterSync();clearDirty();s=getState();s.initialSyncIdentity=syncIdentity(s);s.lastSync=nowIso();s.lastRemoteAt=remote.updatedAt||s.lastRemoteAt;s.syncCount=(s.syncCount||0)+1;setState(s);if(!silent)addLog('동기화','구글시트 데이터 불러오기',{noAuto:true});setStatus('✓ 불러오기 완료 · '+fmtFull(s.lastSync),'ok');finishButton('ok');renderHeader();if(!silent){toast('구글시트 자료를 불러왔습니다.')}return true}catch(e){if(!silent)setStatus('불러오기 실패: '+e.message,'bad');finishButton('bad');return false}finally{busy=false}
+    try{var remote=await fetchRoot(s);if(!remote)throw new Error('저장된 BOM 데이터가 없습니다.');var historyMerge=mergeSharedHistoryOnly(remote,collect(false,true)),historyNeedsPush=Object.keys(historyMerge.sections).length>0;remote=historyMerge.payload;if(silent&&remote.updatedAt&&remote.updatedAt===s.lastRemoteAt&&s.initialSyncIdentity===syncIdentity(s)&&!historyNeedsPush){finishButton('idle');return true}await applyPayload(remote);refreshAfterSync();clearDirty();queueSharedHistoryPush(historyMerge.sections);s=getState();s.initialSyncIdentity=syncIdentity(s);s.lastSync=nowIso();s.lastRemoteAt=remote.updatedAt||s.lastRemoteAt;s.syncCount=(s.syncCount||0)+1;setState(s);setStatus('✓ 불러오기 완료 · 수정이력 공용 반영 · '+fmtFull(s.lastSync),'ok');finishButton('ok');renderHeader();renderInlineHistory();if(!silent){toast('구글시트 자료와 공용 수정이력을 불러왔습니다.')}return true}catch(e){if(!silent)setStatus('불러오기 실패: '+e.message,'bad');finishButton('bad');return false}finally{busy=false}
   }
 
-  var sectionNames={products:'제품·공정',prices:'공정단가',base:'단가산정 기준',overrides:'제품 원가설정',userBom:'사용자 BOM',drawings:'도면·담당자',materialDB:'원자재 단가',processHistory:'공정 변경이력',hiddenProducts:'숨김제품',owners:'담당자 마스터',equipment:'설비정보',salesLink:'매출 연동'};
-  function makeDigests(){var p=collect(false,false),o={};Object.keys(sectionNames).forEach(function(k){try{o[k]=JSON.stringify(p[k])}catch(_){o[k]=''}});return o}
+  var sectionNames={products:'제품·공정',prices:'공정단가',base:'단가산정 기준',overrides:'제품 원가설정',userBom:'사용자 BOM',drawings:'도면·담당자',materialDB:'원자재 단가',processHistory:'공정 변경이력',hiddenProducts:'숨김제품',owners:'담당자 마스터',equipment:'설비정보',salesLink:'매출 연동',editLog:'수정이력'};
+  function makeDigests(){var p=collect(false,true),o={};Object.keys(sectionNames).forEach(function(k){try{o[k]=JSON.stringify(p[k])}catch(_){o[k]=''}});return o}
   function trackChanges(force){
-    if(applying)return;var payload=collect(false,false),cur={};Object.keys(sectionNames).forEach(function(k){try{cur[k]=JSON.stringify(payload[k])}catch(_){cur[k]=''}});if(!lastDigests){lastDigests=cur;lastPayloadSnapshot=clone(payload);return}var changed=[],changedKeys=[],stamp=Date.now(),meta=normalizeSyncMeta(readJson(SYNC_META_KEY,{sections:{},records:{}})),prev=lastPayloadSnapshot||{};
+    if(applying)return;var payload=collect(false,true),cur={};Object.keys(sectionNames).forEach(function(k){try{cur[k]=JSON.stringify(payload[k])}catch(_){cur[k]=''}});if(!lastDigests){lastDigests=cur;lastPayloadSnapshot=clone(payload);return}var changed=[],changedKeys=[],stamp=Date.now(),meta=normalizeSyncMeta(readJson(SYNC_META_KEY,{sections:{},records:{}})),prev=lastPayloadSnapshot||{};
     Object.keys(sectionNames).forEach(function(k){if(cur[k]!==lastDigests[k]){changed.push(sectionNames[k]);changedKeys.push(k);dirtySections[k]=true;meta.sections[k]=stamp;touchChangedRecords(meta,k,prev[k],payload[k],stamp)}});
-    lastDigests=cur;lastPayloadSnapshot=clone(payload);if(!changed.length)return;saveSyncMeta(meta);dirty=true;persistDirty();var detail=changed.join(' · ')+' 변경';addLog(changed.length===1?changed[0]:'데이터 수정',detail,{noAuto:true});if(!force)scheduleAutoSave();
+    lastDigests=cur;lastPayloadSnapshot=clone(payload);if(!changed.length)return;saveSyncMeta(meta);dirty=true;persistDirty();var businessKeys=changedKeys.filter(function(k){return k!=='editLog'}),businessLabels=businessKeys.map(function(k){return sectionNames[k]||k});
+    if(businessLabels.length){var detail=businessLabels.join(' · ')+' 변경';addLog(businessLabels.length===1?businessLabels[0]:'데이터 수정',detail,{noAuto:true})}
+    if(!force)scheduleAutoSave();
   }
   function scheduleAutoSave(){var s=getState();if(!s.auto||!s.url||busy)return;clearTimeout(autoTimer);setButton('idle','자동 저장 대기');autoTimer=setTimeout(function(){autoTimer=null;syncSave(true)},5000)}
 
@@ -9541,7 +9583,7 @@ header .hbtns #bomSyncBtn{order:10!important}
     'dbfastec_cost_overrides_v2':1,'dbfastec_cost_user_bom_v1':1,'dbfastec_cost_drawings_v1':1,
     'dbfastec_material_price_history_v1':1,'dbfastec_cost_hidden_products_v1':1,
     'dbfastec_owner_master_v1':1,'db_equipment_master_v21':1,'dbfastec_sales_link_v1':1,
-    'dbfastec_process_history_v120':1
+    'dbfastec_process_history_v120':1,'dbfastec_bom_edit_log_v1':1
   };
   var changeTrackTimer=null;
   function queueTrackChanges(){
@@ -9614,7 +9656,7 @@ header .hbtns #bomSyncBtn{order:10!important}
     bindPanel();renderHeader();renderInlineHistory();
   }
   function init(){
-    migrateLegacyHistory();install();currentIdentity=syncIdentity(getState());loadPersistentDirty(currentIdentity);lastDigests=makeDigests();lastPayloadSnapshot=collect(false,false);installStorageTracking();
+    migrateLegacyHistory();install();currentIdentity=syncIdentity(getState());loadPersistentDirty(currentIdentity);lastDigests=makeDigests();lastPayloadSnapshot=collect(false,true);installStorageTracking();
     [120,500,1400].forEach(function(ms){setTimeout(install,ms)});
     /* 원격 변경 확인만 60초 간격 유지. 로컬 전체 데이터 반복 검사는 제거 */
     setInterval(function(){var s=getState();if(s.auto&&s.url&&!document.hidden&&!busy){syncLoad(true)}},60000);
@@ -9672,7 +9714,7 @@ header .hbtns #bomSyncBtn{order:10!important}
   function repairLabels(){
     var tab=id('tab-usage');if(tab)tab.textContent='🏷 제품 구분별 분석';
     var sel=id('usageFilter');if(sel&&![].slice.call(sel.options).some(function(o){return o.value==='비규격'})){var op=document.createElement('option');op.value='비규격';op.textContent='비규격';sel.appendChild(op)}
-    var dsel=id('drawUsageFilter');if(dsel&&dsel.options.length&&dsel.options[0])dsel.options[0].textContent='공용/전용/비규격 전체';
+    var dsel=id('drawUsageFilter');if(dsel&&dsel.options.length&&dsel.options[0])dsel.options[0].textContent='제품구분';
     document.querySelectorAll('#view-usage .dh').forEach(function(el){el.childNodes.forEach(function(n){if(n.nodeType===3)n.nodeValue=n.nodeValue.replace('공용품 / 전용품 비중','공용품 / 전용품 / 비규격 비중').replace('품목군별 공용/전용품 관리','품목군별 공용/전용품/비규격 관리')})});
     var ver=id('bomAppVer');if(ver)ver.textContent=(ver.textContent||'버전 '+VER).replace(/v\d+/,VER);
     window.__legacyDocumentTitleV99=window.__legacyDocumentTitleV99.replace(/v\d+/,VER);
@@ -23038,11 +23080,11 @@ setTimeout(install,450);setTimeout(install,1900);
   function products(){try{return Array.isArray(window.PRODUCTS)?window.PRODUCTS:(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS)?PRODUCTS:[])}catch(_){return []}}
   function drawStorage(){try{return localStorage.getItem(DRAW_KEY)||'{}'}catch(_){return '{}'}}
   function categoryOf(p,r){
-    var cats=['공용품','전용품','레이저','내부보강'],u=clean(r&&r.usage),item=clean(p&&p.item);
+    var cats=['공용품','전용품','레이저','내부보강','기타'],u=clean(r&&r.usage),item=clean(p&&p.item);if(u==='비규격')u='기타';
     if(r&&r.usageManual===true&&cats.indexOf(u)>=0)return u;
     if(/\(L\)/i.test(item))return '레이저';
     if(/상하보강|이너프레임/i.test(item))return '내부보강';
-    return u==='전용품'?'전용품':'공용품';
+    if(u==='전용품')return '전용품';if(u==='기타')return '기타';return '공용품';
   }
   function buildDrawCache(force){
     var raw=drawStorage();if(!force&&raw===drawRawStorage&&drawRecords.length===products().length)return drawRecords;
@@ -23064,7 +23106,7 @@ setTimeout(install,450);setTimeout(install,1900);
     var owners=drawRecords.map(function(r){return r.owner}),statuses=drawRecords.map(function(r){return r.status}),usages=drawRecords.map(function(r){return r.usage});
     try{if(typeof window.getOwnerMasterList==='function')owners=owners.concat(window.getOwnerMasterList()||[])}catch(_){ }
     var order=['미등록','검토중','보유','개정필요','폐기'],sset=new Set(statuses);statuses=order.filter(function(x){return sset.has(x)}).concat(statuses.filter(function(x){return order.indexOf(x)<0}));
-    setOptions(id('drawOwnerFilter'),'담당 전체',owners);setOptions(id('drawStatusFilter'),'관리상태 전체',statuses);setOptions(id('drawUsageFilter'),'제품구분 전체',usages);
+    setOptions(id('drawOwnerFilter'),'담당 전체',owners);setOptions(id('drawStatusFilter'),'관리상태 전체',statuses);setOptions(id('drawUsageFilter'),'제품구분',['공용품','전용품','레이저','내부보강','기타']);
   }
   function drawFiltered(){
     var owner=clean(id('drawOwnerFilter')&&id('drawOwnerFilter').value),status=clean(id('drawStatusFilter')&&id('drawStatusFilter').value),usage=clean(id('drawUsageFilter')&&id('drawUsageFilter').value),q=norm(id('drawGroupSearch')&&id('drawGroupSearch').value),terms=q?q.split(' ').filter(Boolean):[];
@@ -23841,5 +23883,268 @@ window.addEventListener('storage',function(e){if(!e.key||/bom|product|user_bom|p
 })();
 </script>
 <!-- ===== /V132.2 ===== -->
+
+<!-- ===== V132.3: 수정이력 공용 동기화 · 다른 PC 즉시 반영 ===== -->
+<script id="v1323-shared-edit-history-sync-script">
+(function(){
+'use strict';
+if(window.__v1323SharedEditHistorySync)return;
+window.__v1323SharedEditHistorySync=true;
+var VER='v132.3',STATE_KEY='dbfastec_bom_gsync_v1',timer=0,lastRun=0;
+function id(x){return document.getElementById(x)}
+function readState(){try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}')||{}}catch(e){return {}}}
+function configured(){var s=readState();return s.auto!==false&&String(s.url||'').trim()&&String(s.key||'').trim()}
+function setVersion(){
+  try{document.title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍'}catch(e){}
+  var v=id('bomAppVer');if(v)v.textContent='버전 '+VER+' · 수정이력 공용 동기화';
+}
+function pullSharedHistory(force){
+  if(!configured()||typeof window.bomSyncLoad!=='function'||document.hidden)return;
+  var now=Date.now();if(!force&&now-lastRun<12000)return;lastRun=now;
+  try{var r=window.bomSyncLoad(true);if(r&&typeof r.catch==='function')r.catch(function(){})}catch(e){}
+}
+function install(){
+  setVersion();
+  clearInterval(timer);
+  timer=setInterval(function(){pullSharedHistory(false)},30000);
+}
+install();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+window.addEventListener('load',function(){install();setTimeout(function(){pullSharedHistory(true)},1200)},{once:true});
+window.addEventListener('focus',function(){setVersion();pullSharedHistory(true)});
+document.addEventListener('visibilitychange',function(){if(!document.hidden){setVersion();pullSharedHistory(true)}});
+window.addEventListener('bomSyncApplied',function(){setTimeout(setVersion,0)});
+window.addEventListener('storage',function(e){if(!e.key||e.key===STATE_KEY||e.key==='dbfastec_bom_edit_log_v1')setTimeout(setVersion,0)});
+})();
+</script>
+<!-- ===== /V132.3 ===== -->
+
+
+
+<!-- ===== V132.4: 도면 업로드 담당자 자동반영 · 도면분석 공용 동기화 보강 ===== -->
+<script id="v1324-drawing-owner-shared-sync-script">
+(function(){
+'use strict';
+if(window.__v1324DrawingOwnerSharedSync)return;
+window.__v1324DrawingOwnerSharedSync=true;
+var VER='v132.4';
+var DRAW_KEY='dbfastec_cost_drawings_v1';
+var OWNER_KEY='dbfastec_owner_master_v1';
+var STATE_KEY='dbfastec_bom_gsync_v1';
+var META_KEY='dbfastec_sync_meta_v1246';
+var pending={},syncTimer=0,viewTimer=0,pullTimer=0,pullBusy=false,lastPull=0;
+
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function state(){return read(STATE_KEY,{url:'',key:'',user:'',auto:true})||{}}
+function configured(){var s=state();return s.auto!==false&&clean(s.url)&&clean(s.key)}
+function now(){return Date.now()}
+function parseTime(v){var n=Number(v);if(isFinite(n)&&n>0)return n;var d=new Date(v||'');return isNaN(d.getTime())?0:d.getTime()}
+function hasFile(r){return !!(clean(r&&r.dwgFileId)||clean(r&&r.pdfFileId)||clean(r&&r.fileId))}
+function kindFields(kind){var p=kind==='PDF'?'pdf':'dwg';return {id:p+'FileId',name:p+'FileName',mime:p+'FileMime',size:p+'FileSize',url:p+'FileUrl',download:p+'DownloadUrl',at:p+'FileUploadedAt',by:p+'FileUploadedBy',folder:p+'FileFolderId'}}
+function kindOf(m){var k=clean(m&&m.fileKind).toUpperCase(),n=clean(m&&m.fileName).toLowerCase(),t=clean(m&&m.mimeType).toLowerCase();if(k==='PDF'||/\.pdf$/i.test(n)||t.indexOf('pdf')>=0)return 'PDF';if(k==='DWG'||/\.dwg$/i.test(n)||t.indexOf('dwg')>=0||t.indexOf('acad')>=0)return 'DWG';return ''}
+function typed(r,kind){r=r||{};var f=kindFields(kind);return {id:clean(r[f.id]),name:clean(r[f.name]),mime:clean(r[f.mime]),size:Number(r[f.size])||0,url:clean(r[f.url]),download:clean(r[f.download]),at:clean(r[f.at]),by:clean(r[f.by]),folder:clean(r[f.folder])}}
+function typedSignature(r,kind){var x=typed(r,kind);return [x.id,x.name,x.mime,x.size,x.at,x.by,x.folder].join('|')}
+function fileSignature(r){return typedSignature(r,'DWG')+'§'+typedSignature(r,'PDF')+'§'+[clean(r&&r.fileId),clean(r&&r.fileName),clean(r&&r.fileUploadedAt),clean(r&&r.fileUploadedBy)].join('|')}
+function latestUploader(r,prev){
+  r=r||{};prev=prev||{};var candidates=[];
+  ['DWG','PDF'].forEach(function(kind){var x=typed(r,kind);if(!x.id||!x.by)return;var changed=typedSignature(r,kind)!==typedSignature(prev,kind);candidates.push({name:x.by,at:parseTime(x.at),changed:changed})});
+  if(clean(r.fileId)&&clean(r.fileUploadedBy))candidates.push({name:clean(r.fileUploadedBy),at:parseTime(r.fileUploadedAt),changed:fileSignature(r)!==fileSignature(prev)});
+  candidates.sort(function(a,b){if(a.changed!==b.changed)return a.changed?-1:1;return b.at-a.at});
+  return candidates.length?candidates[0].name:'';
+}
+function registerOwner(name){
+  name=clean(name);if(!name)return;
+  setTimeout(function(){var a=read(OWNER_KEY,[]);if(!Array.isArray(a))a=[];if(a.indexOf(name)>=0)return;a.push(name);a.sort(function(x,y){return String(x).localeCompare(String(y),'ko')});try{localStorage.setItem(OWNER_KEY,JSON.stringify(a))}catch(e){}},0);
+}
+function normalizeRecord(next,prev){
+  next=next&&typeof next==='object'?clone(next):{};prev=prev&&typeof prev==='object'?prev:{};
+  var uploader=latestUploader(next,prev),fileChanged=fileSignature(next)!==fileSignature(prev),changed=false;
+  if(uploader&&(fileChanged||!clean(next.owner))&&clean(next.owner)!==uploader){
+    next.owner=uploader;
+    next._ownerUpdatedAt=Math.max(parseTime(next.dwgFileUploadedAt),parseTime(next.pdfFileUploadedAt),parseTime(next.fileUploadedAt),now());
+    next._ownerUpdatedBy=uploader;
+    changed=true;
+  }
+  if(hasFile(next)){
+    if(!next.has){next.has=true;changed=true}
+    if(clean(next.status)!=='보유'){next.status='보유';changed=true}
+    if(!clean(next.date)){next.date=new Date().toISOString().slice(0,10);changed=true}
+  }
+  if(fileChanged){next._modifiedAt=now();next._modifiedBy=uploader||clean(state().user)||'사용자 미등록';changed=true}
+  if(clean(next.owner))registerOwner(next.owner);
+  return {record:next,changed:changed,fileChanged:fileChanged,owner:uploader};
+}
+function normalizeMap(value,before){
+  value=value&&typeof value==='object'?clone(value):{};before=before&&typeof before==='object'?before:{};var changedPns=[];
+  Object.keys(value).forEach(function(pn){var z=normalizeRecord(value[pn],before[pn]);value[pn]=z.record;if(z.changed)changedPns.push(String(pn))});
+  return {map:value,changedPns:changedPns};
+}
+function markRecords(pns){
+  pns=(pns||[]).map(clean).filter(Boolean);if(!pns.length)return;
+  var t=now(),m=read(META_KEY,{sections:{},records:{}})||{};if(!m.sections)m.sections={};if(!m.records)m.records={};if(!m.records.drawings)m.records.drawings={};m.sections.drawings=t;pns.forEach(function(pn){m.records.drawings[pn]=t});
+  try{localStorage.setItem(META_KEY,JSON.stringify(m))}catch(e){}
+}
+function renderViews(){
+  clearTimeout(viewTimer);viewTimer=setTimeout(function(){
+    try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}
+    var vd=id('view-draw'),vo=id('view-drawowner');
+    try{if(vd&&!vd.classList.contains('hidden')&&typeof window.renderDrawingAnalysis==='function')window.renderDrawingAnalysis()}catch(e){console.error(e)}
+    try{if(vo&&!vo.classList.contains('hidden')&&typeof window.renderOwnerAnalysis==='function')window.renderOwnerAnalysis()}catch(e){console.error(e)}
+    try{if(typeof window.decorateDrawingButtonsNowV98==='function')window.decorateDrawingButtonsNowV98()}catch(e){}
+    try{if(typeof window.refreshDrawingAggregatesV88==='function')window.refreshDrawingAggregatesV88()}catch(e){}
+  },45)
+}
+function queueSharedSave(pns){
+  (pns||[]).forEach(function(pn){pn=clean(pn);if(pn)pending[pn]=1});
+  clearTimeout(syncTimer);syncTimer=setTimeout(function(){
+    var list=Object.keys(pending);pending={};if(!list.length)return;markRecords(list);
+    try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'drawings',pns:list,v1324:true}}))}catch(e){}
+    try{window.dispatchEvent(new CustomEvent('drawingDataChanged',{detail:{pns:list,v1324:true}}))}catch(e){}
+    if(!configured())return;
+    try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false);else if(typeof window.bomSyncSave==='function')setTimeout(function(){window.bomSyncSave(true)},80)}catch(e){}
+  },520)
+}
+
+/* 모든 구·신 업로드 경로를 한 곳에서 보정: 업로드 등록자 → 도면 담당자 */
+(function patchDrawingStorage(){
+  if(window.__v1324DrawingStoragePatched||!window.Storage||!Storage.prototype)return;window.__v1324DrawingStoragePatched=true;
+  var previousSet=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(k,v){
+    if(this!==localStorage||String(k)!==DRAW_KEY)return previousSet.apply(this,arguments);
+    var before={};try{before=JSON.parse(this.getItem(k)||'{}')||{}}catch(e){}
+    var parsed;try{parsed=JSON.parse(String(v)||'{}')||{}}catch(e){return previousSet.apply(this,arguments)}
+    var z=normalizeMap(parsed,before),json=JSON.stringify(z.map),r=previousSet.call(this,k,json);
+    if(z.changedPns.length){queueSharedSave(z.changedPns);renderViews()}
+    return r;
+  };
+})();
+
+function mergeDriveFile(rec,m,kind){
+  rec=rec&&typeof rec==='object'?clone(rec):{};var f=kindFields(kind),before=typedSignature(rec,kind);
+  rec[f.id]=m.fileId||'';rec[f.name]=m.fileName||'';rec[f.mime]=m.mimeType||'';rec[f.size]=Number(m.size)||0;rec[f.url]=m.viewUrl||m.fileUrl||'';rec[f.download]=m.downloadUrl||'';rec[f.at]=m.uploadedAt||'';rec[f.by]=m.uploadedBy||'';rec[f.folder]=m.folderId||'';
+  var d=typed(rec,'DWG'),p=typed(rec,'PDF'),primary=d.id?d:p;rec.has=!!(d.id||p.id);rec.status=rec.has?'보유':'미등록';if(rec.has&&!clean(rec.date))rec.date=new Date().toISOString().slice(0,10);
+  if(primary.id){rec.fileId=primary.id;rec.fileName=primary.name;rec.fileMime=primary.mime;rec.fileSize=primary.size;rec.fileUrl=primary.url;rec.downloadUrl=primary.download;rec.fileUploadedAt=primary.at;rec.fileUploadedBy=primary.by;rec.fileFolderId=primary.folder}
+  return {record:rec,changed:before!==typedSignature(rec,kind)};
+}
+async function pullDriveList(force){
+  if(pullBusy||!configured()||document.hidden)return false;var t=now();if(!force&&t-lastPull<18000)return false;
+  var vd=id('view-draw'),vo=id('view-drawowner');if(!force&&(!vd||vd.classList.contains('hidden'))&&(!vo||vo.classList.contains('hidden')))return false;
+  pullBusy=true;lastPull=t;
+  try{
+    var s=state(),u=clean(s.url),q='action=drawing_list&key='+encodeURIComponent(s.key)+'&_t='+t;
+    var res=await fetch(u+(u.indexOf('?')>=0?'&':'?')+q,{cache:'no-store'}),tx=await res.text(),d;
+    try{d=JSON.parse(tx)}catch(e){return false}if(!d||!d.ok||!Array.isArray(d.files))return false;
+    var map=read(DRAW_KEY,{}),changed=[];
+    d.files.forEach(function(m){var pn=clean(m&&m.pn),kind=kindOf(m);if(!pn||!kind||!clean(m.fileId))return;var x=mergeDriveFile(map[pn]||{},m,kind);if(x.changed){map[pn]=x.record;changed.push(pn)}});
+    if(changed.length){localStorage.setItem(DRAW_KEY,JSON.stringify(map));queueSharedSave(changed);renderViews()}
+    return true;
+  }catch(e){return false}finally{pullBusy=false}
+}
+function syncAndPull(force){
+  try{if(typeof window.bomSyncLoad==='function'&&configured()){var r=window.bomSyncLoad(true);if(r&&typeof r.finally==='function')r.finally(function(){setTimeout(function(){pullDriveList(force)},100)});else setTimeout(function(){pullDriveList(force)},180)}else pullDriveList(force)}catch(e){pullDriveList(force)}
+}
+function migrateExisting(){
+  var before=read(DRAW_KEY,{}),z=normalizeMap(before,before),map=clone(before),pns=[];
+  /* 기존 데이터는 담당자가 비어 있을 때만 등록자로 보정 */
+  Object.keys(map).forEach(function(pn){var r=map[pn]||{};if(clean(r.owner))return;var who=latestUploader(r,{});if(!who)return;r.owner=who;r._ownerUpdatedAt=Math.max(parseTime(r.dwgFileUploadedAt),parseTime(r.pdfFileUploadedAt),parseTime(r.fileUploadedAt),now());r._ownerUpdatedBy=who;map[pn]=r;pns.push(pn);registerOwner(who)});
+  if(pns.length){localStorage.setItem(DRAW_KEY,JSON.stringify(map));queueSharedSave(pns)}
+}
+function setVersion(){try{document.title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍'}catch(e){}var v=id('bomAppVer');if(v)v.textContent='버전 '+VER+' · 도면 담당자·공용 동기화'}
+function install(){
+  setVersion();migrateExisting();clearInterval(pullTimer);pullTimer=setInterval(function(){pullDriveList(false)},30000);
+}
+install();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+window.addEventListener('load',function(){setVersion();setTimeout(function(){syncAndPull(true)},1400)},{once:true});
+window.addEventListener('focus',function(){setVersion();syncAndPull(true)});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)syncAndPull(true)});
+document.addEventListener('click',function(e){var tab=e.target&&e.target.closest&&e.target.closest('#tab-draw,#tab-drawowner');if(tab)setTimeout(function(){syncAndPull(true);renderViews()},120)},true);
+window.addEventListener('bomSyncApplied',function(){setTimeout(function(){migrateExisting();renderViews();pullDriveList(false)},80)});
+window.addEventListener('storage',function(e){if(!e.key||e.key===DRAW_KEY||e.key===OWNER_KEY){renderViews();if(e.key===DRAW_KEY)setTimeout(function(){pullDriveList(false)},120)}});
+})();
+</script>
+<!-- ===== /V132.4 ===== -->
+
+<!-- ===== V132.5: 제품별원가 공정저장 확정 · 도면분석 보기버튼 제거 · 제품구분 5종 ===== -->
+<style id="v1325-process-save-drawing-filter-style">
+#view-draw #drawViewToggle,
+#view-draw #drawCustomerViewBtn{display:none!important}
+#view-draw .draw-analysis-tools>#v124btn-drawUsageFilter{width:155px!important;min-width:155px!important;max-width:155px!important;flex-basis:155px!important}
+</style>
+<script id="v1325-process-save-drawing-filter-script">
+(function(){
+'use strict';
+if(window.__v1325ProcessSaveDrawingFilter)return;
+window.__v1325ProcessSaveDrawingFilter=true;
+var VER='v132.5',PROD_KEY='dbfastec_cost_products_v2',HIST_KEY='dbfastec_process_history_v120',LATEST_KEY='dbfastec_process_latest_v126',LEGACY_LATEST_KEY='dbfastec_process_latest_v125',META_KEY='dbfastec_sync_meta_v1246',STATE_KEY='dbfastec_bom_gsync_v1';
+var saving=false,coreSave=(typeof window.__v126PersistCurrentProcess==='function'?window.__v126PersistCurrentProcess:window.saveProduct),drawRaw=window.renderDrawingAnalysis;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function read(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error('v132.5 저장 실패',k,e);return false}}
+function products(){try{return Array.isArray(PRODUCTS)?PRODUCTS:(Array.isArray(window.PRODUCTS)?window.PRODUCTS:[])}catch(e){return []}}
+function user(){var s=read(STATE_KEY,{});return clean(s&&s.user)||'이름없음'}
+function plain(s){s=s||{};return {proc:clean(s.proc),gubun:clean(s.gubun),part:clean(s.part),equip:clean(s.equip),st:s.st==null?'':s.st,qty:s.qty==null?'':s.qty,costMode:clean(s.costMode||s.calcMode)}}
+function sameSteps(a,b){a=Array.isArray(a)?a:[];b=Array.isArray(b)?b:[];if(a.length!==b.length)return false;for(var i=0;i<a.length;i++)if(JSON.stringify(plain(a[i]))!==JSON.stringify(plain(b[i])))return false;return true}
+function resolveProduct(){
+ var a=products(),idx=Number(window.__v1249ActiveIndex);try{if(!Number.isInteger(idx)||idx<0)idx=typeof curIdx!=='undefined'?Number(curIdx):-1}catch(e){idx=-1}
+ if(Number.isInteger(idx)&&idx>=0&&a[idx])return {p:a[idx],idx:idx,pn:clean(a[idx].pn)};
+ var title=clean(id('m-title')&&id('m-title').textContent);for(var i=0;i<a.length;i++){var pn=clean(a[i]&&a[i].pn);if(pn&&title.indexOf(pn)>=0)return {p:a[i],idx:i,pn:pn}}
+ return null;
+}
+function capture(){
+ var x=resolveProduct();if(!x)return null;var before=clone(x.p.steps||[]),steps=[];
+ document.querySelectorAll('#overlay #stepbody tr').forEach(function(tr){
+   var proc=clean(tr.querySelector('.d-proc')&&tr.querySelector('.d-proc').value),stRaw=clean(tr.querySelector('.d-st')&&tr.querySelector('.d-st').value);if(!proc&&stRaw==='')return;
+   var oi=Number(tr.getAttribute('data-orig')),base=Number.isInteger(oi)&&oi>=0&&before[oi]?clone(before[oi]):{};
+   base.proc=proc;base.gubun=clean(tr.querySelector('.d-gubun')&&tr.querySelector('.d-gubun').value);base.part=clean(tr.querySelector('.d-part')&&tr.querySelector('.d-part').value);base.equip=clean(tr.querySelector('.d-equip')&&tr.querySelector('.d-equip').value);base.st=stRaw===''?'':(isNaN(Number(stRaw))?stRaw:Number(stRaw));
+   var q=tr.querySelector('.d-qty'),m=tr.querySelector('.d-mode-select');if(q)base.qty=clean(q.value)===''?'':Number(q.value);if(m)base.costMode=clean(m.value);steps.push(base);
+ });
+ x.before=before;x.steps=steps;x.at=Date.now();x.by=user();return x;
+}
+function persisted(ctx){var a=read(PROD_KEY,[]),p=a.find(function(v){return clean(v&&v.pn)===ctx.pn});return !!(p&&sameSteps(p.steps,ctx.steps))}
+function fallback(ctx){
+ ctx.p.steps=clone(ctx.steps);ctx.p._processUpdatedAt=ctx.at;ctx.p._processUpdatedBy=ctx.by;ctx.p._processOrderUpdatedAt=ctx.at;write(PROD_KEY,products());
+ var latest={steps:clone(ctx.steps),at:ctx.at,by:ctx.by},m=read(LATEST_KEY,{});m[ctx.pn]=latest;write(LATEST_KEY,m);m=read(LEGACY_LATEST_KEY,{});m[ctx.pn]=latest;write(LEGACY_LATEST_KEY,m);
+ if(!sameSteps(ctx.before,ctx.steps)){var h=read(HIST_KEY,{}),arr=Array.isArray(h[ctx.pn])?h[ctx.pn]:[];h[ctx.pn]=[{id:'ph_v1325_'+ctx.at+'_'+Math.random().toString(36).slice(2,7),at:ctx.at,by:ctx.by,before:clone(ctx.before),after:clone(ctx.steps)}].concat(arr).slice(0,30);write(HIST_KEY,h)}
+ var meta=read(META_KEY,{sections:{},records:{}})||{};meta.sections=meta.sections||{};meta.records=meta.records||{};meta.records.products=meta.records.products||{};meta.sections.products=ctx.at;meta.sections.processHistory=ctx.at;meta.records.products[ctx.pn]=ctx.at;write(META_KEY,meta);
+ try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}
+ var ov=id('overlay');if(ov)ov.classList.add('hidden');try{if(typeof curIdx!=='undefined')curIdx=null}catch(e){}window.__v1249ActiveIndex=-1;
+ try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',pn:ctx.pn,v1325:true}}))}catch(e){}try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false)}catch(e){}
+}
+function stableSave(){
+ if(saving)return false;saving=true;var ctx=capture(),btn=document.querySelector('#overlay .mfoot .save'),old=btn&&btn.textContent,ok=false,err=null;
+ try{
+  if(!ctx)throw new Error('저장할 제품을 찾을 수 없습니다. 제품을 다시 열어 주세요.');if(btn){btn.disabled=true;btn.textContent='저장 중…'}
+  try{if(typeof coreSave==='function'&&coreSave!==stableSave)ok=coreSave.call(window)!==false}catch(e){err=e;console.error('기존 저장 처리 오류',e)}
+  if(!persisted(ctx)){fallback(ctx);ok=persisted(ctx)}
+  if(!ok)throw(err||new Error('공정 저장 결과를 확인하지 못했습니다.'));
+  try{if(typeof window.__v127SetPopupDirty==='function')window.__v127SetPopupDirty(false)}catch(e){}
+  if(typeof window.toast==='function')window.toast('공정 수정 내용이 저장되었습니다.');return true;
+ }catch(e){console.error('v132.5 공정 저장 오류',e);if(typeof window.toast==='function')window.toast('저장 중 오류: '+(e.message||e));return false}
+ finally{saving=false;if(btn){btn.disabled=false;btn.textContent=old||'저장'}}
+}
+function ensureDrawUi(){
+ ['drawViewToggle','drawCustomerViewBtn'].forEach(function(k){var e=id(k);if(e)e.remove()});
+ var s=id('drawUsageFilter');if(!s)return;var keep=clean(s.value);if(keep==='비규격')keep='기타';var vals=['공용품','전용품','레이저','내부보강','기타'],sig='제품구분|'+vals.join('|');
+ if(s.dataset.v1325Options!==sig){s.innerHTML='<option value="">제품구분</option>'+vals.map(function(v){return '<option value="'+v+'">'+v+'</option>'}).join('');s.dataset.v1325Options=sig}
+ s.value=vals.indexOf(keep)>=0?keep:'';var b=id('v124btn-drawUsageFilter'),op=s.options[s.selectedIndex]||s.options[0];if(b&&op){b.textContent=op.textContent;b.title=op.textContent;b.classList.toggle('filter-active',!!s.value)}
+}
+function observeDrawTools(){var tools=document.querySelector('#view-draw .draw-analysis-tools');if(!tools||tools.__v1325Observed)return;tools.__v1325Observed=true;var queued=false,MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO!=='function')return;try{new MO(function(){if(queued)return;queued=true;requestAnimationFrame(function(){queued=false;ensureDrawUi()})}).observe(tools,{childList:true,subtree:true})}catch(e){}}
+function install(){window.saveProduct=stableSave;ensureDrawUi();observeDrawTools();try{if(window.__v1306FinalVersionObserver&&typeof window.__v1306FinalVersionObserver.disconnect==='function')window.__v1306FinalVersionObserver.disconnect()}catch(e){}var v=id('bomAppVer');if(v)v.textContent='버전 '+VER+' · 공정저장·도면 제품구분';try{document.title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍';window.__legacyDocumentTitleV99=document.title}catch(e){}}
+window.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('#overlay .mfoot .save,#overlay button[onclick*="saveProduct"]');if(!b)return;e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();stableSave()},true);
+if(typeof drawRaw==='function'){window.renderDrawingAnalysis=function(){var r=drawRaw.apply(this,arguments);ensureDrawUi();return r}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();setTimeout(install,300);setTimeout(install,1800)},{once:true});
+window.addEventListener('bomSyncApplied',function(){setTimeout(function(){ensureDrawUi();install()},0)});
+[5000,12000,16000,24000,30000].forEach(function(ms){setTimeout(install,ms)});
+})();
+</script>
+<!-- ===== /V132.5 ===== -->
+
 </body>
 </html>
