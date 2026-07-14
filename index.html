@@ -21249,9 +21249,9 @@ header .tabs #tab-dashboard:hover{color:#111!important;background:#eaf4ff!import
   };
 
   /* 어떤 자동 갱신이 발생해도 사용자가 펼친 BOM을 그대로 복원 */
-  var baseRender=window.renderCost;
-  if(typeof baseRender==='function'&&!baseRender.__v1303Wrapped){
-    var wrapped=function(){var r=baseRender.apply(this,arguments);requestAnimationFrame(restore);return r};wrapped.__v1303Wrapped=true;wrapped.__v1303Base=baseRender;window.renderCost=wrapped;try{renderCost=wrapped}catch(e){}
+  var baseRenderV1303=window.renderCost;
+  if(typeof baseRenderV1303==='function'&&!baseRenderV1303.__v1303Wrapped){
+    var wrappedV1303=(function(base){return function(){var r=base.apply(this,arguments);requestAnimationFrame(restore);return r}})(baseRenderV1303);wrappedV1303.__v1303Wrapped=true;wrappedV1303.__v1303Base=baseRenderV1303;window.renderCost=wrappedV1303;try{renderCost=wrappedV1303}catch(e){}
   }
   document.addEventListener('click',function(e){
     var b=e.target.closest&&e.target.closest('#view-cost .bom-toggle');if(!b)return;
@@ -21418,7 +21418,7 @@ safeCategoryRender.__v1305CategorySafe=true;
 safeCategoryRender.__v1305Base=stableBaseRender;
 installSafeCategoryRender();
 /* 이전 버전의 지연 초기화가 렌더러를 다시 덮어쓰는 경우 최종 안전 렌더러로 복구 */
-[0,80,250,700,1500,3200,6500,11000,18000,26000].forEach(function(ms){setTimeout(installSafeCategoryRender,ms)});
+[0,80,250].forEach(function(ms){setTimeout(installSafeCategoryRender,ms)});
 /* v1306: renderCost 래퍼 10초 재설치 제거 — 최종 지연설치만 유지 */
 var baseClear=window.clearF;if(typeof baseClear==='function'){var clearWrap=function(){selected=new Set(CATS);var r=baseClear.apply(this,arguments);ensureFilter();updateFilterUI();return r};window.clearF=clearWrap;try{clearF=clearWrap}catch(e){}}
 
@@ -21594,7 +21594,7 @@ window.addEventListener('load',function(){setTimeout(init,80)},{once:true});
 <script id="v1305-cost-freeze-guard">
 (function(){
   'use strict';
-  var lastEnter=0;
+  var lastEnter=0,bootUntil=Date.now()+9000,lastStackNotice=0;
   document.addEventListener('click',function(e){
     var tab=e.target&&e.target.closest&&e.target.closest('#tab-cost');if(!tab)return;
     var now=Date.now();if(now-lastEnter<250){e.preventDefault();e.stopImmediatePropagation();return}lastEnter=now;
@@ -21602,7 +21602,9 @@ window.addEventListener('load',function(){setTimeout(init,80)},{once:true});
   window.addEventListener('error',function(e){
     if(String(e&&e.message||'').indexOf('Maximum call stack')>=0){
       try{window.__v1305CategoryRendering=false}catch(_){}
-      try{if(typeof window.toast==='function')window.toast('반복 실행을 차단하고 화면을 복구했습니다.')}catch(_){}
+      /* 초기화 중 구버전 래퍼가 충돌해도 사용자 화면에는 오류 토스트를 반복 표시하지 않는다. */
+      var now=Date.now(),view=document.getElementById('view-cost');
+      if(now>bootUntil&&now-lastStackNotice>15000&&view&&!view.classList.contains('hidden')){lastStackNotice=now;try{if(typeof window.toast==='function')window.toast('제품 목록을 안전하게 다시 표시했습니다.')}catch(_){}}
     }
   });
 })();
@@ -22732,14 +22734,14 @@ window.addEventListener('load',function(){init();setTimeout(init,150);setTimeout
   var PURCHASE_KEY='dbfastec_bom_purchase_prices_v1';
   var baseCalc=window.calc;
   if(typeof baseCalc!=='function')return;
-  var cache=new Map(),cacheTime=0;
+  var cache=new Map(),cacheTime=0,purchaseCache=null;
 
   function n(v){var x=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
   function clean(v){return String(v==null?'':v).trim()}
   function money(v){return Math.round(n(v)).toLocaleString('ko-KR')}
   function esc(v){return clean(v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})}
   function products(){try{return Array.isArray(PRODUCTS)?PRODUCTS:[]}catch(e){return []}}
-  function purchaseMap(){try{return JSON.parse(localStorage.getItem(PURCHASE_KEY)||'{}')||{}}catch(e){return {}}}
+  function purchaseMap(){if(purchaseCache)return purchaseCache;try{purchaseCache=JSON.parse(localStorage.getItem(PURCHASE_KEY)||'{}')||{}}catch(e){purchaseCache={}}return purchaseCache}
   function purchaseCode(ch){return clean(ch&&ch.code)||[clean(ch&&ch.name),clean(ch&&ch.spec)].join('§')}
   function isPurchase(ch){var k=clean(ch&&ch.kind);return k==='부자재'||k==='구매품'||k.indexOf('구매')>=0}
   function qty(ch){var q=n(ch&&ch.qty);return q>0?q:1}
@@ -22751,9 +22753,9 @@ window.addEventListener('load',function(){init();setTimeout(init,150);setTimeout
       return root&&typeof window.bomKids==='function'?(window.bomKids(root)||[]):[];
     }catch(e){return []}
   }
-  function resetCache(){cache.clear();cacheTime=Date.now()}
+  function resetCache(){cache.clear();purchaseCache=null;cacheTime=Date.now()}
   window.__v1316ClearBomCostCache=resetCache;
-  function freshCache(){if(Date.now()-cacheTime>1500)resetCache()}
+  function freshCache(){if(!cacheTime||Date.now()-cacheTime>180000)resetCache()}
   function cloneBase(c){var o={};Object.keys(c||{}).forEach(function(k){o[k]=c[k]});return o}
   function emptyBom(){return {mat:0,proc:0,ovh:0,base:0,count:0,lines:0}}
 
@@ -22799,12 +22801,12 @@ window.addEventListener('load',function(){init();setTimeout(init,150);setTimeout
     if(!p)return {};
     freshCache();
     var pn=clean(p.pn),top=!stack,ck=pn;
-    if(!top&&cache.has(ck))return cache.get(ck);
+    if(cache.has(ck))return cache.get(ck);
     var own=baseCalc(p)||{};
-    if(!hasAssembly(p.steps||[])){if(!top)cache.set(ck,own);return own}
+    if(!hasAssembly(p.steps||[])){cache.set(ck,own);return own}
     var st=stack||new Set([pn]);
     var bom=bomRollup(p,st),out=combine(own,bom);
-    if(!top)cache.set(ck,out);
+    cache.set(ck,out);
     return out;
   }
   rolledCalc.__v1316AssemblyBom=true;
@@ -22813,7 +22815,7 @@ window.addEventListener('load',function(){init();setTimeout(init,150);setTimeout
   try{calc=rolledCalc}catch(e){}
   window.getAssemblyBomRollupV1316=function(p){
     if(!p||!hasAssembly(p.steps||[]))return emptyBom();
-    return bomRollup(p,new Set([clean(p.pn)]));
+    var c=rolledCalc(p);return c&&c.bom?cloneBase(c.bom):emptyBom();
   };
 
   function ensureBox(){
@@ -22850,7 +22852,7 @@ window.addEventListener('load',function(){init();setTimeout(init,150);setTimeout
   function updateModal(){
     var box=ensureBox(),p=null;try{p=products()[Number(curIdx)]}catch(e){}
     if(!box||!p)return;
-    var mc=modalOwnCost(),active=hasAssembly(mc.steps),bom=active?bomRollup(p,new Set([clean(p.pn)])):emptyBom();
+    var mc=modalOwnCost(),active=hasAssembly(mc.steps),saved=active?rolledCalc(p):null,bom=saved&&saved.bom?cloneBase(saved.bom):emptyBom();
     if(!active||!bom.lines){box.classList.remove('on');box.innerHTML='';return}
     var combined=combine(mc.own,bom);
     box.classList.add('on');
@@ -22867,22 +22869,22 @@ window.addEventListener('load',function(){init();setTimeout(init,150);setTimeout
 
   var baseRecalc=window.recalcModal;
   if(typeof baseRecalc==='function'){
-    var recalc=function(){resetCache();var r=baseRecalc.apply(this,arguments);try{updateModal()}catch(e){console.error('BOM 합산 표시 오류',e)}return r};
+    var recalc=function(){var r=baseRecalc.apply(this,arguments);try{updateModal()}catch(e){console.error('BOM 합산 표시 오류',e)}return r};
     recalc.__v1316AssemblyBom=true;recalc.__v1316Base=baseRecalc;window.recalcModal=recalc;try{recalcModal=recalc}catch(e){}
   }
   var baseOpen=window.openDetail;
   if(typeof baseOpen==='function'){
-    var open=function(){resetCache();var r=baseOpen.apply(this,arguments);setTimeout(updateModal,0);return r};
+    var open=function(){var r=baseOpen.apply(this,arguments);setTimeout(updateModal,0);return r};
     open.__v1316AssemblyBom=true;open.__v1316Base=baseOpen;window.openDetail=open;try{openDetail=open}catch(e){}
   }
   var baseRender=window.renderCost;
   if(typeof baseRender==='function'){
-    var render=function(){resetCache();return baseRender.apply(this,arguments)};
+    var render=function(){return baseRender.apply(this,arguments)};
     render.__v1316AssemblyBom=true;render.__v1316Base=baseRender;window.renderCost=render;try{renderCost=render}catch(e){}
   }
   var oldPurchase=window.setBomPurchasePrice;
   if(typeof oldPurchase==='function')window.setBomPurchasePrice=function(){resetCache();var r=oldPurchase.apply(this,arguments);try{window.renderCost(false)}catch(e){}return r};
-  ['bomDataChanged','bomSyncApplied','storage'].forEach(function(ev){window.addEventListener(ev,resetCache)});
+  window.addEventListener('bomDataChanged',function(e){var x=String(e&&e.detail&&e.detail.section||'');if(!x||/product|bom|price|base|override|material/i.test(x))resetCache()});window.addEventListener('bomSyncApplied',resetCache);window.addEventListener('storage',function(e){var k=String(e&&e.key||'');if(!k||/cost_products|cost_prices|cost_base|cost_overrides|user_bom|purchase_prices|material_price/i.test(k))resetCache()});
   try{document.title='제품별 제조원가 통합관리 v131.6 | (주)동방파스텍'}catch(e){}
 })();
 </script>
@@ -23767,23 +23769,23 @@ function installPriceDelete(){
   var rp=window.renderPrice||((typeof renderPrice==='function')?renderPrice:null);
   if(typeof rp==='function'&&!rp.__v1322DeletedRender){
     renderBaseV1322=rp;
-    var renderWrap=function(){var r=renderBaseV1322.apply(this,arguments);cleanupPriceDom();return r};
-    renderWrap.__v1322DeletedRender=true;renderWrap.__v1322Base=renderBaseV1322;
-    window.renderPrice=renderWrap;try{renderPrice=renderWrap}catch(e){}
+    var renderWrapV1322=(function(base){return function(){var r=base.apply(this,arguments);cleanupPriceDom();return r}})(rp);
+    renderWrapV1322.__v1322DeletedRender=true;renderWrapV1322.__v1322Base=rp;
+    window.renderPrice=renderWrapV1322;try{renderPrice=renderWrapV1322}catch(e){}
   }
   var sp=window.savePrices||((typeof savePrices==='function')?savePrices:null);
   if(typeof sp==='function'&&!sp.__v1322DeletedSave){
     saveBaseV1322=sp;
-    var saveWrap=function(){var r=saveBaseV1322.apply(this,arguments);applyDeletedToPrices(priceMap());cleanupPriceDom();return r};
-    saveWrap.__v1322DeletedSave=true;saveWrap.__v1322Base=saveBaseV1322;
-    window.savePrices=saveWrap;try{savePrices=saveWrap}catch(e){}
+    var saveWrapV1322=(function(base){return function(){var r=base.apply(this,arguments);applyDeletedToPrices(priceMap());cleanupPriceDom();return r}})(sp);
+    saveWrapV1322.__v1322DeletedSave=true;saveWrapV1322.__v1322Base=sp;
+    window.savePrices=saveWrapV1322;try{savePrices=saveWrapV1322}catch(e){}
   }
   var oc=window.onPriceChange||((typeof onPriceChange==='function')?onPriceChange:null);
   if(typeof oc==='function'&&!oc.__v1322DeletedChange){
     changeBaseV1322=oc;
-    var changeWrap=function(){var r=changeBaseV1322.apply(this,arguments);applyDeletedToPrices(priceMap());cleanupPriceDom();return r};
-    changeWrap.__v1322DeletedChange=true;changeWrap.__v1322Base=changeBaseV1322;
-    window.onPriceChange=changeWrap;try{onPriceChange=changeWrap}catch(e){}
+    var changeWrapV1322=(function(base){return function(){var r=base.apply(this,arguments);applyDeletedToPrices(priceMap());cleanupPriceDom();return r}})(oc);
+    changeWrapV1322.__v1322DeletedChange=true;changeWrapV1322.__v1322Base=oc;
+    window.onPriceChange=changeWrapV1322;try{onPriceChange=changeWrapV1322}catch(e){}
   }
   var del=function(proc){
     proc=clean(proc);if(!proc)return;
@@ -23933,7 +23935,7 @@ var DRAW_KEY='dbfastec_cost_drawings_v1';
 var OWNER_KEY='dbfastec_owner_master_v1';
 var STATE_KEY='dbfastec_bom_gsync_v1';
 var META_KEY='dbfastec_sync_meta_v1246';
-var pending={},syncTimer=0,viewTimer=0,pullTimer=0,pullBusy=false,lastPull=0;
+var pending={},syncTimer=0,viewTimer=0,pullTimer=0,pullBusy=false,lastPull=0,fullPullBusy=false,lastFullPull=0;
 
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).trim()}
@@ -24014,7 +24016,7 @@ function queueSharedSave(pns){
   if(window.__v1324DrawingStoragePatched||!window.Storage||!Storage.prototype)return;window.__v1324DrawingStoragePatched=true;
   var previousSet=Storage.prototype.setItem;
   Storage.prototype.setItem=function(k,v){
-    if(this!==localStorage||String(k)!==DRAW_KEY)return previousSet.apply(this,arguments);
+    if(this!==localStorage||String(k)!==DRAW_KEY||window.__v1330RemoteDrawingApply)return previousSet.apply(this,arguments);
     var before={};try{before=JSON.parse(this.getItem(k)||'{}')||{}}catch(e){}
     var parsed;try{parsed=JSON.parse(String(v)||'{}')||{}}catch(e){return previousSet.apply(this,arguments)}
     var z=normalizeMap(parsed,before),json=JSON.stringify(z.map),r=previousSet.call(this,k,json);
@@ -24045,7 +24047,8 @@ async function pullDriveList(force){
   }catch(e){return false}finally{pullBusy=false}
 }
 function syncAndPull(force){
-  try{if(typeof window.bomSyncLoad==='function'&&configured()){var r=window.bomSyncLoad(true);if(r&&typeof r.finally==='function')r.finally(function(){setTimeout(function(){pullDriveList(force)},100)});else setTimeout(function(){pullDriveList(force)},180)}else pullDriveList(force)}catch(e){pullDriveList(force)}
+  var t=now();if(fullPullBusy||t-lastFullPull<12000){pullDriveList(false);return}fullPullBusy=true;lastFullPull=t;
+  try{if(typeof window.bomSyncLoad==='function'&&configured()){var r=window.bomSyncLoad(true);if(r&&typeof r.finally==='function')r.finally(function(){fullPullBusy=false;setTimeout(function(){pullDriveList(force)},100)});else{fullPullBusy=false;setTimeout(function(){pullDriveList(force)},180)}}else{fullPullBusy=false;pullDriveList(force)}}catch(e){fullPullBusy=false;pullDriveList(force)}
 }
 function migrateExisting(){
   var before=read(DRAW_KEY,{}),z=normalizeMap(before,before),map=clone(before),pns=[];
@@ -24259,15 +24262,17 @@ function renderAccountModal(){
  box.innerHTML=s.accounts.map(function(a){var meta=[];if(a.registeredBy)meta.push('등록자: '+a.registeredBy);if(a.updatedAt||a.registeredAt)meta.push('저장: '+formatDate(a.updatedAt||a.registeredAt));return '<div class="v85-account-card"><div class="v85-account-avatar">'+esc((a.name||a.email).slice(0,2).toUpperCase())+'</div><div><div class="v85-account-name">'+esc(a.name||'이름 미입력')+'<span class="v1326-state-badge">공용저장</span></div><div class="v85-account-email">'+esc(a.email)+'</div><div class="v1326-account-meta">'+esc(meta.join(' · ')||'등록정보 보존')+'</div></div><button type="button" class="v85-account-remove" data-v1326-remove="'+esc(a.email)+'">등록해제</button></div>'}).join('');
 }
 function renderAccountInfo(cfg){var e=id('v1326-account-info');if(!e)return;cfg=cfg||{};e.innerHTML='<b>도면 폴더</b> · '+esc(cfg.folderName||'Dwg share')+(cfg.folderUrl?' · <a href="'+esc(cfg.folderUrl)+'" target="_blank" rel="noopener">열기</a>':'')+'<br><b>저장 방식</b> · PC 로컬 백업 + 공용 서버 병합보존<br><b>Drive 권한</b> · '+(cfg.driveAuthorized?'승인 완료':'서버 권한 확인 필요')}
+function mergeRemoteDrawingRecord(local,remote){local=local&&typeof local==='object'?clone(local):{};remote=remote&&typeof remote==='object'?remote:{};var out=clone(local),lm=Math.max(timeOf(local._modifiedAt),timeOf(local.modifiedAt)),rm=Math.max(timeOf(remote._modifiedAt),timeOf(remote.modifiedAt));Object.keys(remote).forEach(function(k){if(/^(dwg|pdf)File|^file(Id|Name|Mime|Size|Url|Uploaded|Folder|Download)/.test(k)||k==='owner'||k==='_ownerUpdatedAt'||k==='_ownerUpdatedBy')return;var v=remote[k];if((rm>lm&&v!==''&&v!=null)||out[k]==null||out[k]==='')out[k]=clone(v)});['dwg','pdf'].forEach(function(p){var la=timeOf(local[p+'FileUploadedAt']),ra=timeOf(remote[p+'FileUploadedAt']),rid=clean(remote[p+'FileId']);if(rid&&(!clean(local[p+'FileId'])||ra>=la)){['FileId','FileName','FileMime','FileSize','FileUrl','DownloadUrl','FileUploadedAt','FileUploadedBy','FileFolderId'].forEach(function(f){var k=p+f;if(remote[k]!==undefined&&remote[k]!==''&&remote[k]!=null)out[k]=clone(remote[k])})}});var gl=timeOf(local.fileUploadedAt),gr=timeOf(remote.fileUploadedAt);if(clean(remote.fileId)&&(!clean(local.fileId)||gr>=gl)){['fileId','fileName','fileMime','fileSize','fileUrl','downloadUrl','fileUploadedAt','fileUploadedBy','fileFolderId'].forEach(function(k){if(remote[k]!==undefined&&remote[k]!==''&&remote[k]!=null)out[k]=clone(remote[k])})}var lot=timeOf(local._ownerUpdatedAt),rot=timeOf(remote._ownerUpdatedAt);if(clean(remote.owner)&&(!clean(local.owner)||rot>=lot)){out.owner=remote.owner;out._ownerUpdatedAt=remote._ownerUpdatedAt||Date.now();out._ownerUpdatedBy=remote._ownerUpdatedBy||remote.owner}else if(clean(local.owner)){out.owner=local.owner;out._ownerUpdatedAt=local._ownerUpdatedAt;out._ownerUpdatedBy=local._ownerUpdatedBy}out._modifiedAt=Math.max(lm,rm)||out._modifiedAt;out.has=!!(clean(out.dwgFileId)||clean(out.pdfFileId)||clean(out.fileId));if(out.has)out.status=out.status&&out.status!=='미등록'?out.status:'보유';return out}
+function applyRemoteDrawings(remote){if(!remote||typeof remote!=='object')return 0;var local=read(DRAW_KEY,{}),next=clone(local),changed=[];Object.keys(remote).forEach(function(pn){var merged=mergeRemoteDrawingRecord(local[pn],remote[pn]);if(JSON.stringify(local[pn]||null)!==JSON.stringify(merged)){next[pn]=merged;changed.push(String(pn))}});if(!changed.length)return 0;window.__v1330RemoteDrawingApply=true;drawingWriteBusy=true;try{localStorage.setItem(DRAW_KEY,JSON.stringify(next))}catch(e){console.warn('도면 공용자료 반영 실패',e)}finally{drawingWriteBusy=false;window.__v1330RemoteDrawingApply=false}changed.forEach(function(pn){var r=next[pn];if(clean(r&&r.owner))registerOwner(r.owner)});try{if(typeof window.invalidateDrawingCacheV81==='function')window.invalidateDrawingCacheV81()}catch(e){}try{window.dispatchEvent(new CustomEvent('drawingDataChanged',{detail:{pns:changed,remotePull:true,v1330:true}}))}catch(e){}return changed.length}
 async function loadAccountsRemote(manual){
  if(accountLoadBusy||!configured())return getAccountState();if(!manual&&Date.now()-lastAccountLoad<20000)return getAccountState();accountLoadBusy=true;lastAccountLoad=Date.now();if(manual)modalStatus('공유계정을 공용 서버에서 확인하는 중…');
  try{
-   var local=getAccountState(),ded={accounts:[],removed:{}},gen={accounts:[],removed:{}},cfg={};
+   var local=getAccountState(),ded={accounts:[],removed:{}},gen={accounts:[],removed:{}},cfg={},drawingCount=0;
    try{ded=await fetchDedicatedConfig();cfg=ded.config||{}}catch(e){if(manual)modalStatus('전용 설정 조회 확인사항: '+e.message,'warn')}
-   try{var g=await fetchGenericData();gen=g.config}catch(e){}
+   try{var g=await fetchGenericData();gen=g.config;drawingCount=applyRemoteDrawings(g.root&&g.root.drawings)}catch(e){}
    var merged=persistAccountState(mergeStates(local,ded,gen));renderAccountModal();renderAccountInfo(cfg);
-   if(manual)modalStatus('✓ 공유계정 '+merged.accounts.length+'명 공용 동기화 확인 완료','ok');
-   if(JSON.stringify(serializeState(local))!==JSON.stringify(serializeState(merged)))queueAccountSave(250);
+   if(manual)modalStatus('✓ 공유계정 '+merged.accounts.length+'명 · 담당자/도면 '+drawingCount+'건 공용자료 반영 완료','ok');
+   
    return merged;
  }finally{accountLoadBusy=false}
 }
@@ -24326,7 +24331,7 @@ function afterDrawingRepair(pns){
 (function patchDrawingStorage(){
  if(window.__v1326DrawingStoragePatched||!window.Storage||!Storage.prototype)return;window.__v1326DrawingStoragePatched=true;var oldSet=Storage.prototype.setItem;
  Storage.prototype.setItem=function(k,v){
-   if(this!==localStorage||String(k)!==DRAW_KEY||drawingWriteBusy)return oldSet.apply(this,arguments);var before={};try{before=JSON.parse(this.getItem(k)||'{}')||{}}catch(e){}var incoming;try{incoming=JSON.parse(String(v)||'{}')||{}}catch(e){return oldSet.apply(this,arguments)}
+   if(this!==localStorage||String(k)!==DRAW_KEY||drawingWriteBusy||window.__v1330RemoteDrawingApply)return oldSet.apply(this,arguments);var before={};try{before=JSON.parse(this.getItem(k)||'{}')||{}}catch(e){}var incoming;try{incoming=JSON.parse(String(v)||'{}')||{}}catch(e){return oldSet.apply(this,arguments)}
    /* 동기화 자료에 품번 기록이 빠져도 기존 도면 메타는 삭제하지 않는다. */
    Object.keys(before).forEach(function(pn){if(!Object.prototype.hasOwnProperty.call(incoming,pn))incoming[pn]=clone(before[pn])});var changed=[];
    Object.keys(incoming).forEach(function(pn){var z=repairDrawingRecord(String(pn),incoming[pn],before[pn]);incoming[pn]=z.record;if(z.changed||JSON.stringify(before[pn]||null)!==JSON.stringify(z.record))changed.push(String(pn))});
@@ -24338,7 +24343,7 @@ function repairExistingDrawings(){
 }
 function wrapSyncFunctions(){
  function wrap(name,after){var fn=window[name];if(typeof fn!=='function'||fn.__v1326AccountOwnerWrap)return;var w=function(){var r=fn.apply(this,arguments);if(r&&typeof r.then==='function')return r.then(function(v){setTimeout(after,0);return v},function(e){setTimeout(after,0);throw e});setTimeout(after,0);return r};w.__v1326AccountOwnerWrap=true;w.__raw=fn;window[name]=w}
- wrap('bomSyncSave',function(){queueAccountSave(120);repairExistingDrawings()});wrap('bomSyncLoad',function(){loadAccountsRemote(false);repairExistingDrawings()})
+ wrap('bomSyncSave',function(){repairExistingDrawings()});wrap('bomSyncLoad',function(){loadAccountsRemote(false);repairExistingDrawings()})
 }
 function setVersion(){var v=id('bomAppVer');if(v)v.textContent='버전 '+VER+' · 공유계정·도면담당자 동기화';try{document.title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍';window.__legacyDocumentTitleV99=document.title}catch(e){}}
 function init(){persistAccountState(localAccountState());repairExistingDrawings();wrapSyncFunctions();setVersion();if(configured())setTimeout(function(){loadAccountsRemote(false)},900)}
@@ -24346,7 +24351,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 window.addEventListener('load',function(){init();setTimeout(wrapSyncFunctions,800);setTimeout(wrapSyncFunctions,2600)},{once:true});
 window.addEventListener('focus',function(){setVersion();wrapSyncFunctions();loadAccountsRemote(false);repairExistingDrawings()});
 document.addEventListener('visibilitychange',function(){if(!document.hidden){setVersion();loadAccountsRemote(false);repairExistingDrawings()}});
-window.addEventListener('bomSyncApplied',function(){setTimeout(function(){repairExistingDrawings();loadAccountsRemote(false);queueAccountSave(350)},80)});
+window.addEventListener('bomSyncApplied',function(){setTimeout(function(){repairExistingDrawings();loadAccountsRemote(false)},80)});
 window.addEventListener('storage',function(e){if(e.key===ACCOUNT_KEY||e.key===LEGACY_ACCOUNT_KEY){accountState=persistAccountState(mergeStates(getAccountState(),localAccountState()));renderAccountModal()}if(e.key===DRAW_KEY)setTimeout(repairExistingDrawings,30)});
 clearInterval(syncWrapTimer);var tries=0;syncWrapTimer=setInterval(function(){wrapSyncFunctions();setVersion();if(++tries>12)clearInterval(syncWrapTimer)},2500);
 })();
@@ -24378,13 +24383,18 @@ var LATEST_KEY='dbfastec_process_latest_v126';
 var LEGACY_LATEST_KEY='dbfastec_process_latest_v125';
 var META_KEY='dbfastec_sync_meta_v1246';
 var STATE_KEY='dbfastec_bom_gsync_v1';
+var PROD_PATCH_KEY='dbfastec_product_patch_v1330',OV_PATCH_KEY='dbfastec_override_patch_v1330',HIST_PATCH_KEY='dbfastec_process_history_patch_v1330';
 var EQUIP_KEY='db_equipment_master_v21';
 var saving=false,recalcTimer=0,recalcArgs=null,recalcRunning=false,heavyRecalc=null,versionObserver=null;
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
 function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
-function read(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
-function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error('v132.7 저장 실패',k,e);return false}}
+function readPatch(key){var a={},b={};try{a=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(e){}try{b=JSON.parse(sessionStorage.getItem(key)||'{}')||{}}catch(e){}return Object.assign({},a,b)}
+function read(k,d){var v;try{v=JSON.parse(localStorage.getItem(k)||'null');v=v==null?d:v}catch(e){v=d}if(k===OV_KEY)v=Object.assign({},v||{},readPatch(OV_PATCH_KEY));if(k===HIST_KEY)v=Object.assign({},v||{},readPatch(HIST_PATCH_KEY));return v}
+function putPatch(key,obj){var cur=readPatch(key);cur=Object.assign(cur,obj||{});var tx=JSON.stringify(cur),ok=false;try{localStorage.setItem(key,tx);ok=true}catch(e){}try{sessionStorage.setItem(key,tx);ok=true}catch(e){}return ok}
+function productPatch(value){var old=[];try{old=JSON.parse(localStorage.getItem(PROD_KEY)||'[]')||[]}catch(e){}var om={};old.forEach(function(p){if(p&&p.pn!=null)om[String(p.pn)]=p});var changed={};(Array.isArray(value)?value:[]).forEach(function(p){var pn=clean(p&&p.pn);if(pn&&JSON.stringify(om[pn]||null)!==JSON.stringify(p))changed[pn]=p});return putPatch(PROD_PATCH_KEY,changed)}
+function mapPatch(key,value,storeKey){var old={};try{old=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(e){}var changed={};Object.keys(value||{}).forEach(function(k){if(JSON.stringify(old[k]||null)!==JSON.stringify(value[k]))changed[k]=value[k]});return putPatch(storeKey,changed)}
+function write(k,v){try{localStorage.setItem(k,JSON.stringify(v));if(k===PROD_KEY){try{localStorage.removeItem(PROD_PATCH_KEY);sessionStorage.removeItem(PROD_PATCH_KEY)}catch(e){}}return true}catch(e){console.warn('v133.0 저장공간 보강 사용',k,e&&e.name||e);try{localStorage.removeItem('dbfastec_bom_edit_log_shadow_v1329');localStorage.removeItem(LEGACY_LATEST_KEY)}catch(_){ }try{localStorage.setItem(k,JSON.stringify(v));return true}catch(_e){}if(k===PROD_KEY)return productPatch(v);if(k===OV_KEY)return mapPatch(k,v,OV_PATCH_KEY);if(k===HIST_KEY){var compact={};Object.keys(v||{}).forEach(function(pn){if(Array.isArray(v[pn])&&v[pn].length)compact[pn]=v[pn].slice(0,12)});try{localStorage.setItem(k,JSON.stringify(compact));return true}catch(_e2){}return mapPatch(k,v,HIST_PATCH_KEY)}return false}}
 function timeOf(v){var n=Number(v);if(isFinite(n)&&n>0)return n;var d=Date.parse(String(v||''));return isFinite(d)?d:0}
 function user(){var s=read(STATE_KEY,{});return clean(s&&s.user)||'이름없음'}
 function products(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}try{if(Array.isArray(window.PRODUCTS))return window.PRODUCTS}catch(e){}return read(PROD_KEY,[])||[]}
@@ -24420,7 +24430,7 @@ function lockEquipInnerHtml(){var root=id('dashEquip');if(!root||root.__v1327Inn
 function removeDrawingFileStats(){document.querySelectorAll('#view-dashboard .v1296-drawing-file-wrap,#view-dashboard .v1298-drawing-file-wrap').forEach(function(e){e.remove()})}
 function observeDashboard(){var draw=id('dashDrawing');if(draw&&!draw.__v1327Observed){draw.__v1327Observed=true;var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO==='function')try{new MO(removeDrawingFileStats).observe(draw,{childList:true,subtree:true})}catch(e){}}removeDrawingFileStats();lockEquipInnerHtml();decorateEquip()}
 function setVersion(){var v=id('bomAppVer'),txt='버전 '+VER+' · 설비표 안정화·공정팝업 고속저장';if(v&&v.textContent!==txt)v.textContent=txt;try{var title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍';if(document.title!==title)document.title=title;window.__legacyDocumentTitleV99=title}catch(e){}}
-function installVersionGuard(){try{if(window.__v1306FinalVersionObserver&&typeof window.__v1306FinalVersionObserver.disconnect==='function')window.__v1306FinalVersionObserver.disconnect()}catch(e){}if(versionObserver)return;var v=id('bomAppVer'),t=document.querySelector('title'),MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO!=='function')return;versionObserver=new MO(function(){setVersion()});try{if(v)versionObserver.observe(v,{childList:true,characterData:true,subtree:true});if(t)versionObserver.observe(t,{childList:true,characterData:true,subtree:true})}catch(e){versionObserver=null}}
+function installVersionGuard(){try{if(window.__v1306FinalVersionObserver&&typeof window.__v1306FinalVersionObserver.disconnect==='function')window.__v1306FinalVersionObserver.disconnect()}catch(e){}try{if(versionObserver&&typeof versionObserver.disconnect==='function')versionObserver.disconnect()}catch(e){}versionObserver={disconnect:function(){}}}
 function install(){installLightRecalc();installSaveButton();installPopupObserver();observeCostRows();observeDashboard();installVersionGuard();setVersion();window.saveProduct=finalSave;window.__v1327SaveProduct=finalSave}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 window.addEventListener('load',function(){install();setTimeout(install,350);setTimeout(install,2200)},{once:true});
@@ -24429,8 +24439,7 @@ window.addEventListener('bomSyncApplied',function(){setTimeout(function(){decora
 window.addEventListener('storage',function(e){if(e.key===HIST_KEY)setTimeout(decorateChangedIcons,0);if(e.key===EQUIP_KEY)setTimeout(decorateEquip,0)});
 document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('#view-cost .prod-row,#view-cost .act button'))setTimeout(function(){installSaveButton();installLightRecalc()},0)},true);
 [5000,12000,20000,32000].forEach(function(ms){setTimeout(install,ms)});
-})();
-</script>
+})();</script>
 <!-- ===== /V132.7 ===== -->
 
 
@@ -24469,7 +24478,7 @@ window.addEventListener('load',mark,{once:true});
 if(window.__v1329SharedHistoryMainStability)return;
 window.__v1329SharedHistoryMainStability=true;
 
-var VER='v132.9';
+var VER='v133.0';
 var STATE_KEY='dbfastec_bom_gsync_v1';
 var ROOT_KEY='bomCostV1';
 var EDIT_KEY='dbfastec_bom_edit_log_v1';
@@ -24569,7 +24578,7 @@ async function fetchRoot(){
   try{var q=url+(url.indexOf('?')>=0?'&':'?')+'action=get&key='+encodeURIComponent(key)+'&_t='+Date.now(),r=await fetch(q,{cache:'no-store',signal:ctl?ctl.signal:undefined});if(!r.ok)throw new Error('HTTP '+r.status);var d=await r.json();if(!d||d.ok===false)throw new Error(d&&d.error||'서버 응답 오류');var data=d.data||d;return data&&data[ROOT_KEY]?data[ROOT_KEY]:null}finally{if(t)clearTimeout(t)}
 }
 function queuePush(){
-  clearTimeout(pushTimer);pushTimer=setTimeout(function(){if(!configured())return;var fn=window.bomSyncSave;if(typeof fn!=='function')return;try{var r=fn(true);if(r&&typeof r.then==='function')r.then(function(ok){if(ok===false)setTimeout(queuePush,2500);else setTimeout(function(){pullSharedHistory(true)},1000)}).catch(function(){setTimeout(queuePush,2500)});else if(r===false)setTimeout(queuePush,2500);else setTimeout(function(){pullSharedHistory(true)},1000)}catch(e){setTimeout(queuePush,2500)}},700)
+  clearTimeout(pushTimer);pushTimer=setTimeout(function(){if(!configured())return;var fn=window.bomSyncSave;if(typeof fn!=='function')return;try{var r=fn(true);if(r&&typeof r.then==='function')r.then(function(ok){if(ok!==false)setTimeout(function(){pullSharedHistory(false)},1200)}).catch(function(e){console.warn('수정이력 공용저장 지연',e)});else if(r!==false)setTimeout(function(){pullSharedHistory(false)},1200)}catch(e){console.warn('수정이력 공용저장 호출 실패',e)}},700)
 }
 async function pullSharedHistory(force){
   if(pullBusy||!configured()||(!force&&document.hidden))return false;var now=Date.now();if(!force&&now-lastPull<12000)return true;lastPull=now;pullBusy=true;
@@ -24587,8 +24596,8 @@ function installLoadWrapper(){
   var cur=window.bomSyncLoad;if(typeof cur!=='function')return false;if(cur.__v1329HistoryAware)return true;syncBaseLoad=cur;var fn=function(silent){var self=this,args=arguments;if(silent===true){var hp=pullSharedHistory(false),now=Date.now();if(now-lastFullSilent<55000)return Promise.resolve(hp).then(function(){return true});lastFullSilent=now;return Promise.resolve(hp).then(function(){return syncBaseLoad.apply(self,args)}).then(function(r){setTimeout(function(){pullSharedHistory(false)},500);return r})}return syncBaseLoad.apply(self,args)};fn.__v1329HistoryAware=true;fn.__v1329Base=cur;window.bomSyncLoad=fn;return true
 }
 function wrapRefresh(){var cur=window.refreshMainDashboard;if(typeof cur!=='function'||cur.__v1329HistoryUi)return;var fn=function(){var r=cur.apply(this,arguments);setTimeout(function(){lockHomeIcon();lockKpiNodes();renderMainHistory()},0);return r};fn.__v1329HistoryUi=true;fn.__v1329Base=cur;window.refreshMainDashboard=fn}
-function lockVersionText(){var v=id('bomAppVer');if(!v||v.__v1329TextLocked)return false;var desc=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');if(!desc||!desc.get||!desc.set)return false;var fixed='버전 '+VER+' · 공용 수정이력·메인 안정화';try{Object.defineProperty(v,'textContent',{configurable:true,get:function(){return desc.get.call(v)},set:function(){if(desc.get.call(v)===fixed)return;desc.set.call(v,fixed)}});v.__v1329TextLocked=true;if(v.textContent!==fixed)v.textContent=fixed;return true}catch(e){return false}}
-function setVersion(){lockVersionText();var v=id('bomAppVer'),tx='버전 '+VER+' · 공용 수정이력·메인 안정화';if(v&&v.textContent!==tx)v.textContent=tx;try{var title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍';document.title=title;window.__legacyDocumentTitleV99=title}catch(e){}}
+function lockVersionText(){var v=id('bomAppVer');if(!v||v.__v1329TextLocked)return false;var desc=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');if(!desc||!desc.get||!desc.set)return false;var fixed='버전 '+VER+' · 저장·속도·도면동기화 안정화';try{Object.defineProperty(v,'textContent',{configurable:true,get:function(){return desc.get.call(v)},set:function(){if(desc.get.call(v)===fixed)return;desc.set.call(v,fixed)}});v.__v1329TextLocked=true;if(v.textContent!==fixed)v.textContent=fixed;return true}catch(e){return false}}
+function setVersion(){lockVersionText();var v=id('bomAppVer'),tx='버전 '+VER+' · 저장·속도·도면동기화 안정화';if(v&&v.textContent!==tx)v.textContent=tx;try{var title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍';document.title=title;window.__legacyDocumentTitleV99=title}catch(e){}}
 function install(){repairLocalLogs();installHistoryStorageGuard();installLoadWrapper();wrapRefresh();lockHomeIcon();lockKpiNodes();lockVersionText();renderMainHistory();setVersion()}
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
@@ -24605,6 +24614,24 @@ setInterval(function(){installLoadWrapper();lockHomeIcon();lockKpiNodes();if(con
 })();
 </script>
 <!-- ===== /V132.9 ===== -->
+
+
+<!-- ===== V133.0: 저장공간·BOM속도·도면동기화 최종 안정화 ===== -->
+<script id="v1330-final-stability-script">
+(function(){
+'use strict';
+if(window.__v1330FinalStability)return;window.__v1330FinalStability=true;
+var VER='v133.0',PROD_KEY='dbfastec_cost_products_v2',PROD_PATCH_KEY='dbfastec_product_patch_v1330',HIST_KEY='dbfastec_process_history_v120',HIST_PATCH_KEY='dbfastec_process_history_patch_v1330',OV_KEY='dbfastec_cost_overrides_v2',OV_PATCH_KEY='dbfastec_override_patch_v1330';
+function read(k,d,session){try{var x=JSON.parse((session?sessionStorage:localStorage).getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function mergedPatch(k){return Object.assign({},read(k,{},false),read(k,{},true))}
+function applyMapPatch(key,patchKey,globalName){var p=mergedPatch(patchKey);if(!Object.keys(p).length)return 0;var base=read(key,{},false)||{},m=Object.assign({},base,p);try{localStorage.setItem(key,JSON.stringify(m));localStorage.removeItem(patchKey);sessionStorage.removeItem(patchKey)}catch(e){}try{if(globalName==='OV'&&typeof OV!=='undefined')OV=Object.assign({},OV||{},p);if(globalName&&window[globalName]&&typeof window[globalName]==='object')Object.assign(window[globalName],p)}catch(e){}return Object.keys(p).length}
+function applyProductPatch(){var p=mergedPatch(PROD_PATCH_KEY),keys=Object.keys(p);if(!keys.length)return 0;var a=[];try{a=(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))?PRODUCTS:read(PROD_KEY,[],false)}catch(e){a=read(PROD_KEY,[],false)}var map={};a.forEach(function(x,i){if(x&&x.pn!=null)map[String(x.pn)]=i});keys.forEach(function(pn){if(map[pn]!=null)a[map[pn]]=p[pn];else a.push(p[pn])});try{PRODUCTS=a;window.PRODUCTS=a}catch(e){}try{localStorage.setItem(PROD_KEY,JSON.stringify(a));localStorage.removeItem(PROD_PATCH_KEY);sessionStorage.removeItem(PROD_PATCH_KEY)}catch(e){}return keys.length}
+function refresh(){var n=applyProductPatch();applyMapPatch(OV_KEY,OV_PATCH_KEY,'OV');applyMapPatch(HIST_KEY,HIST_PATCH_KEY,null);if(n){try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',patchRestore:true,v1330:true}}))}catch(e){}}}
+function setVersion(){var v=document.getElementById('bomAppVer'),tx='버전 '+VER+' · 저장·속도·도면동기화 안정화';try{if(v&&v.textContent!==tx)v.textContent=tx}catch(e){}try{document.title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍';window.__legacyDocumentTitleV99=document.title}catch(e){}}
+refresh();setVersion();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){refresh();setVersion()},{once:true});window.addEventListener('load',function(){setTimeout(function(){refresh();setVersion()},120)},{once:true});
+})();
+</script>
+<!-- ===== /V133.0 ===== -->
 
 </body>
 </html>
