@@ -32,7 +32,45 @@ html.dbf-main-ready body{
   setTimeout(function(){try{window.__dbfReleaseMainBoot()}catch(e){}},3000);
 })();
 </script>
-<title>제품별 제조원가 통합관리 v130.0 | (주)동방파스텍</title>
+<title>제품별 제조원가 통합관리 v133.6 | (주)동방파스텍</title>
+<style id="v1336-version-first-paint-lock-style">
+/* 로딩 중 누적 구버전 스크립트가 버전 문구를 순차 변경해도 화면에는 최종 버전만 표시 */
+html body header #bomUserVersionWrap #bomAppVer{font-size:0!important;white-space:nowrap!important}
+html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v133.6 · 제목 로딩 안정화'!important;font-size:9.8px!important;font-weight:600!important;color:#94a3b8!important;white-space:nowrap!important}
+</style>
+<script id="v1336-browser-title-first-lock-script">
+(function(){
+  'use strict';
+  var FINAL_VERSION='v133.6';
+  var FINAL_TITLE='제품별 제조원가 통합관리 v133.6 | (주)동방파스텍';
+  window.__DBF_FINAL_VERSION=FINAL_VERSION;
+  window.__DBF_FINAL_TITLE=FINAL_TITLE;
+  window.__dbfBlockedTitleWrites=0;
+  function nativeTitleDescriptor(){
+    var p=document,d;
+    while(p&&!d){try{d=Object.getOwnPropertyDescriptor(p,'title')}catch(e){}p=Object.getPrototypeOf(p)}
+    return d||null;
+  }
+  var nativeDesc=nativeTitleDescriptor();
+  try{if(nativeDesc&&typeof nativeDesc.set==='function')nativeDesc.set.call(document,FINAL_TITLE);else{var t=document.querySelector('title');if(t)t.textContent=FINAL_TITLE}}catch(e){}
+  try{
+    Object.defineProperty(document,'title',{
+      configurable:false,enumerable:true,
+      get:function(){return FINAL_TITLE},
+      set:function(v){if(String(v||'')!==FINAL_TITLE)window.__dbfBlockedTitleWrites++;return FINAL_TITLE}
+    });
+  }catch(e){
+    try{var t=document.querySelector('title');if(t)t.textContent=FINAL_TITLE}catch(_){}
+  }
+  try{
+    Object.defineProperty(window,'__legacyDocumentTitleV99',{
+      configurable:false,enumerable:true,
+      get:function(){return FINAL_TITLE},
+      set:function(v){if(String(v||'')!==FINAL_TITLE)window.__dbfBlockedTitleWrites++;return FINAL_TITLE}
+    });
+  }catch(e){try{window.__legacyDocumentTitleV99=FINAL_TITLE}catch(_){}}
+})();
+</script>
 <script id="v99-static-browser-title-init">
 window.__legacyDocumentTitleV99='제품별 제조원가 통합관리 v130.3 | (주)동방파스텍';
 window.__DBF_SAFE_BOOT_PENDING=true;
@@ -1619,7 +1657,25 @@ header .tabs #tab-dashboard.on{
 <button hidden id="salesImportBtn" onclick="document.getElementById('salesExcelInput').click()" title="거래처·제품·공용/전용/비규격 구분을 불러옵니다" type="button">📥 매출 엑셀</button>
 <button id="bomEditLogBtn" onclick="if(window.openBomEditLog){window.openBomEditLog()}" title="BOM 프로그램 수정이력" type="button">🕘 수정이력</button>
 <button id="bomSyncBtn" onclick="if(window.bomSyncSave){window.bomSyncSave(false)}" title="현재 변경사항을 구글시트에 즉시 저장·병합" type="button"><span class="sync-main">🔄 동기화</span><span class="sync-time"> · 미실행</span></button>
-<span id="bomUserVersionWrap"><span class="bom-user-name">사용자 · 사용자 미등록</span><span class="bom-app-version" id="bomAppVer">버전 v128.5 · 2026.07.10</span></span>
+<span id="bomUserVersionWrap"><span class="bom-user-name">사용자 · 사용자 미등록</span><span class="bom-app-version" id="bomAppVer">버전 v133.6 · 제목 로딩 안정화</span></span>
+<script id="v1336-visible-version-first-lock-script">
+(function(){
+  'use strict';
+  var el=document.getElementById('bomAppVer');if(!el)return;
+  var FIXED='버전 v133.6 · 제목 로딩 안정화';
+  var desc=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');
+  if(!desc||!desc.get||!desc.set)return;
+  try{
+    desc.set.call(el,FIXED);
+    Object.defineProperty(el,'textContent',{
+      configurable:false,enumerable:true,
+      get:function(){return desc.get.call(el)},
+      set:function(v){if(String(v||'')!==FIXED)window.__dbfBlockedVersionWrites=(window.__dbfBlockedVersionWrites||0)+1;return FIXED}
+    });
+    el.setAttribute('data-version-locked','v133.6');
+  }catch(e){}
+})();
+</script>
 </div>
 </div>
 <div aria-label="상단 버튼 설명" class="button-guide">
@@ -24866,5 +24922,326 @@ window.addEventListener('storage',function(e){if(!e.key||[EDIT_KEY,SHADOW_KEY,PR
 </script>
 <!-- ===== /V133.2 ===== -->
 
+
+<!-- ===== V133.5: 제품별원가 팝업 BOM 원가합산 복원 · 제조원가 포함 ===== -->
+<style id="v1333-modal-bom-stability-style">
+/* 구버전 BOM 박스는 계산 보조만 유지하고 화면에서는 최종 안정화 박스만 표시 */
+#overlay #m-bom-rollup-v1316{display:none!important}
+#overlay #m-bom-rollup-v1333{
+  display:none;margin:12px 0 10px;padding:11px 12px;border:1px solid #b9cde7;
+  border-left:4px solid #2f6fb0;border-radius:10px;background:#f3f8ff;
+  box-shadow:0 1px 3px rgba(20,40,74,.06);min-height:92px;
+  animation:none!important;transition:none!important;visibility:visible!important;opacity:1!important
+}
+#overlay #m-bom-rollup-v1333.on{display:block!important}
+#overlay #m-bom-rollup-v1333 .v1333-head{display:flex;align-items:center;gap:8px;margin-bottom:9px;white-space:nowrap}
+#overlay #m-bom-rollup-v1333 .v1333-head b{font-size:13px;color:#16284a;flex:0 0 auto}
+#overlay #m-bom-rollup-v1333 .v1333-head span{margin-left:auto;font-size:10.5px;color:#60718a;font-weight:700;overflow:hidden;text-overflow:ellipsis}
+#overlay #m-bom-rollup-v1333 .v1333-grid{display:grid;grid-template-columns:repeat(5,minmax(105px,1fr));gap:7px}
+#overlay #m-bom-rollup-v1333 .v1333-cell{padding:8px 9px;border:1px solid #d9e5f3;border-radius:8px;background:#fff;text-align:right;min-width:0}
+#overlay #m-bom-rollup-v1333 .v1333-cell small{display:block;font-size:10px;color:#6b7890;font-weight:800;white-space:nowrap}
+#overlay #m-bom-rollup-v1333 .v1333-cell b{display:block;margin-top:2px;font-size:13px;color:#1b2435;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#overlay #m-bom-rollup-v1333 .v1333-cell.total b{color:#0b6b43;font-size:14px}
+#overlay #m-bom-rollup-v1333 .v1333-cell.final{border-color:#9fc6ad;background:#f1fbf5}
+#overlay #m-bom-rollup-v1333 .v1333-cell.final small{color:#33734b}
+#overlay #m-bom-rollup-v1333 .v1333-cell.final b{color:#08733f;font-size:15px}
+#overlay #m-summary.v1333-bom-summary{min-height:286px;visibility:visible!important;opacity:1!important;animation:none!important;transition:none!important}
+#overlay #m-summary .v1333-bom-line{background:#f3f8ff;margin-left:-7px;margin-right:-7px;padding-left:7px;padding-right:7px}
+#overlay #m-summary .v1333-bom-line .lab{color:#315d94;font-weight:800}
+#overlay #m-summary .v1333-bom-total{border-top:1px solid #bfd1e7;margin-top:2px;padding-top:7px}
+@media(max-width:900px){#overlay #m-bom-rollup-v1333 .v1333-grid{grid-template-columns:1fr 1fr}}
+</style>
+<script id="v1333-modal-bom-stability-script">
+(function(){
+'use strict';
+if(window.__v1333ModalBomStable)return;window.__v1333ModalBomStable=true;
+var PURCHASE_KEY='dbfastec_bom_purchase_prices_v1';
+var revision=1,scheduled=false,timers=[],writing=false,session={pn:'',bom:null,rev:0,boxHtml:'',summaryHtml:''};
+var summaryObserver=null,stepObserver=null,overlayObserver=null,boxObserver=null,observedSummary=null,observedSteps=null,observedBox=null;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+function num(v){var n=Number(String(v==null?'':v).replace(/,/g,''));return isFinite(n)?n:0}
+function money(v){return Math.round(num(v)).toLocaleString('ko-KR')}
+function esc(v){return clean(v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})}
+function products(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}try{if(Array.isArray(window.PRODUCTS))return window.PRODUCTS}catch(e){}return []}
+function overlayOpen(){var o=id('overlay');return !!(o&&!o.classList.contains('hidden'))}
+function resolveProduct(){
+  var a=products(),idx=-1;
+  try{idx=Number(typeof curIdx!=='undefined'?curIdx:window.curIdx)}catch(e){idx=Number(window.curIdx)}
+  if(!Number.isInteger(idx)||idx<0)idx=Number(window.__v1249ActiveIndex);
+  if(Number.isInteger(idx)&&idx>=0&&a[idx])return {p:a[idx],idx:idx,pn:clean(a[idx].pn)};
+  var title=clean(id('m-title')&&id('m-title').textContent);
+  for(var i=0;i<a.length;i++){var pn=clean(a[i]&&a[i].pn);if(pn&&title.indexOf(pn)>=0)return {p:a[i],idx:i,pn:pn}}
+  return null;
+}
+function domSteps(p){
+  var rows=Array.prototype.slice.call(document.querySelectorAll('#overlay #stepbody tr')),out=[];
+  rows.forEach(function(tr){
+    var proc=clean(tr.querySelector('.d-proc')&&tr.querySelector('.d-proc').value),st=clean(tr.querySelector('.d-st')&&tr.querySelector('.d-st').value);
+    if(!proc&&st==='')return;
+    out.push({proc:proc,gubun:clean(tr.querySelector('.d-gubun')&&tr.querySelector('.d-gubun').value),part:clean(tr.querySelector('.d-part')&&tr.querySelector('.d-part').value),equip:clean(tr.querySelector('.d-equip')&&tr.querySelector('.d-equip').value),st:st});
+  });
+  return out.length?out:(Array.isArray(p&&p.steps)?p.steps:[]);
+}
+function hasAssembly(steps){return (steps||[]).some(function(s){return /조립/.test(clean(s&&s.proc))})}
+function purchaseMap(){try{return JSON.parse(localStorage.getItem(PURCHASE_KEY)||'{}')||{}}catch(e){return {}}}
+function purchaseCode(ch){return clean(ch&&ch.code)||[clean(ch&&ch.name),clean(ch&&ch.spec)].join('§')}
+function isPurchase(ch){var k=clean(ch&&ch.kind);return k==='부자재'||k==='구매품'||k.indexOf('구매')>=0}
+function qty(ch){var q=num(ch&&ch.qty);return q>0?q:1}
+function productFor(ch){try{return typeof window.productForBomCode==='function'?window.productForBomCode(ch&&ch.code,ch&&ch.name,ch&&ch.spec):null}catch(e){return null}}
+function children(p){try{var root=typeof window.productBomRoot==='function'?window.productBomRoot(p):clean(p&&p.pn);return root&&typeof window.bomKids==='function'?(window.bomKids(root)||[]):[]}catch(e){return []}}
+function emptyBom(){return {mat:0,proc:0,ovh:0,base:0,count:0,lines:0}}
+function bomRollup(p){
+  var total=emptyBom(),kids=children(p),pm=purchaseMap();
+  (kids||[]).forEach(function(ch){
+    /* 원가 연결 여부와 관계없이 등록된 BOM 행은 표시 대상에 포함한다. */
+    var q=qty(ch),child=productFor(ch),pp=num(pm[purchaseCode(ch)]),c=null;
+    total.count+=q;total.lines++;
+    if(isPurchase(ch)){total.mat+=pp*q;return}
+    if(child){
+      try{c=typeof window.calc==='function'?window.calc(child):null}catch(e){c=null}
+      if(c){total.mat+=num(c.mat)*q;total.proc+=num(c.proc)*q;total.ovh+=num(c.ovh)*q;return}
+    }
+    /* 연결 제품이 없는 부품은 등록된 매입가가 있을 때 재료비로 반영한다. */
+    if(pp>0)total.mat+=pp*q;
+  });
+  total.base=total.mat+total.proc+total.ovh;return total;
+}
+function modalMode(){var b=id('m-mode-direct');return b&&b.classList.contains('on')?'direct':'dimension'}
+function val(x){var e=id(x);return e?e.value:''}
+function modalOwn(steps){
+  var ovs={};document.querySelectorAll('#overlay #stepbody tr').forEach(function(tr,j){var x=clean(tr.querySelector('.stepov')&&tr.querySelector('.stepov').value);if(x!=='')ovs[j]=x});
+  var md={mode:modalMode(),grade:val('m-grade')||'EGI',density:val('m-density'),unitPrice:val('m-matkg'),recoverWeight:val('m-recoverw'),thickness:val('m-thickness'),width:val('m-width'),length:val('m-length'),qty:val('m-useqty')||1,allow:val('m-allow')||'auto',scrapW:val('m-scrapw'),scrapL:val('m-scrapl'),weight:val('m-matw')};
+  var ov={steps:ovs,material:md,matw:modalMode()==='direct'?val('m-matw'):'',matkg:val('m-matkg'),ovh:val('m-ovh'),profit:val('m-profit')};
+  try{return typeof window.computeCost==='function'?window.computeCost(steps||[],ov):null}catch(e){return null}
+}
+function combine(own,bom){
+  own=own||{};bom=bom||emptyBom();var def=num(typeof BASE!=='undefined'&&BASE.defect),prof=num(own.profR);
+  var out={};out.mat=num(own.mat)+num(bom.mat);out.proc=num(own.proc)+num(bom.proc);out.ovh=num(own.ovh)+num(bom.ovh);out.base=out.mat+out.proc+out.ovh;out.withDef=def>0?out.base/(1-def/100):out.base;out.sale=out.withDef*(1+prof/100);out.profR=prof;return out;
+}
+function ensureBox(){
+  var editor=document.querySelector('#overlay .material-editor');if(!editor)return null;
+  var box=id('m-bom-rollup-v1333');if(!box){box=document.createElement('div');box.id='m-bom-rollup-v1333';editor.insertAdjacentElement('beforebegin',box)}
+  bindBoxObserver(box);return box;
+}
+function boxHtml(bom,combined){return '<div class="v1333-head"><b>📦 BOM 원가 합산</b><span>하위 BOM '+num(bom.lines).toLocaleString()+'종 · 소요량 반영</span></div><div class="v1333-grid">'+
+  '<div class="v1333-cell"><small>BOM 재료비</small><b>'+money(bom.mat)+' 원</b></div><div class="v1333-cell"><small>BOM 가공비</small><b>'+money(bom.proc)+' 원</b></div><div class="v1333-cell"><small>BOM 제조경비</small><b>'+money(bom.ovh)+' 원</b></div><div class="v1333-cell total"><small>BOM 원가 소계</small><b>'+money(bom.base)+' 원</b></div><div class="v1333-cell final"><small>제조원가 (BOM 포함)</small><b>'+money(combined&&combined.withDef)+' 원</b></div></div>'}
+function summaryHtml(own,combined,bom){
+  var m=own.material||{},def=num(typeof BASE!=='undefined'&&BASE.defect),prof=num(combined.profR),grade=m.grade?esc(m.grade):'',weight=m.weight!=null?Number(num(m.weight).toFixed(4)):0;
+  return '<div class="srow"><span class="lab">본제품 재료비'+(grade?' ('+grade+' · '+weight+'kg)':'')+'</span><span class="val">'+money(own.mat)+' 원</span></div>'+ 
+  '<div class="srow v1333-bom-line"><span class="lab">BOM 재료비</span><span class="val">+ '+money(bom.mat)+' 원</span></div>'+ 
+  '<div class="srow v1333-bom-total"><span class="lab">재료비 합계</span><span class="val">'+money(combined.mat)+' 원</span></div>'+ 
+  '<div class="srow"><span class="lab">본제품 가공비</span><span class="val">'+money(own.proc)+' 원</span></div>'+ 
+  '<div class="srow v1333-bom-line"><span class="lab">BOM 가공비</span><span class="val">+ '+money(bom.proc)+' 원</span></div>'+ 
+  '<div class="srow v1333-bom-total"><span class="lab">가공비 합계</span><span class="val">'+money(combined.proc)+' 원</span></div>'+ 
+  '<div class="srow"><span class="lab">본제품 제조경비</span><span class="val">'+money(own.ovh)+' 원</span></div>'+ 
+  '<div class="srow v1333-bom-line"><span class="lab">BOM 제조경비</span><span class="val">+ '+money(bom.ovh)+' 원</span></div>'+ 
+  '<div class="srow v1333-bom-total"><span class="lab">제조경비 합계</span><span class="val">'+money(combined.ovh)+' 원</span></div>'+ 
+  '<div class="srow"><span class="lab">소계</span><span class="val">'+money(combined.base)+' 원</span></div>'+ 
+  '<div class="srow"><span class="lab">불량반영 ('+Number(def.toFixed(1))+'%)</span><span class="val">'+money(combined.withDef)+' 원</span></div>'+ 
+  '<div class="srow total"><span class="lab">제조원가 (개당 · BOM 포함)</span><span class="val">'+money(combined.withDef)+' 원</span></div>'+ 
+  '<div class="srow saleline"><span class="lab">판매가 참고 (이윤 '+Number(prof.toFixed(1))+'%)</span><span class="val">'+money(combined.sale)+' 원</span></div>';
+}
+function hideStable(){
+  var box=id('m-bom-rollup-v1333');if(box){box.classList.remove('on');box.removeAttribute('data-pn')}
+  var sum=id('m-summary');if(sum)sum.classList.remove('v1333-bom-summary');session.boxHtml='';session.summaryHtml='';
+}
+function renderStable(){
+  scheduled=false;if(!overlayOpen()){hideStable();return false}
+  bindObservers();var x=resolveProduct();if(!x||!x.p)return false;
+  var steps=domSteps(x.p),kids=children(x.p),active=!!(kids&&kids.length);
+  if(session.pn!==x.pn){session={pn:x.pn,bom:null,rev:0,boxHtml:'',summaryHtml:''}}
+  /* 공정명에 '조립'이 없어도 BOM이 등록되어 있으면 합산 박스를 표시한다. */
+  if(!active){hideStable();return false}
+  if(!session.bom||session.rev!==revision){var b=bomRollup(x.p);session.bom=b||emptyBom();session.rev=revision}
+  var bom=session.bom;if(!bom||!bom.lines){hideStable();return false}
+  var own=modalOwn(steps);if(!own){schedule(100,220);return false}
+  var combined=combine(own,bom),box=ensureBox(),sum=id('m-summary');if(!box||!sum)return false;
+  var bh=boxHtml(bom,combined),sh=summaryHtml(own,combined,bom);session.boxHtml=bh;session.summaryHtml=sh;
+  writing=true;
+  try{
+    box.setAttribute('data-pn',x.pn);box.classList.add('on');if(box.innerHTML!==bh)box.innerHTML=bh;
+    sum.classList.add('v1333-bom-summary');if(sum.innerHTML!==sh)sum.innerHTML=sh;
+    var ps=id('m-procsum');if(ps)ps.textContent=money(combined.proc);
+    var unit=id('m-unit-cost-v61');if(unit)unit.textContent=money(combined.withDef)+' 원';
+    var proc=id('m-process-total-v61');if(proc)proc.textContent=money(combined.proc)+' 원';
+  }finally{writing=false}
+  return true;
+}
+function run(){try{renderStable()}catch(e){console.error('v133.5 BOM 팝업 안정화 오류',e)}}
+function schedule(){
+  var ds=arguments.length?Array.prototype.slice.call(arguments):[0];
+  if(!scheduled){scheduled=true;requestAnimationFrame(run)}
+  ds.forEach(function(d){if(!(d>0))return;var t=setTimeout(run,d);timers.push(t);if(timers.length>24)clearTimeout(timers.shift())});
+}
+function bindBoxObserver(box){
+  if(!box||observedBox===box)return;observedBox=box;if(boxObserver)try{boxObserver.disconnect()}catch(e){}
+  var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO!=='function')return;
+  try{boxObserver=new MO(function(){if(writing||!session.boxHtml)return;if(box.innerHTML!==session.boxHtml||!box.classList.contains('on'))schedule(0)});boxObserver.observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}catch(e){}
+}
+function bindObservers(){
+  var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO!=='function')return;
+  var sum=id('m-summary');if(sum&&observedSummary!==sum){observedSummary=sum;if(summaryObserver)try{summaryObserver.disconnect()}catch(e){};try{summaryObserver=new MO(function(){if(writing||!session.summaryHtml)return;if(sum.innerHTML!==session.summaryHtml)schedule(0)});summaryObserver.observe(sum,{childList:true,subtree:true,characterData:true})}catch(e){}}
+  var steps=id('stepbody');if(steps&&observedSteps!==steps){observedSteps=steps;if(stepObserver)try{stepObserver.disconnect()}catch(e){};try{stepObserver=new MO(function(){if(!writing)schedule(0,150)});stepObserver.observe(steps,{childList:true,subtree:true})}catch(e){}}
+  var ov=id('overlay');if(ov&&!overlayObserver){try{overlayObserver=new MO(function(){if(overlayOpen())schedule(0,80,180);else hideStable()});overlayObserver.observe(ov,{attributes:true,attributeFilter:['class']})}catch(e){}}
+  bindBoxObserver(id('m-bom-rollup-v1333'));
+}
+function invalidate(){revision++;session.bom=null;session.rev=0;if(overlayOpen())schedule(0,120)}
+window.__v1335RefreshBomCost=function(force){if(force){revision++;session.bom=null;session.rev=0}schedule(0,80,180);return true};
+function install(){bindObservers();if(overlayOpen())schedule(0,80,180)}
+document.addEventListener('input',function(e){if(e.target&&e.target.closest&&e.target.closest('#overlay'))schedule(140,240)},true);
+document.addEventListener('change',function(e){if(e.target&&e.target.closest&&e.target.closest('#overlay'))schedule(130,230)},true);
+document.addEventListener('click',function(e){if(e.target&&e.target.closest&&(e.target.closest('#view-cost .prod-row')||e.target.closest('#view-cost .actioncell button')||e.target.closest('#overlay')))schedule(0,90,190)},true);
+['bomDataChanged','bomSyncApplied'].forEach(function(n){window.addEventListener(n,invalidate)});
+window.addEventListener('storage',function(e){var k=String(e&&e.key||'');if(!k||/cost_products|cost_prices|cost_base|cost_overrides|user_bom|purchase_prices|material_price/i.test(k))invalidate()});
+install();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+window.addEventListener('load',function(){install();[120,700,2600,6200,13200,21200,34200].forEach(function(ms){setTimeout(install,ms)})},{once:true});
+})();
+</script>
+<!-- ===== /V133.5 ===== -->
+
+
+
+<!-- ===== V133.4: 제품별원가 팝업 산정수량·기본단가 무깜빡임 안정화 ===== -->
+<style id="v1334-modal-step-stability-style">
+#overlay #stepbody tr,
+#overlay #stepbody td,
+#overlay #stepbody input,
+#overlay #stepbody select,
+#overlay #stepbody .d-base{
+  animation:none!important;
+  transition:none!important;
+}
+#overlay #stepbody .d-qty{
+  min-width:68px!important;
+  width:68px!important;
+  font-variant-numeric:tabular-nums!important;
+  backface-visibility:hidden;
+}
+#overlay #stepbody td.d-base{
+  min-width:86px!important;
+  width:86px!important;
+  white-space:nowrap!important;
+  font-variant-numeric:tabular-nums!important;
+  visibility:visible!important;
+  opacity:1!important;
+  backface-visibility:hidden;
+}
+#overlay .step-table-wrap{overflow-anchor:none!important}
+</style>
+<script id="v1334-modal-step-stability-script">
+(function(){
+'use strict';
+if(window.__v1334ModalStepStable)return;window.__v1334ModalStepStable=true;
+var VER='v133.6',rawInner=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
+var installBusy=false,observer=null,openRaf=0,stats={suppressed:0,allowed:0,lastPn:'',lastSig:''};
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+function norm(v){v=clean(v).replace(/,/g,'');if(v==='')return '';var n=Number(v);return isFinite(n)?String(n):v}
+function overlayOpen(){var o=id('overlay');return !!(o&&!o.classList.contains('hidden'))}
+function products(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}try{if(Array.isArray(window.PRODUCTS))return window.PRODUCTS}catch(e){}return []}
+function activePn(){
+  var a=products(),idx=-1;
+  try{idx=Number(typeof curIdx!=='undefined'?curIdx:window.curIdx)}catch(e){idx=Number(window.curIdx)}
+  if(!Number.isInteger(idx)||idx<0)idx=Number(window.__v1249ActiveIndex);
+  if(Number.isInteger(idx)&&idx>=0&&a[idx])return clean(a[idx].pn);
+  var title=clean(id('m-title')&&id('m-title').textContent);
+  for(var i=0;i<a.length;i++){var pn=clean(a[i]&&a[i].pn);if(pn&&title.indexOf(pn)>=0)return pn}
+  return '';
+}
+function rowSig(root){
+  if(!root||!root.querySelectorAll)return '';
+  var out=[];
+  root.querySelectorAll('tr').forEach(function(tr){
+    function val(s){var e=tr.querySelector(s);return e?clean(e.value):''}
+    var mode=val('.d-mode-select')||clean(tr.querySelector('.d-mode')&&tr.querySelector('.d-mode').textContent);
+    out.push([val('.d-proc'),val('.d-gubun'),val('.d-part'),val('.d-equip'),norm(val('.d-st')),norm(val('.d-qty')),mode,norm(val('.stepov'))].join('\u241e'));
+  });
+  return out.join('\u241f');
+}
+function htmlSig(html){
+  if(!rawInner||!rawInner.set)return '';
+  try{
+    var table=document.createElement('table');rawInner.set.call(table,'<tbody>'+String(html==null?'':html)+'</tbody>');
+    return rowSig(table.tBodies&&table.tBodies[0]);
+  }catch(e){return ''}
+}
+function markDirty(){
+  if(!overlayOpen())return;
+  var body=id('stepbody');if(!body||!body.children.length)return;
+  try{if(typeof window.__v127SetPopupDirty==='function')window.__v127SetPopupDirty(true)}catch(e){}
+  var pn=activePn();if(pn){body.__v1334Pn=pn;stats.lastPn=pn}
+  stats.lastSig=rowSig(body);
+}
+function stabilizeCells(){
+  var body=id('stepbody');if(!body)return;
+  body.querySelectorAll('tr').forEach(function(tr){
+    var q=tr.querySelector('.d-qty'),b=tr.querySelector('.d-base');
+    if(q){q.setAttribute('data-v1334-stable','1');q.style.visibility='visible';q.style.opacity='1'}
+    if(b){b.setAttribute('data-v1334-stable','1');b.style.visibility='visible';b.style.opacity='1'}
+  });
+  markDirty();
+}
+function lockBody(){
+  var body=id('stepbody');if(!body||body.__v1334InnerLocked||!rawInner||!rawInner.get||!rawInner.set)return false;
+  try{
+    Object.defineProperty(body,'innerHTML',{
+      configurable:true,
+      get:function(){return rawInner.get.call(body)},
+      set:function(v){
+        var pn=activePn(),cur=rowSig(body),next=htmlSig(v),samePn=!!pn&&body.__v1334Pn===pn;
+        if(overlayOpen()&&samePn&&cur&&next&&cur===next){stats.suppressed++;stats.lastSig=cur;return}
+        rawInner.set.call(body,v);stats.allowed++;body.__v1334Pn=pn||body.__v1334Pn||'';stats.lastPn=body.__v1334Pn;stats.lastSig=rowSig(body);
+        requestAnimationFrame(stabilizeCells);
+      }
+    });
+    body.__v1334InnerLocked=true;
+  }catch(e){return false}
+  return true;
+}
+function afterOpen(){
+  cancelAnimationFrame(openRaf);openRaf=requestAnimationFrame(function(){lockBody();stabilizeCells()});
+  setTimeout(function(){lockBody();stabilizeCells()},30);
+  setTimeout(function(){lockBody();stabilizeCells()},140);
+}
+function wrapOpen(){
+  var cur=window.openDetail;if(typeof cur!=='function'||cur.__v1334StepStable)return false;
+  var fn=function(){var r=cur.apply(this,arguments);afterOpen();return r};
+  try{Object.keys(cur).forEach(function(k){fn[k]=cur[k]})}catch(e){}
+  fn.__v1334StepStable=true;fn.__v1334Base=cur;window.openDetail=fn;try{openDetail=fn}catch(e){}return true;
+}
+function observeOverlay(){
+  var ov=id('overlay');if(!ov||observer)return;
+  var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO!=='function')return;
+  try{observer=new MO(function(){if(overlayOpen())afterOpen()});observer.observe(ov,{attributes:true,attributeFilter:['class']})}catch(e){}
+}
+function setVersion(){
+  var v=id('bomAppVer'),tx='버전 '+VER+' · 제목 로딩 안정화';
+  try{if(v&&v.textContent!==tx)v.textContent=tx}catch(e){}
+  try{document.title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍';window.__legacyDocumentTitleV99=document.title}catch(e){}
+}
+function install(){
+  if(installBusy)return;installBusy=true;
+  try{wrapOpen();lockBody();observeOverlay();if(overlayOpen())afterOpen();setVersion()}finally{installBusy=false}
+}
+window.__v1334StepStabilityStats=stats;
+install();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+window.addEventListener('load',function(){install();setTimeout(install,160)},{once:true});
+})();
+</script>
+<!-- ===== /V133.4 ===== -->
+
+
+<!-- ===== V133.6: 브라우저 제목 최종버전 선고정 · 구버전 카운팅 제거 ===== -->
+<script id="v1336-title-loading-final-script">
+(function(){
+  'use strict';
+  var title=window.__DBF_FINAL_TITLE||'제품별 제조원가 통합관리 v133.6 | (주)동방파스텍';
+  try{var t=document.querySelector('title');if(t&&t.textContent!==title)t.textContent=title}catch(e){}
+  try{document.documentElement.setAttribute('data-final-version','v133.6')}catch(e){}
+})();
+</script>
+<!-- ===== /V133.6 ===== -->
 </body>
 </html>
