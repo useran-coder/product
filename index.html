@@ -20244,7 +20244,7 @@ function visibleView(){var v=Array.prototype.find.call(document.querySelectorAll
 function setupDom(){
   var tabs=document.querySelector('header .tabs'),wrap=document.querySelector('.wrap');if(!tabs||!wrap)return false;
   var tab=id('tab-dashboard');if(!tab){tab=document.createElement('button');tab.id='tab-dashboard';tab.type='button';tab.textContent='메인';tab.onclick=function(){userNavigated=true;window.switchTab('dashboard')};tabs.insertBefore(tab,tabs.firstChild)}else{tab.textContent='메인'}
-  var view=id('view-dashboard');if(!view){view=document.createElement('div');view.id='view-dashboard';view.innerHTML='<div class="dashboard-shell"><div class="dashboard-kpis" id="dashboardKpis"></div><div class="dashboard-grid"><section class="dashboard-card span-8"><div class="dashboard-card-head"><h2>품목군별 제품 현황</h2><span class="sub">등록 제품 수 TOP 10</span><button onclick="window.dashGo(\'groupcost\')">전체 분석 ›</button></div><div class="dashboard-card-body" id="dashGroups"></div></section><section class="dashboard-card span-4"><div class="dashboard-card-head"><h2>제품 구분별 현황</h2><span class="sub">공용품 · 전용품 · 레이저 · 내부보강 수량/비중</span><button onclick="window.dashGo(\'usage\')">상세 ›</button></div><div class="dashboard-card-body" id="dashUsage"></div></section><section class="dashboard-card span-6"><div class="dashboard-card-head"><h2>설비별 등록 현황</h2><span class="sub">포장·조립/포장 제외 · 적용 제품 수 TOP 10</span><button onclick="window.dashGo(\'equipanalysis\')">설비 분석 ›</button></div><div class="dashboard-card-body" id="dashEquip"></div></section><section class="dashboard-card span-6"><div class="dashboard-card-head"><h2>공정별 등록 현황</h2><span class="sub">적용 제품 수 TOP 10</span><button onclick="window.dashGo(\'process\')">공정 분석 ›</button></div><div class="dashboard-card-body" id="dashProcess"></div></section><section class="dashboard-card span-6"><div class="dashboard-card-head"><h2>도면 관리 현황</h2><span class="sub">보유율 · 담당자별 현황</span><button onclick="window.dashGo(\'draw\')">도면 관리 ›</button></div><div class="dashboard-card-body" id="dashDrawing"></div></section><section class="dashboard-card span-6"><div class="dashboard-card-head"><h2>원자재 단가 게시판</h2><span class="sub">최근 월 평균 매입단가</span><button onclick="window.dashGo(\'matprice\')">단가 관리 ›</button></div><div class="dashboard-card-body" style="padding:0" id="dashMaterial"></div></section><section class="dashboard-card span-7"><div class="dashboard-card-head"><h2>최근 수정이력</h2><span class="sub">제품원가 · 공정 · 동기화 기록</span><button onclick="window.dashHistory()">전체 이력 ›</button></div><div class="dashboard-card-body" style="padding:0" id="dashHistory"></div></section><section class="dashboard-card span-5"><div class="dashboard-card-head"><h2>관리 알림 게시판</h2><span class="sub">확인이 필요한 항목</span></div><div class="dashboard-card-body" id="dashNotices"></div></section></div><div class="dashboard-footnote"><span>※ 카드와 그래프를 클릭하면 해당 상세 화면 또는 필터 결과로 이동합니다.</span><span><button type="button" onclick="window.refreshMainDashboard()">↻ 새로고침</button> · <span id="dashboardFooterTime"></span></span></div></div>';wrap.insertBefore(view,wrap.firstChild)}
+  var view=id('view-dashboard');if(!view){view=document.createElement('div');view.id='view-dashboard';view.innerHTML='<div class="dashboard-shell"><div class="dashboard-kpis" id="dashboardKpis"></div><div class="dashboard-grid"><section class="dashboard-card span-8"><div class="dashboard-card-head"><h2>품목군별 제품 현황</h2><span class="sub">등록 제품 수 TOP 10</span><button onclick="window.dashGo(\'groupcost\')">전체 분석 ›</button></div><div class="dashboard-card-body" id="dashGroups"></div></section><section class="dashboard-card span-4"><div class="dashboard-card-head"><h2>제품 구분별 현황</h2><span class="sub">공용품 · 전용품 · 레이저 · 내부보강 수량/비중</span><button onclick="window.dashGo(\'usage\')">상세 ›</button></div><div class="dashboard-card-body" id="dashUsage"></div></section><section class="dashboard-card span-6"><div class="dashboard-card-head"><h2>설비별 등록 현황</h2><span class="sub">포장·조립/포장 제외 · 적용 제품 수 TOP 10</span><button onclick="window.dashGo(\'equipanalysis\')">설비 분석 ›</button></div><div class="dashboard-card-body" id="dashEquip"></div></section><section class="dashboard-card span-6"><div class="dashboard-card-head"><h2>공정별 등록 현황</h2><span class="sub">적용 제품 수 TOP 10</span><button onclick="window.dashGo(\'process\')">공정 분석 ›</button></div><div class="dashboard-card-body" id="dashProcess"></div></section><section class="dashboard-card span-6"><div class="dashboard-card-head"><h2>도면 관리 현황</h2><span class="sub">보유율 · 담당자별 현황</span><button onclick="window.dashGo(\'draw\')">도면 관리 ›</button></div><div class="dashboard-card-body" id="dashDrawing"></div></section><section class="dashboard-card span-6"><div class="dashboard-card-head"><h2>원자재 단가 게시판</h2><span class="sub">최근 월 평균 매입단가</span><button onclick="window.dashGo(\'matprice\')">단가 관리 ›</button></div><div class="dashboard-card-body" style="padding:0" id="dashMaterial"></div></section><section class="dashboard-card span-7"><div class="dashboard-card-head v1332-history-head"><h2>최근 수정이력</h2><span class="sub dashboard-history-policy v1332-history-policy">기간 제한 없음 · 시스템 최대 1,000건 · 제품별 최대 20건 · 공정별 최대 30건 · 현재 2026.07.07 ~ 2026.07.14</span><button onclick="window.dashHistory()">전체 이력 ›</button></div><div class="dashboard-card-body" style="padding:0" id="dashHistory"></div></section><section class="dashboard-card span-5"><div class="dashboard-card-head"><h2>관리 알림 게시판</h2><span class="sub">확인이 필요한 항목</span></div><div class="dashboard-card-body" id="dashNotices"></div></section></div><div class="dashboard-footnote"><span>※ 카드와 그래프를 클릭하면 해당 상세 화면 또는 필터 결과로 이동합니다.</span><span><button type="button" onclick="window.refreshMainDashboard()">↻ 새로고침</button> · <span id="dashboardFooterTime"></span></span></div></div>';wrap.insertBefore(view,wrap.firstChild)}
   return true;
 }
 function applyDashboardVisibility(){document.querySelectorAll('.wrap>[id^="view-"]').forEach(function(v){v.classList.toggle('hidden',v.id!=='view-dashboard')});document.querySelectorAll('header .tabs>button').forEach(function(b){b.classList.toggle('on',b.id==='tab-dashboard')});var v=id('view-dashboard');if(v)v.classList.remove('hidden')}
@@ -20554,7 +20554,7 @@ function historyPolicyText(rows){var valid=rows.filter(function(r){return r.t>0}
 function patchHistoryInfo(){
   var card=id('dashHistory')&&id('dashHistory').closest('.dashboard-card');if(!card)return;
   var head=card.querySelector('.dashboard-card-head'),sub=head&&head.querySelector('.sub'),rows=collectHistory();
-  if(sub){sub.textContent='제품원가 · 공정 · 동기화 기록';sub.title=historyPolicyText(rows)}
+  if(sub){var policy=historyPolicyText(rows);sub.textContent=policy;sub.title=policy;sub.classList.add('dashboard-history-policy','v1332-history-policy')}
   var old=head&&head.querySelector('.dashboard-history-policy');if(!old&&head){old=document.createElement('span');old.className='dashboard-history-policy';head.insertBefore(old,head.querySelector('button'))}if(old){old.textContent=historyPolicyText(rows);old.title=old.textContent}
   var trs=document.querySelectorAll('#dashHistory tbody tr');for(var i=0;i<trs.length;i++){if(rows[i])trs[i].setAttribute('data-v1296-history-id',rows[i].id)}
 }
@@ -24553,7 +24553,7 @@ function renderMainHistory(){
   var rows=collectRows(),e=id('dashHistory');
   if(e){var shown=rows.slice(0,7),html=shown.length?'<table class="dashboard-board"><colgroup><col style="width:18%"><col style="width:15%"><col style="width:17%"><col style="width:50%"></colgroup><thead><tr><th>일시</th><th>수정자</th><th>구분</th><th>수정 내용</th></tr></thead><tbody>'+shown.map(function(r){return '<tr data-history-id="'+esc(r.id)+'" style="cursor:pointer"><td>'+esc(fmt(r.t))+'</td><td>'+esc(r.user)+'</td><td><span class="dashboard-status info">'+esc(r.cat)+'</span></td><td title="'+esc(r.detail)+'">'+esc(r.detail)+'</td></tr>'}).join('')+'</tbody></table>':'<div class="v1329-history-empty">아직 등록된 수정이력이 없습니다.</div>';if(e.__v1329Html!==html){e.__v1329Html=html;e.innerHTML=html}}
   updateTodayCard(rows);updateHistoryButton(rows);
-  var card=e&&e.closest('.dashboard-card'),sub=card&&card.querySelector('.dashboard-card-head .sub');if(sub){var tx='다른 컴퓨터와 공용 동기화 · 전체 '+rows.length.toLocaleString('ko-KR')+'건';if(sub.textContent!==tx)sub.textContent=tx;sub.title=tx}
+  var card=e&&e.closest('.dashboard-card'),sub=card&&card.querySelector('.dashboard-card-head .sub');if(sub){var valid=rows.filter(function(r){return Number(r.t)>0}),oldest=valid.length?valid[valid.length-1].t:0,newest=valid.length?valid[0].t:0,period=valid.length?fmt(oldest)+' ~ '+fmt(newest):'저장된 이력 없음',tx='기간 제한 없음 · 시스템 최대 1,000건 · 제품별 최대 20건 · 공정별 최대 30건 · 현재 '+period;if(sub.textContent!==tx)sub.textContent=tx;sub.title=tx;sub.classList.add('dashboard-history-policy','v1332-history-policy')}
 }
 function queueUi(){clearTimeout(uiTimer);uiTimer=setTimeout(renderMainHistory,30)}
 
@@ -24632,6 +24632,239 @@ refresh();setVersion();if(document.readyState==='loading')document.addEventListe
 })();
 </script>
 <!-- ===== /V133.0 ===== -->
+
+
+<!-- ===== V133.1: 공유계정 버튼 정렬 · 화면전환/초기로딩 경량화 ===== -->
+<style id="v1331-layout-performance-style">
+/* 공유계정 버튼 3개를 데스크톱에서 한 줄로 유지 */
+#v1326-account-overlay .v85-account-buttons{
+  display:grid!important;
+  grid-template-columns:minmax(112px,1fr) auto auto!important;
+  align-items:center!important;
+  gap:7px!important;
+  flex-wrap:nowrap!important;
+  width:100%!important;
+}
+#v1326-account-overlay .v85-account-buttons button{
+  min-width:0!important;
+  padding:0 9px!important;
+  font-size:11.3px!important;
+  white-space:nowrap!important;
+}
+#v1326-account-overlay #v1326-account-add{overflow:hidden!important;text-overflow:ellipsis!important}
+#v1326-account-overlay #v1326-account-save{min-width:68px!important}
+#v1326-account-overlay #v1326-account-reload{min-width:132px!important}
+#v1326-account-overlay .v85-account-list{contain:content}
+@media(max-width:760px){
+  #v1326-account-overlay .v85-account-buttons{
+    grid-template-columns:minmax(106px,1fr) auto auto!important;
+    gap:5px!important;
+  }
+  #v1326-account-overlay .v85-account-buttons button{padding:0 6px!important;font-size:10.5px!important}
+  #v1326-account-overlay #v1326-account-reload{min-width:120px!important}
+}
+</style>
+<script id="v1331-ui-performance-script">
+(function(){
+'use strict';
+if(window.__v1331UiPerformance)return;window.__v1331UiPerformance=true;
+var installTimer=0,navFrame=0,navPending=null,navRunning=false,revision=1;
+var wrapped={};
+function now(){return (window.performance&&performance.now)?performance.now():Date.now()}
+function bump(){revision++}
+function copyProps(dst,src){try{Object.keys(src||{}).forEach(function(k){try{dst[k]=src[k]}catch(_){}})}catch(_){}}
+function activeFilterSignature(){
+  var view=document.querySelector('.wrap > [id^="view-"]:not(.hidden)');
+  if(!view)return '';
+  var out=[view.id];
+  try{view.querySelectorAll('.filters input,.filters select,.raw-tools input,.raw-tools select,.material-price-tools input,.material-price-tools select').forEach(function(e){out.push(e.id||e.name||e.className);out.push(e.type==='checkbox'?(e.checked?'1':'0'):String(e.value||''))})}catch(_){ }
+  try{out.push(String(window.CURRENT_GROUP||''),String(window.VIEW_LIMIT||''),window.__v124ProcessChangedOnly?'1':'0')}catch(_){ }
+  return out.join('\u241f');
+}
+function argKey(args){var a=[];for(var i=0;i<args.length;i++){var v=args[i];if(v==null||typeof v==='string'||typeof v==='number'||typeof v==='boolean')a.push(String(v));else a.push(Object.prototype.toString.call(v))}return a.join('|')}
+function wrapBurst(name,gap,withFilters){
+  var cur=window[name];
+  if(typeof cur!=='function'||cur.__v1331BurstGuard)return false;
+  var busy=false,pending=false,pendingThis=null,pendingArgs=null,lastAt=-1e9,lastSig='',lastResult;
+  var fn=function(){
+    var self=this,args=arguments,sig=revision+'|'+argKey(args)+(withFilters?'|'+activeFilterSignature():'');
+    if(busy){pending=true;pendingThis=self;pendingArgs=Array.prototype.slice.call(args);return lastResult}
+    var t=now();if(sig===lastSig&&t-lastAt<gap)return lastResult;
+    busy=true;
+    try{lastResult=cur.apply(self,args);return lastResult}
+    finally{
+      busy=false;lastAt=now();lastSig=sig;
+      if(pending){var ps=pendingThis,pa=pendingArgs;pending=false;pendingThis=null;pendingArgs=null;requestAnimationFrame(function(){try{fn.apply(ps,pa)}catch(e){console.error(e)}})}
+    }
+  };
+  copyProps(fn,cur);fn.__v1331BurstGuard=true;fn.__v1331Base=cur;window[name]=fn;wrapped[name]=fn;return true;
+}
+function fastExpose(tab){
+  tab=String(tab||'');if(!tab)return;
+  try{
+    document.querySelectorAll('.wrap > [id^="view-"]').forEach(function(v){v.classList.toggle('hidden',v.id!=='view-'+tab)});
+    document.querySelectorAll('header .tabs button[id^="tab-"]').forEach(function(b){b.classList.toggle('on',b.id==='tab-'+tab)});
+    var target=document.getElementById('view-'+tab);if(target){target.style.visibility='visible';target.style.opacity='1'}
+    window.scrollTo(0,0);
+  }catch(_){ }
+}
+function wrapSwitch(){
+  var cur=window.switchTab;
+  if(typeof cur!=='function'||cur.__v1331FastSwitch)return false;
+  var fn=function(tab){
+    var self=this,args=Array.prototype.slice.call(arguments);
+    if(navRunning)return cur.apply(self,args);
+    fastExpose(tab);navPending={self:self,args:args};
+    if(navFrame)cancelAnimationFrame(navFrame);
+    navFrame=requestAnimationFrame(function(){
+      navFrame=0;var p=navPending;navPending=null;if(!p)return;
+      navRunning=true;try{cur.apply(p.self,p.args)}catch(e){console.error('화면 전환 처리 오류',e)}finally{navRunning=false}
+    });
+    return true;
+  };
+  copyProps(fn,cur);fn.__v1331FastSwitch=true;fn.__v1331Base=cur;window.switchTab=fn;wrapped.switchTab=fn;return true;
+}
+function idleCall(cb){if(typeof requestIdleCallback==='function')return requestIdleCallback(cb,{timeout:1200});return setTimeout(cb,40)}
+function wrapSilentSync(){
+  var cur=window.bomSyncLoad;
+  if(typeof cur!=='function'||cur.__v1331IdleSync)return false;
+  var pending=null,lastSilent=0;
+  var fn=function(silent){
+    var self=this,args=Array.prototype.slice.call(arguments);
+    if(silent!==true)return cur.apply(self,args);
+    var t=Date.now();if(pending)return pending;if(t-lastSilent<12000)return Promise.resolve(true);
+    pending=new Promise(function(resolve,reject){idleCall(function(){try{Promise.resolve(cur.apply(self,args)).then(resolve,reject)}catch(e){reject(e)}})}).finally(function(){lastSilent=Date.now();pending=null});
+    return pending;
+  };
+  copyProps(fn,cur);fn.__v1331IdleSync=true;fn.__v1331Base=cur;window.bomSyncLoad=fn;wrapped.bomSyncLoad=fn;return true;
+}
+function install(){
+  clearTimeout(installTimer);
+  wrapSwitch();wrapSilentSync();
+  [
+    ['renderCost',55,true],['buildFilters',80,false],['refreshMainDashboard',70,false],
+    ['renderDrawingAnalysis',70,true],['renderOwnerAnalysis',70,true],['renderUsageAnalysis',70,true],
+    ['renderAna',70,true],['renderPrice',70,true],['renderRawMaterials',70,true],
+    ['renderBase',70,true],['renderMaterialPrice',70,true],['renderEquipmentAnalysis',70,true],
+    ['renderGroupCostAnalysis',70,true],['renderQuick',70,true]
+  ].forEach(function(x){wrapBurst(x[0],x[1],x[2])});
+}
+/* 입력·저장·동기화 변경이 있으면 중복렌더 판단 기준을 즉시 갱신 */
+document.addEventListener('input',bump,true);document.addEventListener('change',bump,true);
+['bomDataChanged','drawingDataChanged','bomSyncApplied','bomSharedHistoryApplied','drawingShareAccountsChanged'].forEach(function(n){window.addEventListener(n,bump)});
+window.addEventListener('storage',bump);
+/* 최초 화면은 바로 표시하고, 기능 초기화는 첫 페인트 뒤에 정리 */
+install();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+window.addEventListener('load',function(){install();[240,1100,3200,7200,12200,18200].forEach(function(ms){setTimeout(install,ms)})},{once:true});
+})();
+</script>
+<!-- ===== /V133.1 ===== -->
+
+
+<!-- ===== V133.2: 최근 수정이력 제목줄 한 줄 고정 · 깜빡임 제거 ===== -->
+<style id="v1332-history-head-stability-style">
+#view-dashboard .dashboard-card:has(#dashHistory) > .dashboard-card-head,
+#view-dashboard .dashboard-card-head.v1332-history-head{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:nowrap!important;
+  gap:9px!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+  transition:none!important;
+}
+#view-dashboard .dashboard-card:has(#dashHistory) > .dashboard-card-head h2,
+#view-dashboard .dashboard-card-head.v1332-history-head h2{
+  flex:0 0 auto!important;
+  margin:0!important;
+  white-space:nowrap!important;
+  line-height:1.2!important;
+}
+#view-dashboard .dashboard-card:has(#dashHistory) > .dashboard-card-head .v1332-history-policy,
+#view-dashboard .dashboard-card-head.v1332-history-head .v1332-history-policy{
+  display:block!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  color:#66778e!important;
+  font-size:9.6px!important;
+  font-weight:800!important;
+  letter-spacing:-.18px!important;
+  line-height:1.25!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  visibility:visible!important;
+  opacity:1!important;
+  transition:none!important;
+}
+#view-dashboard .dashboard-card:has(#dashHistory) > .dashboard-card-head > .sub:not(.v1332-history-policy),
+#view-dashboard .dashboard-card-head.v1332-history-head > .sub:not(.v1332-history-policy){display:none!important}
+#view-dashboard .dashboard-card:has(#dashHistory) > .dashboard-card-head button,
+#view-dashboard .dashboard-card-head.v1332-history-head button{
+  flex:0 0 auto!important;
+  margin-left:auto!important;
+  white-space:nowrap!important;
+}
+@media(max-width:1100px){
+  #view-dashboard .dashboard-card-head.v1332-history-head .v1332-history-policy{font-size:8.9px!important;letter-spacing:-.3px!important}
+}
+</style>
+<script id="v1332-history-head-stability-script">
+(function(){
+'use strict';
+if(window.__v1332HistoryHeadStable)return;window.__v1332HistoryHeadStable=true;
+var EDIT_KEY='dbfastec_bom_edit_log_v1',SHADOW_KEY='dbfastec_bom_edit_log_shadow_v1329',PROCESS_KEY='dbfastec_process_history_v120',OV_KEY='dbfastec_cost_overrides_v2';
+var queued=false,nativeText=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');
+function id(x){return document.getElementById(x)}
+function read(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function clean(v){return String(v==null?'':v).trim()}
+function pad(v){return String(v).padStart(2,'0')}
+function dateText(t){var d=new Date(Number(t)||t||0);if(isNaN(d.getTime()))return '';return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())}
+function timeKey(r){return Number(r&&((r.t!=null?r.t:r.at)))||0}
+function collectTimes(){
+  var out=[],seen={};
+  function add(t,key){t=Number(t)||0;if(!t)return;key=clean(key)||String(t);if(seen[key])return;seen[key]=1;out.push(t)}
+  [read(EDIT_KEY,[]),read(SHADOW_KEY,[])].forEach(function(a){(Array.isArray(a)?a:[]).forEach(function(r,i){add(timeKey(r),'e:'+(r&&r.id||i)+':'+timeKey(r))})});
+  var p=read(PROCESS_KEY,{})||{};Object.keys(p).forEach(function(pn){(Array.isArray(p[pn])?p[pn]:[]).forEach(function(r,i){add(timeKey(r),'p:'+pn+':'+(r&&r.id||i)+':'+timeKey(r))})});
+  var o=read(OV_KEY,{})||{};Object.keys(o).forEach(function(pn){var a=o[pn]&&o[pn]._editHistory;(Array.isArray(a)?a:[]).forEach(function(r,i){add(timeKey(r),'o:'+pn+':'+(r&&r.id||i)+':'+timeKey(r))})});
+  out.sort(function(a,b){return a-b});return out;
+}
+function policyText(){var a=collectTimes(),period=a.length?dateText(a[0])+' ~ '+dateText(a[a.length-1]):'저장된 이력 없음';return '기간 제한 없음 · 시스템 최대 1,000건 · 제품별 최대 20건 · 공정별 최대 30건 · 현재 '+period}
+function setNativeText(el,tx){
+  el.__v1332LockedText=tx;
+  try{if(nativeText&&nativeText.set){if(nativeText.get.call(el)!==tx)nativeText.set.call(el,tx)}else if(el.innerHTML!==tx)el.innerHTML=tx}catch(e){}
+  el.title=tx;
+}
+function lockText(el){
+  if(!el||el.__v1332PolicyLocked||!nativeText||!nativeText.get||!nativeText.set)return;
+  try{Object.defineProperty(el,'textContent',{configurable:true,get:function(){return nativeText.get.call(el)},set:function(){var wanted=el.__v1332LockedText||policyText();if(nativeText.get.call(el)!==wanted)nativeText.set.call(el,wanted)}});el.__v1332PolicyLocked=true}catch(e){}
+}
+function ensure(){
+  queued=false;var body=id('dashHistory'),card=body&&body.closest('.dashboard-card'),head=card&&card.querySelector('.dashboard-card-head');if(!head)return false;
+  head.classList.add('v1332-history-head');
+  var nodes=head.querySelectorAll('.dashboard-history-policy,.v1332-history-policy'),policy=nodes[0]||head.querySelector('.sub');
+  if(!policy){policy=document.createElement('span');var btn=head.querySelector('button');head.insertBefore(policy,btn||null)}
+  Array.prototype.forEach.call(nodes,function(n){if(n!==policy)n.remove()});
+  head.querySelectorAll('.sub').forEach(function(n){if(n!==policy)n.remove()});
+  policy.className='sub dashboard-history-policy v1332-history-policy';
+  lockText(policy);setNativeText(policy,policyText());
+  return true;
+}
+function queue(){if(queued)return;queued=true;requestAnimationFrame(ensure)}
+function wrapRefresh(){var cur=window.refreshMainDashboard;if(typeof cur!=='function'||cur.__v1332HistoryHead)return;var fn=function(){var r=cur.apply(this,arguments);queue();return r};try{Object.keys(cur).forEach(function(k){fn[k]=cur[k]})}catch(e){}fn.__v1332HistoryHead=true;fn.__v1332Base=cur;window.refreshMainDashboard=fn}
+function install(){wrapRefresh();ensure()}
+install();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+window.addEventListener('load',function(){install();setTimeout(install,120)},{once:true});
+['bomDataChanged','bomSyncApplied','bomSharedHistoryApplied'].forEach(function(n){window.addEventListener(n,queue)});
+window.addEventListener('storage',function(e){if(!e.key||[EDIT_KEY,SHADOW_KEY,PROCESS_KEY,OV_KEY].indexOf(e.key)>=0)queue()});
+})();
+</script>
+<!-- ===== /V133.2 ===== -->
 
 </body>
 </html>
