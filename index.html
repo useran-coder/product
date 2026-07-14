@@ -5,8 +5,14 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <style id="v1301-first-paint-guard">
-/* 첫 페인트에서 제품별원가가 노출되는 현상 방지 */
+/* 전체 초기화가 끝날 때까지 실제 페이지는 숨기고 숫자 로딩 화면만 표시 */
 html.dbf-main-boot body{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+}
+html.dbf-main-boot body > *:not(#dbfFullPageLoader):not(script):not(style){
   opacity:0!important;
   visibility:hidden!important;
   pointer-events:none!important;
@@ -17,32 +23,61 @@ html.dbf-main-ready body{
   pointer-events:auto!important;
 }
 </style>
+<style id="v1337-full-page-loader-style">
+#dbfFullPageLoader{
+  position:fixed!important;inset:0!important;z-index:2147483647!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  background:#f7f9fc!important;color:#16284a!important;opacity:1!important;visibility:visible!important;
+  pointer-events:auto!important;font-family:'Malgun Gothic','맑은 고딕',system-ui,sans-serif!important;
+  transition:opacity .24s ease,visibility .24s ease!important;
+}
+#dbfFullPageLoader .dbf-loader-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-width:220px;text-align:center}
+#dbfFullPageLoader .dbf-loader-percent{font-size:54px;line-height:1;font-weight:900;letter-spacing:-2px;color:#16284a;font-variant-numeric:tabular-nums}
+#dbfFullPageLoader .dbf-loader-label{font-size:13px;font-weight:800;color:#617089;letter-spacing:-.2px}
+#dbfFullPageLoader .dbf-loader-track{width:220px;height:5px;border-radius:999px;background:#dfe6ef;overflow:hidden}
+#dbfFullPageLoader .dbf-loader-bar{display:block;width:0;height:100%;border-radius:inherit;background:#2f6fb0;transition:width .12s linear}
+#dbfFullPageLoader.dbf-loader-done{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+html.dbf-main-ready #dbfFullPageLoader{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+@media(max-width:640px){#dbfFullPageLoader .dbf-loader-percent{font-size:46px}#dbfFullPageLoader .dbf-loader-track{width:190px}}
+</style>
 <script id="v1301-first-paint-guard-script">
 (function(){
   'use strict';
   window.__dbfMainBootStartedAt=(window.performance&&performance.now)?performance.now():Date.now();
-  window.__dbfReleaseMainBoot=function(){
+  window.__dbfFullLoaderEnabled=true;
+  window.__dbfFullLoaderReady=false;
+  window.__dbfReleaseMainBoot=function(force){
+    if(!force&&window.__dbfFullLoaderEnabled&&!window.__dbfFullLoaderReady){
+      window.__dbfMainBootReleaseQueued=true;
+      return false;
+    }
     var root=document.documentElement;
-    if(!root||root.classList.contains('dbf-main-ready'))return;
+    if(!root||root.classList.contains('dbf-main-ready'))return true;
     root.classList.remove('dbf-main-boot');
     root.classList.add('dbf-main-ready');
     window.__dbfMainBootReleasedAt=(window.performance&&performance.now)?performance.now():Date.now();
+    return true;
   };
-  /* 예외가 발생해도 화면이 영구적으로 숨겨지지 않도록 안전 해제 */
-  setTimeout(function(){try{window.__dbfReleaseMainBoot()}catch(e){}},3000);
+  /* 최후 안전장치: 어떤 예외가 있어도 15초 뒤 100% 처리 후 화면을 복구 */
+  setTimeout(function(){
+    if(window.__dbfFullLoaderReady)return;
+    window.__dbfFullLoaderReady=true;
+    try{var p=document.getElementById('dbfLoadingPercent');if(p)p.textContent='100%';var b=document.getElementById('dbfLoadingBar');if(b)b.style.width='100%'}catch(e){}
+    try{window.__dbfReleaseMainBoot(true)}catch(e){}
+  },15000);
 })();
 </script>
-<title>제품별 제조원가 통합관리 v133.6 | (주)동방파스텍</title>
+<title>제품별 제조원가 통합관리 v133.7 | (주)동방파스텍</title>
 <style id="v1336-version-first-paint-lock-style">
 /* 로딩 중 누적 구버전 스크립트가 버전 문구를 순차 변경해도 화면에는 최종 버전만 표시 */
 html body header #bomUserVersionWrap #bomAppVer{font-size:0!important;white-space:nowrap!important}
-html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v133.6 · 제목 로딩 안정화'!important;font-size:9.8px!important;font-weight:600!important;color:#94a3b8!important;white-space:nowrap!important}
+html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v133.7 · 전체 로딩 화면'!important;font-size:9.8px!important;font-weight:600!important;color:#94a3b8!important;white-space:nowrap!important}
 </style>
 <script id="v1336-browser-title-first-lock-script">
 (function(){
   'use strict';
-  var FINAL_VERSION='v133.6';
-  var FINAL_TITLE='제품별 제조원가 통합관리 v133.6 | (주)동방파스텍';
+  var FINAL_VERSION='v133.7';
+  var FINAL_TITLE='제품별 제조원가 통합관리 v133.7 | (주)동방파스텍';
   window.__DBF_FINAL_VERSION=FINAL_VERSION;
   window.__DBF_FINAL_TITLE=FINAL_TITLE;
   window.__dbfBlockedTitleWrites=0;
@@ -1639,6 +1674,80 @@ header .tabs #tab-dashboard.on{
 
 </head>
 <body>
+<div id="dbfFullPageLoader" role="status" aria-live="polite" aria-label="프로그램 불러오는 중">
+  <div class="dbf-loader-inner">
+    <div class="dbf-loader-percent" id="dbfLoadingPercent">0%</div>
+    <div class="dbf-loader-track" aria-hidden="true"><span class="dbf-loader-bar" id="dbfLoadingBar"></span></div>
+    <div class="dbf-loader-label" id="dbfLoadingLabel">프로그램을 불러오는 중입니다</div>
+  </div>
+</div>
+<script id="v1337-full-page-loader-script">
+(function(){
+  'use strict';
+  if(window.__v1337FullPageLoaderInstalled)return;
+  window.__v1337FullPageLoaderInstalled=true;
+  var loader=document.getElementById('dbfFullPageLoader');
+  var percentEl=document.getElementById('dbfLoadingPercent');
+  var barEl=document.getElementById('dbfLoadingBar');
+  var labelEl=document.getElementById('dbfLoadingLabel');
+  var value=0,domReady=false,loadReady=false,finished=false,settling=false,pollTimer=0;
+  var started=(window.performance&&performance.now)?performance.now():Date.now();
+  function clamp(n){return Math.max(0,Math.min(100,Math.round(Number(n)||0)))}
+  function setProgress(n,label){
+    n=clamp(n);if(n<value)return;value=n;
+    if(percentEl)percentEl.textContent=n+'%';
+    if(barEl)barEl.style.width=n+'%';
+    if(label&&labelEl)labelEl.textContent=label;
+    try{loader&&loader.setAttribute('aria-valuenow',String(n))}catch(e){}
+  }
+  function keyContentReady(){
+    var dash=document.getElementById('view-dashboard');
+    var kpis=document.getElementById('dashboardKpis');
+    var cards=dash?dash.querySelectorAll('.dashboard-card').length:0;
+    var hasKpis=!!(kpis&&kpis.children&&kpis.children.length);
+    return document.readyState==='complete'&&!!dash&&cards>=6&&hasKpis;
+  }
+  function finish(){
+    if(finished)return;finished=true;settling=false;
+    clearInterval(window.__v1337LoaderTick);clearTimeout(pollTimer);
+    setProgress(100,'로딩 완료');
+    window.__dbfFullLoaderReady=true;
+    window.__dbfFullLoaderDuration=Math.max(0,((window.performance&&performance.now)?performance.now():Date.now())-started);
+    setTimeout(function(){
+      try{window.__dbfReleaseMainBoot(true)}catch(e){}
+      if(loader){loader.classList.add('dbf-loader-done');setTimeout(function(){try{loader.remove()}catch(e){}},360)}
+    },170);
+  }
+  function settleAndFinish(){
+    if(finished||settling)return;settling=true;setProgress(Math.max(value,97),'화면을 준비하는 중입니다');
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      var done=function(){setTimeout(finish,80)};
+      if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(done,{timeout:650});
+      else setTimeout(done,220);
+    })});
+  }
+  function pollReady(){
+    if(finished)return;
+    if(keyContentReady()){settleAndFinish();return}
+    if(domReady)setProgress(Math.max(value,82),'메인 화면을 구성하는 중입니다');
+    if(loadReady)setProgress(Math.max(value,92),'데이터를 정리하는 중입니다');
+    pollTimer=setTimeout(pollReady,90);
+  }
+  window.__v1337LoaderTick=setInterval(function(){
+    if(finished)return;
+    var cap=!domReady?72:(!loadReady?88:96);
+    var step=value<28?4:(value<62?3:(value<84?2:1));
+    setProgress(Math.min(cap,value+step));
+  },70);
+  setProgress(1);
+  if(document.readyState!=='loading'){domReady=true;setProgress(78,'메인 화면을 구성하는 중입니다')}
+  else document.addEventListener('DOMContentLoaded',function(){domReady=true;setProgress(Math.max(value,78),'메인 화면을 구성하는 중입니다');pollReady()},{once:true});
+  if(document.readyState==='complete'){loadReady=true;setProgress(92,'데이터를 정리하는 중입니다');pollReady()}
+  else window.addEventListener('load',function(){loadReady=true;setProgress(Math.max(value,92),'데이터를 정리하는 중입니다');pollReady()},{once:true});
+  pollReady();
+  setTimeout(function(){if(!finished)settleAndFinish()},12000);
+})();
+</script>
 <header>
 <div class="htop">
 <div class="brand-wrap">
@@ -1657,12 +1766,12 @@ header .tabs #tab-dashboard.on{
 <button hidden id="salesImportBtn" onclick="document.getElementById('salesExcelInput').click()" title="거래처·제품·공용/전용/비규격 구분을 불러옵니다" type="button">📥 매출 엑셀</button>
 <button id="bomEditLogBtn" onclick="if(window.openBomEditLog){window.openBomEditLog()}" title="BOM 프로그램 수정이력" type="button">🕘 수정이력</button>
 <button id="bomSyncBtn" onclick="if(window.bomSyncSave){window.bomSyncSave(false)}" title="현재 변경사항을 구글시트에 즉시 저장·병합" type="button"><span class="sync-main">🔄 동기화</span><span class="sync-time"> · 미실행</span></button>
-<span id="bomUserVersionWrap"><span class="bom-user-name">사용자 · 사용자 미등록</span><span class="bom-app-version" id="bomAppVer">버전 v133.6 · 제목 로딩 안정화</span></span>
+<span id="bomUserVersionWrap"><span class="bom-user-name">사용자 · 사용자 미등록</span><span class="bom-app-version" id="bomAppVer">버전 v133.7 · 전체 로딩 화면</span></span>
 <script id="v1336-visible-version-first-lock-script">
 (function(){
   'use strict';
   var el=document.getElementById('bomAppVer');if(!el)return;
-  var FIXED='버전 v133.6 · 제목 로딩 안정화';
+  var FIXED='버전 v133.7 · 전체 로딩 화면';
   var desc=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');
   if(!desc||!desc.get||!desc.set)return;
   try{
@@ -1672,7 +1781,7 @@ header .tabs #tab-dashboard.on{
       get:function(){return desc.get.call(el)},
       set:function(v){if(String(v||'')!==FIXED)window.__dbfBlockedVersionWrites=(window.__dbfBlockedVersionWrites||0)+1;return FIXED}
     });
-    el.setAttribute('data-version-locked','v133.6');
+    el.setAttribute('data-version-locked','v133.7');
   }catch(e){}
 })();
 </script>
@@ -25133,7 +25242,7 @@ window.addEventListener('load',function(){install();[120,700,2600,6200,13200,212
 (function(){
 'use strict';
 if(window.__v1334ModalStepStable)return;window.__v1334ModalStepStable=true;
-var VER='v133.6',rawInner=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
+var VER='v133.7',rawInner=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
 var installBusy=false,observer=null,openRaf=0,stats={suppressed:0,allowed:0,lastPn:'',lastSig:''};
 function id(x){return document.getElementById(x)}
 function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
@@ -25216,7 +25325,7 @@ function observeOverlay(){
   try{observer=new MO(function(){if(overlayOpen())afterOpen()});observer.observe(ov,{attributes:true,attributeFilter:['class']})}catch(e){}
 }
 function setVersion(){
-  var v=id('bomAppVer'),tx='버전 '+VER+' · 제목 로딩 안정화';
+  var v=id('bomAppVer'),tx='버전 '+VER+' · 전체 로딩 화면';
   try{if(v&&v.textContent!==tx)v.textContent=tx}catch(e){}
   try{document.title='제품별 제조원가 통합관리 '+VER+' | (주)동방파스텍';window.__legacyDocumentTitleV99=document.title}catch(e){}
 }
@@ -25237,9 +25346,9 @@ window.addEventListener('load',function(){install();setTimeout(install,160)},{on
 <script id="v1336-title-loading-final-script">
 (function(){
   'use strict';
-  var title=window.__DBF_FINAL_TITLE||'제품별 제조원가 통합관리 v133.6 | (주)동방파스텍';
+  var title=window.__DBF_FINAL_TITLE||'제품별 제조원가 통합관리 v133.7 | (주)동방파스텍';
   try{var t=document.querySelector('title');if(t&&t.textContent!==title)t.textContent=title}catch(e){}
-  try{document.documentElement.setAttribute('data-final-version','v133.6')}catch(e){}
+  try{document.documentElement.setAttribute('data-final-version','v133.7')}catch(e){}
 })();
 </script>
 <!-- ===== /V133.6 ===== -->
