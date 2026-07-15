@@ -25461,5 +25461,1053 @@ setTimeout(function(){release('safety-4s')},4000);
 </script>
 <!-- ===== /V134.0 ===== -->
 
+<!-- ===== V134.1: 제품별원가 숨김·삭제 품번 기준 안정화 ===== -->
+<script id="v1341-cost-hide-delete-stability-script">
+(function(){
+'use strict';
+if(window.__v1341CostHideDeleteStability)return;window.__v1341CostHideDeleteStability=true;
+var PROD_KEY='dbfastec_cost_products_v2',OV_KEY='dbfastec_cost_overrides_v2',HIDDEN_KEY='dbfastec_cost_hidden_products_v1';
+function clean(v){return String(v==null?'':v).trim()}
+function escAttr(v){return String(v==null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+function readJson(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function writeJson(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error('저장 실패',k,e);return false}}
+function productList(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}return readJson(PROD_KEY,[])}
+function overrideMap(){try{if(typeof OV!=='undefined'&&OV&&typeof OV==='object')return OV}catch(e){}return readJson(OV_KEY,{})||{}}
+function productIndexByPn(pn){pn=clean(pn);var a=productList();for(var i=0;i<a.length;i++){if(clean(a[i]&&a[i].pn)===pn)return i}return -1}
+function productByPn(pn){var i=productIndexByPn(pn),a=productList();return i>=0?a[i]:null}
+function productKey(p){return [p&&p.pn,p&&p.item,p&&p.spec].map(function(v){return clean(v)}).join('\u241f')}
+function saveProducts(a){try{PRODUCTS=a}catch(e){}try{window.PRODUCTS=a}catch(e){}return writeJson(PROD_KEY,a)}
+function saveOverrides(o){try{OV=o}catch(e){}try{window.OV=o}catch(e){}return writeJson(OV_KEY,o)}
+function refreshCostViews(){
+  try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}
+  try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV83==='function')window.invalidatePerformanceCacheV83()}catch(e){}
+  try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}
+  try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){console.error('제품별 원가 렌더 오류',e)}
+  try{if(typeof window.quickFillProducts==='function')window.quickFillProducts()}catch(e){}
+  try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',v1341:true}}))}catch(e){}
+  try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false);else if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}
+}
+function normalizeButtons(){
+  document.querySelectorAll('#view-cost tr.prod-row[data-pn]').forEach(function(tr){
+    var pn=clean(tr.getAttribute('data-pn')),idx=productIndexByPn(pn),cell=tr.querySelector('td.actioncell');
+    if(!cell||!pn)return;
+    tr.setAttribute('onclick',idx>=0?'openDetail('+idx+')':'');
+    var bom=tr.querySelector('.bom-toggle');if(bom&&idx>=0)bom.setAttribute('onclick','toggleProductBom(event,'+idx+')');
+    var draw=tr.querySelector('.draw-toggle');if(draw&&idx>=0)draw.setAttribute('onclick','toggleDrawing(event,'+idx+')');
+    var edit=cell.querySelector('button:not(.hide-product-btn):not(.del)');
+    if(edit&&idx>=0)edit.setAttribute('onclick','openDetail('+idx+')');
+    var hide=cell.querySelector('.hide-product-btn');
+    if(!hide){
+      hide=document.createElement('button');hide.type='button';hide.className='hide-product-btn';hide.textContent='숨김';
+      var delBefore=cell.querySelector('.del');cell.insertBefore(hide,delBefore||null);
+    }
+    hide.textContent='숨김';hide.title='제품 숨김';hide.setAttribute('aria-label','제품 숨김');
+    hide.removeAttribute('onclick');hide.setAttribute('data-pn',pn);
+    var del=cell.querySelector('.del');
+    if(del){del.textContent='삭제';del.setAttribute('data-pn',pn);del.setAttribute('onclick',"deleteProductByPn('"+escAttr(pn)+"')")}
+  });
+}
+window.hideProductByPn=function(pn){
+  pn=clean(pn);var a=productList(),idx=productIndexByPn(pn);if(idx<0){alert('숨김 처리할 제품을 찾지 못했습니다. 화면을 새로고침한 후 다시 시도해 주세요.');return false}
+  var p=a[idx];if(!confirm('['+clean(p.pn)+'] '+clean(p.item)+' 제품을 숨길까요?\n숨김 제품 보기에서 다시 복원할 수 있습니다.'))return false;
+  var hidden=readJson(HIDDEN_KEY,[]);if(!Array.isArray(hidden))hidden=[];
+  var key=productKey(p);if(!hidden.some(function(x){return productKey(x)===key}))hidden.push(JSON.parse(JSON.stringify(p)));
+  a.splice(idx,1);saveProducts(a);writeJson(HIDDEN_KEY,hidden);refreshCostViews();
+  try{if(typeof window.toast==='function')window.toast('제품을 숨겼습니다 · 숨김 제품 '+hidden.length.toLocaleString()+'개')}catch(e){}
+  return true;
+};
+window.deleteProductByPn=function(pn){
+  pn=clean(pn);var a=productList(),idx=productIndexByPn(pn);if(idx<0){alert('삭제할 제품을 찾지 못했습니다. 화면을 새로고침한 후 다시 시도해 주세요.');return false}
+  var p=a[idx];if(!confirm('['+clean(p.pn)+'] '+clean(p.item)+' 을(를) 목록에서 삭제할까요?'))return false;
+  a.splice(idx,1);var ov=overrideMap();delete ov[pn];saveProducts(a);saveOverrides(ov);refreshCostViews();
+  try{if(typeof window.toast==='function')window.toast('삭제되었습니다')}catch(e){}
+  return true;
+};
+window.delProduct=function(idx){
+  var p=productList()[Number(idx)];return p?window.deleteProductByPn(p.pn):false;
+};
+var oldRestore=window.restoreHiddenProduct;
+window.restoreHiddenProduct=function(key){
+  var hidden=readJson(HIDDEN_KEY,[]);if(!Array.isArray(hidden))hidden=[];
+  var idx=hidden.findIndex(function(p){return productKey(p)===key});if(idx<0&&typeof oldRestore==='function')return oldRestore.apply(this,arguments);
+  if(idx<0)return false;
+  var p=hidden[idx],a=productList();if(a.some(function(x){return clean(x&&x.pn)===clean(p&&p.pn)})){alert('같은 품번 ['+clean(p&&p.pn)+'] 제품이 현재 목록에 있어 복원할 수 없습니다.');return false}
+  a.push(p);hidden.splice(idx,1);saveProducts(a);writeJson(HIDDEN_KEY,hidden);
+  try{if(typeof window.renderHiddenList==='function')window.renderHiddenList()}catch(e){}
+  refreshCostViews();try{if(typeof window.toast==='function')window.toast('제품을 복원했습니다')}catch(e){}
+  return true;
+};
+document.addEventListener('click',function(e){
+  var hide=e.target&&e.target.closest?e.target.closest('#view-cost .hide-product-btn'):null;
+  var del=e.target&&e.target.closest?e.target.closest('#view-cost .actioncell .del'):null;
+  var btn=hide||del;if(!btn)return;
+  var tr=btn.closest('tr.prod-row[data-pn]'),pn=clean(btn.getAttribute('data-pn')||(tr&&tr.getAttribute('data-pn')));
+  if(!pn)return;
+  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  if(hide)window.hideProductByPn(pn);else window.deleteProductByPn(pn);
+},true);
+function install(){
+  normalizeButtons();
+  var raw=window.renderCost;if(typeof raw==='function'&&!raw.__v1341HideDeleteStable){
+    var wrapped=function(){var r=raw.apply(this,arguments);setTimeout(normalizeButtons,0);return r};
+    wrapped.__v1341HideDeleteStable=true;wrapped.__v1341Raw=raw;window.renderCost=wrapped;try{renderCost=wrapped}catch(e){}
+  }
+  try{var v=document.getElementById('bomAppVer'),tx='버전 v134.1 · 숨김·삭제 안정화';if(v)v.textContent=tx}catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();setTimeout(install,300);setTimeout(install,1200)},{once:true});
+window.addEventListener('bomDataChanged',function(){setTimeout(normalizeButtons,0)});
+})();
+</script>
+<!-- ===== /V134.1 ===== -->
+
+<!-- ===== V134.2: 숨김 제품 보기 목록 즉시 반영 ===== -->
+<script id="v1342-hidden-product-list-refresh-script">
+(function(){
+'use strict';
+if(window.__v1342HiddenProductListRefresh)return;window.__v1342HiddenProductListRefresh=true;
+var HIDDEN_KEY='dbfastec_cost_hidden_products_v1';
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function readHidden(){try{var x=JSON.parse(localStorage.getItem(HIDDEN_KEY)||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
+function writeHidden(a){try{localStorage.setItem(HIDDEN_KEY,JSON.stringify(Array.isArray(a)?a:[]));return true}catch(e){return false}}
+function productKey(p){return [p&&p.pn,p&&p.item,p&&p.spec].map(function(v){return clean(v)}).join('\u241f')}
+function searchMatch(p,q){
+  q=clean(q).toLowerCase();if(!q)return true;
+  var text=[p&&p.pn,p&&p.item,p&&p.spec,((p&&p.steps)||[]).map(function(s){return [s.proc,s.gubun,s.part,s.equip].join(' ')}).join(' ')].join(' ').toLowerCase();
+  return q.split(/\s+/).filter(Boolean).every(function(t){return text.indexOf(t)>-1});
+}
+function ensureUi(){
+  var filters=document.querySelector('#view-cost .filters');
+  if(filters&&!id('hiddenProductListBtn')){
+    var btn=document.createElement('button');
+    btn.type='button';btn.id='hiddenProductListBtn';btn.className='hidden-products-btn';
+    btn.innerHTML='숨김 제품 보기 <span class="hidden-count">0</span>';
+    var count=id('fcount');filters.insertBefore(btn,count||null);
+  }
+  if(!id('hiddenProductsOverlay')){
+    var ov=document.createElement('div');
+    ov.id='hiddenProductsOverlay';ov.className='hidden-products-overlay hidden';
+    ov.innerHTML='<div class="hidden-products-modal" role="dialog" aria-modal="true" aria-labelledby="hiddenProductsTitle">'
+      +'<div class="hidden-products-head"><div><h3 id="hiddenProductsTitle">숨김 제품 관리</h3><div class="sub">숨긴 제품은 목록에서 제외되며, 여기에서 다시 복원할 수 있습니다.</div></div><button type="button" class="close-hidden-modal" aria-label="닫기">×</button></div>'
+      +'<div class="hidden-products-tools"><input id="hiddenProductSearch" placeholder="품번 · 품명 · 규격 · 공정 검색"><span class="hidden-products-summary" id="hiddenProductsSummary"></span><button type="button" class="restore-all-hidden" id="restoreAllHiddenBtn">전체 복원</button></div>'
+      +'<div class="hidden-products-body"><div id="hiddenProductsList"></div></div></div>';
+    document.body.appendChild(ov);
+  }
+  var overlay=id('hiddenProductsOverlay');
+  if(overlay&&!overlay.__v1342Bound){
+    overlay.__v1342Bound=true;
+    overlay.addEventListener('click',function(e){
+      if(e.target===overlay||e.target.closest('.close-hidden-modal'))window.closeHiddenProducts();
+      var b=e.target.closest&&e.target.closest('.restore-hidden-btn');
+      if(b){e.preventDefault();restoreOne(decodeURIComponent(b.getAttribute('data-hidden-key')||''))}
+    },true);
+  }
+  var search=id('hiddenProductSearch');
+  if(search&&!search.__v1342Bound){search.__v1342Bound=true;search.addEventListener('input',window.renderHiddenListV1342)}
+  var all=id('restoreAllHiddenBtn');
+  if(all&&!all.__v1342Bound){all.__v1342Bound=true;all.addEventListener('click',restoreAll)}
+  updateButton();
+}
+function updateButton(){
+  var n=readHidden().length,b=id('hiddenProductListBtn');
+  if(!b)return;
+  var c=b.querySelector('.hidden-count');if(c)c.textContent=n.toLocaleString();
+  b.classList.toggle('has-hidden',n>0);
+  b.title=n?'숨김 처리한 제품 '+n.toLocaleString()+'개를 확인·복원합니다.':'숨김 처리한 제품이 없습니다.';
+}
+window.renderHiddenListV1342=function(){
+  ensureUi();
+  var list=readHidden(),q=id('hiddenProductSearch')?id('hiddenProductSearch').value:'';
+  var filtered=list.filter(function(p){return searchMatch(p,q)});
+  var summary=id('hiddenProductsSummary');if(summary)summary.textContent=filtered.length.toLocaleString()+' / '+list.length.toLocaleString()+'개';
+  var all=id('restoreAllHiddenBtn');if(all)all.disabled=!list.length;
+  var box=id('hiddenProductsList');if(!box)return;
+  if(!filtered.length){
+    box.innerHTML='<div class="hidden-products-empty">'+(list.length?'검색 조건에 맞는 숨김 제품이 없습니다.':'숨김 처리한 제품이 없습니다.')+'</div>';
+  }else{
+    box.innerHTML='<table class="hidden-products-table"><colgroup><col style="width:145px"><col style="width:240px"><col><col style="width:82px"><col style="width:100px"></colgroup><thead><tr><th>품번</th><th>품명</th><th>규격</th><th class="num">공정수</th><th>관리</th></tr></thead><tbody>'
+      +filtered.map(function(p){return '<tr><td><span class="pn">'+esc(p&&p.pn)+'</span></td><td class="strong" title="'+esc(p&&p.item)+'">'+esc(p&&p.item)+'</td><td title="'+esc(p&&p.spec)+'">'+esc(p&&p.spec)+'</td><td class="num">'+(((p&&p.steps)||[]).length).toLocaleString()+'</td><td><button type="button" class="restore-hidden-btn" data-hidden-key="'+encodeURIComponent(productKey(p))+'">복원</button></td></tr>'}).join('')
+      +'</tbody></table>';
+  }
+  updateButton();
+};
+function restoreOne(key){
+  if(typeof window.restoreHiddenProduct==='function')window.restoreHiddenProduct(key);
+  setTimeout(function(){window.renderHiddenListV1342();updateButton()},0);
+}
+function restoreAll(){
+  var list=readHidden();if(!list.length)return;
+  if(typeof window.restoreAllHiddenProducts==='function')window.restoreAllHiddenProducts();
+  else if(confirm('숨김 제품 '+list.length.toLocaleString()+'개를 전체 복원할까요?'))writeHidden([]);
+  setTimeout(function(){window.renderHiddenListV1342();updateButton()},0);
+}
+window.openHiddenProducts=function(){
+  ensureUi();
+  var ov=id('hiddenProductsOverlay');if(!ov)return;
+  ov.classList.remove('hidden');
+  window.renderHiddenListV1342();
+  setTimeout(function(){var q=id('hiddenProductSearch');if(q)q.focus()},30);
+};
+window.closeHiddenProducts=function(){var ov=id('hiddenProductsOverlay');if(ov)ov.classList.add('hidden')};
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('#hiddenProductListBtn'):null;
+  if(!b)return;
+  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  window.openHiddenProducts();
+},true);
+var oldHide=window.hideProductByPn;
+if(typeof oldHide==='function'&&!oldHide.__v1342ListRefresh){
+  var hideWrap=function(){var r=oldHide.apply(this,arguments);setTimeout(function(){ensureUi();window.renderHiddenListV1342()},0);return r};
+  hideWrap.__v1342ListRefresh=true;window.hideProductByPn=hideWrap;
+}
+var oldRestore=window.restoreHiddenProduct;
+if(typeof oldRestore==='function'&&!oldRestore.__v1342ListRefresh){
+  var restoreWrap=function(){var r=oldRestore.apply(this,arguments);setTimeout(function(){ensureUi();window.renderHiddenListV1342()},0);return r};
+  restoreWrap.__v1342ListRefresh=true;window.restoreHiddenProduct=restoreWrap;
+}
+function install(){ensureUi();updateButton();try{var v=id('bomAppVer');if(v)v.textContent='버전 v134.2 · 숨김목록 즉시반영'}catch(e){}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();setTimeout(install,500)},{once:true});
+window.addEventListener('storage',function(e){if(!e.key||e.key===HIDDEN_KEY)setTimeout(function(){ensureUi();window.renderHiddenListV1342()},0)});
+window.addEventListener('bomDataChanged',function(){setTimeout(updateButton,0)});
+})();
+</script>
+<!-- ===== /V134.2 ===== -->
+
+<!-- ===== V134.3: 삭제 제품 선택 복원 ===== -->
+<style id="v1343-deleted-product-restore-style">
+#view-cost .filters #deletedProductListBtn{
+  border:1.5px solid #efb9b9!important;
+  background:#fff5f5!important;
+  color:#a52222!important;
+  border-radius:7px!important;
+  padding:8px 12px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+#view-cost .filters #deletedProductListBtn.has-deleted{
+  background:#ffecec!important;
+  border-color:#dc8b8b!important;
+}
+#view-cost .filters #deletedProductListBtn .deleted-count{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:20px;
+  margin-left:4px;
+  padding:1px 6px;
+  border-radius:999px;
+  background:#b32424;
+  color:#fff;
+  font-size:10.5px;
+}
+.deleted-products-table input[type="checkbox"]{width:16px;height:16px;accent-color:#b32424}
+.deleted-products-table .deleted-date{color:#66758b;font-size:11px}
+.deleted-products-tools .restore-selected-deleted{background:#eaf7ef;border-color:#9ed2b3;color:#087243}
+</style>
+<script id="v1343-deleted-product-restore-script">
+(function(){
+'use strict';
+if(window.__v1343DeletedProductRestore)return;window.__v1343DeletedProductRestore=true;
+var PROD_KEY='dbfastec_cost_products_v2',OV_KEY='dbfastec_cost_overrides_v2',DELETED_KEY='dbfastec_cost_deleted_products_v1';
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function readJson(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function writeJson(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error('저장 실패',k,e);return false}}
+function products(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}return readJson(PROD_KEY,[])}
+function overrides(){try{if(typeof OV!=='undefined'&&OV&&typeof OV==='object')return OV}catch(e){}return readJson(OV_KEY,{})||{}}
+function deletedList(){var a=readJson(DELETED_KEY,[]);return Array.isArray(a)?a:[]}
+function saveProducts(a){try{PRODUCTS=a}catch(e){}try{window.PRODUCTS=a}catch(e){}return writeJson(PROD_KEY,a)}
+function saveOverrides(o){try{OV=o}catch(e){}try{window.OV=o}catch(e){}return writeJson(OV_KEY,o)}
+function saveDeleted(a){return writeJson(DELETED_KEY,Array.isArray(a)?a:[])}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function pnOfRecord(r){return clean((r&&r.product&&r.product.pn)||r&&r.pn)}
+function dateText(t){var d=new Date(Number(t)||Date.parse(t)||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function productIndexByPn(pn){pn=clean(pn);var a=products();for(var i=0;i<a.length;i++){if(clean(a[i]&&a[i].pn)===pn)return i}return -1}
+function refreshViews(){
+  try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}
+  try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV83==='function')window.invalidatePerformanceCacheV83()}catch(e){}
+  try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}
+  try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}
+  try{if(typeof window.quickFillProducts==='function')window.quickFillProducts()}catch(e){}
+  try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',deletedRestore:true,v1343:true}}))}catch(e){}
+  try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false);else if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}
+}
+function searchMatch(r,q){
+  q=clean(q).toLowerCase();if(!q)return true;
+  var p=(r&&r.product)||{};
+  var text=[p.pn,p.item,p.spec,((p.steps)||[]).map(function(s){return [s.proc,s.gubun,s.part,s.equip].join(' ')}).join(' ')].join(' ').toLowerCase();
+  return q.split(/\s+/).filter(Boolean).every(function(t){return text.indexOf(t)>-1});
+}
+function ensureUi(){
+  var filters=document.querySelector('#view-cost .filters');
+  if(filters&&!id('deletedProductListBtn')){
+    var btn=document.createElement('button');
+    btn.type='button';btn.id='deletedProductListBtn';btn.className='deleted-products-btn';
+    btn.innerHTML='삭제 제품 보기 <span class="deleted-count">0</span>';
+    var hidden=id('hiddenProductListBtn'),count=id('fcount');
+    if(hidden&&hidden.parentNode===filters)hidden.insertAdjacentElement('afterend',btn);
+    else filters.insertBefore(btn,count||null);
+  }
+  if(!id('deletedProductsOverlay')){
+    var ov=document.createElement('div');
+    ov.id='deletedProductsOverlay';ov.className='hidden-products-overlay hidden';
+    ov.innerHTML='<div class="hidden-products-modal" role="dialog" aria-modal="true" aria-labelledby="deletedProductsTitle">'
+      +'<div class="hidden-products-head"><div><h3 id="deletedProductsTitle">삭제 제품 관리</h3><div class="sub">삭제한 제품을 선택해서 다시 제품별 원가 목록으로 복원합니다.</div></div><button type="button" class="close-deleted-modal" aria-label="닫기">×</button></div>'
+      +'<div class="hidden-products-tools deleted-products-tools"><input id="deletedProductSearch" placeholder="품번 · 품명 · 규격 · 공정 검색"><span class="hidden-products-summary" id="deletedProductsSummary"></span><button type="button" class="restore-selected-deleted" id="restoreSelectedDeletedBtn">선택 복원</button></div>'
+      +'<div class="hidden-products-body"><div id="deletedProductsList"></div></div></div>';
+    document.body.appendChild(ov);
+  }
+  var overlay=id('deletedProductsOverlay');
+  if(overlay&&!overlay.__v1343Bound){
+    overlay.__v1343Bound=true;
+    overlay.addEventListener('click',function(e){
+      if(e.target===overlay||e.target.closest('.close-deleted-modal'))window.closeDeletedProducts();
+      var one=e.target.closest&&e.target.closest('.restore-deleted-one');
+      if(one){e.preventDefault();restoreDeletedRecords([one.getAttribute('data-deleted-id')||''])}
+    },true);
+  }
+  var search=id('deletedProductSearch');if(search&&!search.__v1343Bound){search.__v1343Bound=true;search.addEventListener('input',window.renderDeletedListV1343)}
+  var restore=id('restoreSelectedDeletedBtn');if(restore&&!restore.__v1343Bound){restore.__v1343Bound=true;restore.addEventListener('click',function(){var ids=[].slice.call(document.querySelectorAll('#deletedProductsList input[data-deleted-id]:checked')).map(function(x){return x.getAttribute('data-deleted-id')});restoreDeletedRecords(ids)})}
+  updateButton();
+}
+function updateButton(){
+  var n=deletedList().length,b=id('deletedProductListBtn');if(!b)return;
+  var c=b.querySelector('.deleted-count');if(c)c.textContent=n.toLocaleString();
+  b.classList.toggle('has-deleted',n>0);
+  b.title=n?'삭제한 제품 '+n.toLocaleString()+'개를 확인·복원합니다.':'삭제한 제품이 없습니다.';
+}
+window.renderDeletedListV1343=function(){
+  ensureUi();
+  var list=deletedList(),q=id('deletedProductSearch')?id('deletedProductSearch').value:'';
+  var filtered=list.filter(function(r){return searchMatch(r,q)});
+  var summary=id('deletedProductsSummary');if(summary)summary.textContent=filtered.length.toLocaleString()+' / '+list.length.toLocaleString()+'개';
+  var btn=id('restoreSelectedDeletedBtn');if(btn)btn.disabled=!list.length;
+  var box=id('deletedProductsList');if(!box)return;
+  if(!filtered.length){
+    box.innerHTML='<div class="hidden-products-empty">'+(list.length?'검색 조건에 맞는 삭제 제품이 없습니다.':'삭제 보관된 제품이 없습니다.')+'</div>';
+  }else{
+    box.innerHTML='<table class="hidden-products-table deleted-products-table"><colgroup><col style="width:44px"><col style="width:135px"><col style="width:220px"><col><col style="width:118px"><col style="width:90px"></colgroup><thead><tr><th><input type="checkbox" id="deletedCheckAll"></th><th>품번</th><th>품명</th><th>규격</th><th>삭제일시</th><th>관리</th></tr></thead><tbody>'
+      +filtered.map(function(r){var p=(r&&r.product)||{},rid=esc(r&&r.id);return '<tr><td><input type="checkbox" data-deleted-id="'+rid+'"></td><td><span class="pn">'+esc(p.pn)+'</span></td><td class="strong" title="'+esc(p.item)+'">'+esc(p.item)+'</td><td title="'+esc(p.spec)+'">'+esc(p.spec)+'</td><td class="deleted-date">'+esc(dateText(r.deletedAt))+'</td><td><button type="button" class="restore-hidden-btn restore-deleted-one" data-deleted-id="'+rid+'">복원</button></td></tr>'}).join('')
+      +'</tbody></table>';
+    var all=id('deletedCheckAll');if(all)all.addEventListener('change',function(){document.querySelectorAll('#deletedProductsList input[data-deleted-id]').forEach(function(x){x.checked=all.checked})});
+  }
+  updateButton();
+};
+function storeDeletedRecord(p,ovValue){
+  var list=deletedList(),now=Date.now(),pn=clean(p&&p.pn);
+  list=list.filter(function(r){return pnOfRecord(r)!==pn});
+  list.unshift({id:pn+'__'+now,deletedAt:now,pn:pn,product:clone(p),override:clone(ovValue||null)});
+  saveDeleted(list.slice(0,500));
+}
+window.deleteProductByPn=function(pn){
+  pn=clean(pn);var a=products(),idx=productIndexByPn(pn);if(idx<0){alert('삭제할 제품을 찾지 못했습니다. 화면을 새로고침한 후 다시 시도해 주세요.');return false}
+  var p=a[idx];if(!confirm('['+clean(p.pn)+'] '+clean(p.item)+' 을(를) 목록에서 삭제할까요?\n삭제 제품 보기에서 다시 복원할 수 있습니다.'))return false;
+  var ov=overrides(),ovValue=ov[pn];
+  storeDeletedRecord(p,ovValue);
+  a.splice(idx,1);delete ov[pn];saveProducts(a);saveOverrides(ov);refreshViews();window.renderDeletedListV1343();
+  try{if(typeof window.toast==='function')window.toast('삭제 목록에 보관했습니다 · 삭제 제품 '+deletedList().length.toLocaleString()+'개')}catch(e){}
+  return true;
+};
+window.delProduct=function(idx){var p=products()[Number(idx)];return p?window.deleteProductByPn(p.pn):false};
+function restoreDeletedRecords(ids){
+  ids=(Array.isArray(ids)?ids:[]).filter(Boolean);if(!ids.length){alert('복원할 제품을 선택해 주세요.');return false}
+  var list=deletedList(),set={};ids.forEach(function(x){set[x]=1});
+  var a=products(),ov=overrides(),restored=0,skipped=[],remain=[];
+  list.forEach(function(r){
+    if(!set[r.id]){remain.push(r);return}
+    var p=clone(r.product||{}),pn=clean(p.pn||r.pn);
+    if(!pn||a.some(function(x){return clean(x&&x.pn)===pn})){skipped.push(pn||'(품번없음)');remain.push(r);return}
+    a.push(p);if(r.override)ov[pn]=clone(r.override);restored++;
+  });
+  saveProducts(a);saveOverrides(ov);saveDeleted(remain);refreshViews();window.renderDeletedListV1343();
+  var msg=restored.toLocaleString()+'개 제품을 복원했습니다'+(skipped.length?' · 중복/오류 '+skipped.length+'개 제외':'');
+  try{if(typeof window.toast==='function')window.toast(msg);else alert(msg)}catch(e){alert(msg)}
+  return restored>0;
+}
+window.openDeletedProducts=function(){ensureUi();var ov=id('deletedProductsOverlay');if(!ov)return;ov.classList.remove('hidden');window.renderDeletedListV1343();setTimeout(function(){var q=id('deletedProductSearch');if(q)q.focus()},30)};
+window.closeDeletedProducts=function(){var ov=id('deletedProductsOverlay');if(ov)ov.classList.add('hidden')};
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('#deletedProductListBtn'):null;if(!b)return;
+  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  window.openDeletedProducts();
+},true);
+function install(){
+  ensureUi();updateButton();
+  var raw=window.renderCost;if(typeof raw==='function'&&!raw.__v1343DeletedRestore){
+    var wrapped=function(){var r=raw.apply(this,arguments);setTimeout(function(){ensureUi();updateButton()},0);return r};
+    wrapped.__v1343DeletedRestore=true;wrapped.__v1343Raw=raw;window.renderCost=wrapped;try{renderCost=wrapped}catch(e){}
+  }
+  try{var v=id('bomAppVer');if(v)v.textContent='버전 v134.3 · 삭제제품 선택복원'}catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();setTimeout(install,500);setTimeout(install,1500)},{once:true});
+window.addEventListener('storage',function(e){if(!e.key||e.key===DELETED_KEY)setTimeout(function(){ensureUi();window.renderDeletedListV1343()},0)});
+window.addEventListener('bomDataChanged',function(){setTimeout(updateButton,0)});
+})();
+</script>
+<!-- ===== /V134.3 ===== -->
+
+<!-- ===== V134.4: 숨김목록 전체자료 기준 · 삭제버튼 위치/닫기 정렬 ===== -->
+<style id="v1344-hidden-deleted-ui-final-style">
+#deletedProductsOverlay .hidden-products-modal{position:relative!important}
+#deletedProductsOverlay .hidden-products-head{
+  position:relative!important;
+  padding-right:56px!important;
+}
+#deletedProductsOverlay .hidden-products-head .close-deleted-modal{
+  position:absolute!important;
+  top:12px!important;
+  right:14px!important;
+  width:32px!important;
+  height:32px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0!important;
+  border-radius:8px!important;
+}
+#view-cost #costSearchAdd>#deletedProductListBtn{order:2!important}
+#view-cost #costSearchAdd>#hiddenProductListBtn{order:3!important}
+#view-cost #costSearchAdd>.cost-add-product-btn,
+#view-cost #costSearchAdd>button[onclick*="openAdd("]{order:4!important}
+#view-cost .filters>#deletedProductListBtn{margin-right:6px!important}
+</style>
+<script id="v1344-hidden-deleted-ui-final-script">
+(function(){
+'use strict';
+if(window.__v1344HiddenDeletedUiFinal)return;window.__v1344HiddenDeletedUiFinal=true;
+var PROD_KEY='dbfastec_cost_products_v2',HIDDEN_KEY='dbfastec_cost_hidden_products_v1',OV_KEY='dbfastec_cost_overrides_v2';
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function readJson(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function writeJson(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error('저장 실패',k,e);return false}}
+function memoryProducts(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}try{if(Array.isArray(window.PRODUCTS))return window.PRODUCTS}catch(e){}return []}
+function storedProducts(){var a=readJson(PROD_KEY,[]);return Array.isArray(a)?a:[]}
+function fullProducts(){
+  var stored=storedProducts(),mem=memoryProducts();
+  return stored.length>=mem.length?stored:mem;
+}
+function setProducts(a){
+  try{PRODUCTS=a}catch(e){}try{window.PRODUCTS=a}catch(e){}
+  return writeJson(PROD_KEY,a);
+}
+function readHidden(){var a=readJson(HIDDEN_KEY,[]);return Array.isArray(a)?a:[]}
+function writeHidden(a){return writeJson(HIDDEN_KEY,Array.isArray(a)?a:[])}
+function productKey(p){return [p&&p.pn,p&&p.item,p&&p.spec].map(function(v){return clean(v)}).join('\u241f')}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function searchMatch(p,q){
+  q=clean(q).toLowerCase();if(!q)return true;
+  var text=[p&&p.pn,p&&p.item,p&&p.spec,((p&&p.steps)||[]).map(function(s){return [s.proc,s.gubun,s.part,s.equip].join(' ')}).join(' ')].join(' ').toLowerCase();
+  return q.split(/\s+/).filter(Boolean).every(function(t){return text.indexOf(t)>-1});
+}
+function refresh(){
+  try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}
+  try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV83==='function')window.invalidatePerformanceCacheV83()}catch(e){}
+  try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}
+  try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}
+  try{if(typeof window.quickFillProducts==='function')window.quickFillProducts()}catch(e){}
+  try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',hiddenFinal:true,v1344:true}}))}catch(e){}
+  try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false);else if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}
+}
+function ensureHiddenUi(){
+  var filters=document.querySelector('#view-cost .filters'),hidden=id('hiddenProductListBtn');
+  if(filters&&!hidden){
+    hidden=document.createElement('button');hidden.type='button';hidden.id='hiddenProductListBtn';hidden.className='hidden-products-btn';
+    hidden.innerHTML='숨김 제품 보기 <span class="hidden-count">0</span>';
+    var count=id('fcount');filters.insertBefore(hidden,count||null);
+  }
+  if(!id('hiddenProductsOverlay')){
+    var ov=document.createElement('div');ov.id='hiddenProductsOverlay';ov.className='hidden-products-overlay hidden';
+    ov.innerHTML='<div class="hidden-products-modal" role="dialog" aria-modal="true" aria-labelledby="hiddenProductsTitle">'
+      +'<div class="hidden-products-head"><div><h3 id="hiddenProductsTitle">숨김 제품 관리</h3><div class="sub">숨긴 제품은 목록에서 제외되며, 여기에서 다시 복원할 수 있습니다.</div></div><button type="button" class="close-hidden-modal" aria-label="닫기">×</button></div>'
+      +'<div class="hidden-products-tools"><input id="hiddenProductSearch" placeholder="품번 · 품명 · 규격 · 공정 검색"><span class="hidden-products-summary" id="hiddenProductsSummary"></span><button type="button" class="restore-all-hidden" id="restoreAllHiddenBtn">전체 복원</button></div>'
+      +'<div class="hidden-products-body"><div id="hiddenProductsList"></div></div></div>';
+    document.body.appendChild(ov);
+  }
+  var overlay=id('hiddenProductsOverlay');
+  if(overlay&&!overlay.__v1344Bound){
+    overlay.__v1344Bound=true;
+    overlay.addEventListener('click',function(e){
+      if(e.target===overlay||e.target.closest('.close-hidden-modal'))window.closeHiddenProducts();
+      var one=e.target.closest&&e.target.closest('.restore-hidden-btn');
+      if(one){e.preventDefault();restoreHiddenOne(decodeURIComponent(one.getAttribute('data-hidden-key')||''))}
+    },true);
+  }
+  var search=id('hiddenProductSearch');if(search&&!search.__v1344Bound){search.__v1344Bound=true;search.addEventListener('input',renderHidden)}
+  var all=id('restoreAllHiddenBtn');if(all&&!all.__v1344Bound){all.__v1344Bound=true;all.addEventListener('click',restoreAllHidden)}
+}
+function updateHiddenButton(){
+  var b=id('hiddenProductListBtn'),n=readHidden().length;if(!b)return;
+  var c=b.querySelector('.hidden-count');if(c)c.textContent=n.toLocaleString();
+  b.classList.toggle('has-hidden',n>0);
+  b.title=n?'숨김 처리한 제품 '+n.toLocaleString()+'개를 확인·복원합니다.':'숨김 처리한 제품이 없습니다.';
+}
+function renderHidden(){
+  ensureHiddenUi();
+  var list=readHidden(),q=id('hiddenProductSearch')?id('hiddenProductSearch').value:'';
+  var filtered=list.filter(function(p){return searchMatch(p,q)});
+  var summary=id('hiddenProductsSummary');if(summary)summary.textContent=filtered.length.toLocaleString()+' / '+list.length.toLocaleString()+'개';
+  var all=id('restoreAllHiddenBtn');if(all)all.disabled=!list.length;
+  var box=id('hiddenProductsList');if(!box)return;
+  if(!filtered.length){
+    box.innerHTML='<div class="hidden-products-empty">'+(list.length?'검색 조건에 맞는 숨김 제품이 없습니다.':'숨김 처리한 제품이 없습니다.')+'</div>';
+  }else{
+    box.innerHTML='<table class="hidden-products-table"><colgroup><col style="width:145px"><col style="width:240px"><col><col style="width:82px"><col style="width:100px"></colgroup><thead><tr><th>품번</th><th>품명</th><th>규격</th><th class="num">공정수</th><th>관리</th></tr></thead><tbody>'
+      +filtered.map(function(p){return '<tr><td><span class="pn">'+esc(p&&p.pn)+'</span></td><td class="strong" title="'+esc(p&&p.item)+'">'+esc(p&&p.item)+'</td><td title="'+esc(p&&p.spec)+'">'+esc(p&&p.spec)+'</td><td class="num">'+(((p&&p.steps)||[]).length).toLocaleString()+'</td><td><button type="button" class="restore-hidden-btn" data-hidden-key="'+encodeURIComponent(productKey(p))+'">복원</button></td></tr>'}).join('')
+      +'</tbody></table>';
+  }
+  updateHiddenButton();
+}
+function restoreHiddenOne(key){
+  var hidden=readHidden(),idx=hidden.findIndex(function(p){return productKey(p)===key});if(idx<0)return false;
+  var p=hidden[idx],a=fullProducts(),pn=clean(p&&p.pn);
+  if(a.some(function(x){return clean(x&&x.pn)===pn})){alert('같은 품번 ['+pn+'] 제품이 현재 목록에 있어 복원할 수 없습니다.');return false}
+  a.push(clone(p));hidden.splice(idx,1);setProducts(a);writeHidden(hidden);refresh();renderHidden();
+  try{if(typeof window.toast==='function')window.toast('제품을 복원했습니다')}catch(e){}
+  return true;
+}
+function restoreAllHidden(){
+  var hidden=readHidden();if(!hidden.length)return false;
+  if(!confirm('숨김 제품 '+hidden.length.toLocaleString()+'개를 전체 복원할까요?'))return false;
+  var a=fullProducts(),existing={};a.forEach(function(p){existing[clean(p&&p.pn)]=1});
+  var remain=[],restored=0;
+  hidden.forEach(function(p){var pn=clean(p&&p.pn);if(!pn||existing[pn])remain.push(p);else{a.push(clone(p));existing[pn]=1;restored++}});
+  setProducts(a);writeHidden(remain);refresh();renderHidden();
+  try{if(typeof window.toast==='function')window.toast(restored.toLocaleString()+'개 제품을 복원했습니다'+(remain.length?' · 중복 '+remain.length+'개 제외':''))}catch(e){}
+  return true;
+}
+window.renderHiddenListV1342=renderHidden;
+window.openHiddenProducts=function(){ensureHiddenUi();var ov=id('hiddenProductsOverlay');if(!ov)return;ov.classList.remove('hidden');renderHidden();setTimeout(function(){var q=id('hiddenProductSearch');if(q)q.focus()},30)};
+window.closeHiddenProducts=function(){var ov=id('hiddenProductsOverlay');if(ov)ov.classList.add('hidden')};
+window.hideProductByPn=function(pn){
+  pn=clean(pn);var a=fullProducts(),idx=a.findIndex(function(p){return clean(p&&p.pn)===pn});
+  if(idx<0){alert('숨김 처리할 제품을 찾지 못했습니다. 화면을 새로고침한 후 다시 시도해 주세요.');return false}
+  var p=a[idx];if(!confirm('['+clean(p.pn)+'] '+clean(p.item)+' 제품을 숨길까요?\n숨김 제품 보기에서 다시 복원할 수 있습니다.'))return false;
+  var hidden=readHidden(),key=productKey(p);if(!hidden.some(function(x){return productKey(x)===key}))hidden.push(clone(p));
+  a.splice(idx,1);setProducts(a);writeHidden(hidden);refresh();renderHidden();
+  try{if(typeof window.toast==='function')window.toast('제품을 숨겼습니다 · 숨김 제품 '+hidden.length.toLocaleString()+'개')}catch(e){}
+  return true;
+};
+window.restoreHiddenProduct=function(key){return restoreHiddenOne(key)};
+window.restoreAllHiddenProducts=restoreAllHidden;
+function arrangeButtons(){
+  ensureHiddenUi();
+  var box=id('costSearchAdd'),filters=document.querySelector('#view-cost .filters'),hidden=id('hiddenProductListBtn'),deleted=id('deletedProductListBtn'),addBtn=document.querySelector('#costSearchAdd>.cost-add-product-btn,#costSearchAdd>button[onclick*="openAdd("]');
+  var host=box||filters;if(!host)return;
+  if(deleted&&deleted.parentNode!==host)host.insertBefore(deleted,hidden||addBtn||null);
+  if(hidden&&hidden.parentNode!==host)host.insertBefore(hidden,addBtn||null);
+  if(deleted&&hidden&&deleted.nextElementSibling!==hidden)host.insertBefore(deleted,hidden);
+  updateHiddenButton();
+}
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('#hiddenProductListBtn'):null;if(!b)return;
+  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  window.openHiddenProducts();
+},true);
+function install(){arrangeButtons();renderHidden();try{var v=id('bomAppVer');if(v)v.textContent='버전 v134.4 · 숨김/삭제 UI 최종보정'}catch(e){}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();setTimeout(install,400);setTimeout(install,1400)},{once:true});
+window.addEventListener('bomDataChanged',function(){setTimeout(arrangeButtons,0)});
+window.addEventListener('storage',function(e){if(!e.key||e.key===HIDDEN_KEY||e.key===PROD_KEY)setTimeout(function(){arrangeButtons();renderHidden()},0)});
+})();
+</script>
+<!-- ===== /V134.4 ===== -->
+
+<!-- ===== V134.5: 삭제목록 전체자료 기준 최종보정 ===== -->
+<script id="v1345-deleted-list-final-fix-script">
+(function(){
+'use strict';
+if(window.__v1345DeletedListFinalFix)return;window.__v1345DeletedListFinalFix=true;
+var PROD_KEY='dbfastec_cost_products_v2',OV_KEY='dbfastec_cost_overrides_v2',DELETED_KEY='dbfastec_cost_deleted_products_v1';
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function readJson(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function writeJson(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){console.error('저장 실패',k,e);return false}}
+function memoryProducts(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}try{if(Array.isArray(window.PRODUCTS))return window.PRODUCTS}catch(e){}return []}
+function storedProducts(){var a=readJson(PROD_KEY,[]);return Array.isArray(a)?a:[]}
+function allProducts(){var s=storedProducts(),m=memoryProducts();return s.length>=m.length?s:m}
+function setProducts(a){try{PRODUCTS=a}catch(e){}try{window.PRODUCTS=a}catch(e){}return writeJson(PROD_KEY,a)}
+function ovMap(){try{if(typeof OV!=='undefined'&&OV&&typeof OV==='object')return OV}catch(e){}return readJson(OV_KEY,{})||{}}
+function setOv(o){try{OV=o}catch(e){}try{window.OV=o}catch(e){}return writeJson(OV_KEY,o||{})}
+function deletedList(){var a=readJson(DELETED_KEY,[]);return Array.isArray(a)?a:[]}
+function saveDeleted(a){return writeJson(DELETED_KEY,Array.isArray(a)?a:[])}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function dateText(t){var d=new Date(Number(t)||Date.parse(t)||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function searchMatch(r,q){
+  q=clean(q).toLowerCase();if(!q)return true;
+  var p=(r&&r.product)||{};
+  var text=[p.pn,p.item,p.spec,((p.steps)||[]).map(function(s){return [s.proc,s.gubun,s.part,s.equip].join(' ')}).join(' ')].join(' ').toLowerCase();
+  return q.split(/\s+/).filter(Boolean).every(function(t){return text.indexOf(t)>-1});
+}
+function refresh(){
+  try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}
+  try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV83==='function')window.invalidatePerformanceCacheV83()}catch(e){}
+  try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}
+  try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}
+  try{if(typeof window.quickFillProducts==='function')window.quickFillProducts()}catch(e){}
+  try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',deletedFinal:true,v1345:true}}))}catch(e){}
+  try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false);else if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}
+}
+function ensureUi(){
+  var filters=document.querySelector('#view-cost .filters'),deleted=id('deletedProductListBtn'),hidden=id('hiddenProductListBtn');
+  if(filters&&!deleted){
+    deleted=document.createElement('button');deleted.type='button';deleted.id='deletedProductListBtn';deleted.className='deleted-products-btn';
+    deleted.innerHTML='삭제 제품 보기 <span class="deleted-count">0</span>';
+    if(hidden&&hidden.parentNode)hidden.parentNode.insertBefore(deleted,hidden);else filters.insertBefore(deleted,id('fcount')||null);
+  }
+  if(!id('deletedProductsOverlay')){
+    var ov=document.createElement('div');ov.id='deletedProductsOverlay';ov.className='hidden-products-overlay hidden';
+    ov.innerHTML='<div class="hidden-products-modal" role="dialog" aria-modal="true" aria-labelledby="deletedProductsTitle">'
+      +'<div class="hidden-products-head"><div><h3 id="deletedProductsTitle">삭제 제품 관리</h3><div class="sub">삭제한 제품을 선택해서 다시 제품별 원가 목록으로 복원합니다.</div></div><button type="button" class="close-deleted-modal" aria-label="닫기">×</button></div>'
+      +'<div class="hidden-products-tools deleted-products-tools"><input id="deletedProductSearch" placeholder="품번 · 품명 · 규격 · 공정 검색"><span class="hidden-products-summary" id="deletedProductsSummary"></span><button type="button" class="restore-selected-deleted" id="restoreSelectedDeletedBtn">선택 복원</button></div>'
+      +'<div class="hidden-products-body"><div id="deletedProductsList"></div></div></div>';
+    document.body.appendChild(ov);
+  }
+  var overlay=id('deletedProductsOverlay');
+  if(overlay&&!overlay.__v1345Bound){
+    overlay.__v1345Bound=true;
+    overlay.addEventListener('click',function(e){
+      if(e.target===overlay||e.target.closest('.close-deleted-modal'))window.closeDeletedProducts();
+      var one=e.target.closest&&e.target.closest('.restore-deleted-one');
+      if(one){e.preventDefault();restoreDeleted([one.getAttribute('data-deleted-id')||''])}
+    },true);
+  }
+  var search=id('deletedProductSearch');if(search&&!search.__v1345Bound){search.__v1345Bound=true;search.addEventListener('input',renderDeleted)}
+  var restore=id('restoreSelectedDeletedBtn');if(restore&&!restore.__v1345Bound){restore.__v1345Bound=true;restore.addEventListener('click',function(){var ids=[].slice.call(document.querySelectorAll('#deletedProductsList input[data-deleted-id]:checked')).map(function(x){return x.getAttribute('data-deleted-id')});restoreDeleted(ids)})}
+  arrangeButtons();updateButton();
+}
+function arrangeButtons(){
+  var box=id('costSearchAdd'),filters=document.querySelector('#view-cost .filters'),deleted=id('deletedProductListBtn'),hidden=id('hiddenProductListBtn'),host=box||filters;
+  if(!host)return;
+  if(deleted&&deleted.parentNode!==host)host.insertBefore(deleted,hidden||null);
+  if(hidden&&hidden.parentNode!==host)host.appendChild(hidden);
+  if(deleted&&hidden&&deleted.nextElementSibling!==hidden)host.insertBefore(deleted,hidden);
+}
+function updateButton(){
+  var b=id('deletedProductListBtn'),n=deletedList().length;if(!b)return;
+  var c=b.querySelector('.deleted-count');if(c)c.textContent=n.toLocaleString();
+  b.classList.toggle('has-deleted',n>0);
+  b.title=n?'삭제한 제품 '+n.toLocaleString()+'개를 확인·복원합니다.':'삭제한 제품이 없습니다.';
+}
+function renderDeleted(){
+  ensureUi();
+  var list=deletedList(),q=id('deletedProductSearch')?id('deletedProductSearch').value:'';
+  var filtered=list.filter(function(r){return searchMatch(r,q)});
+  var summary=id('deletedProductsSummary');if(summary)summary.textContent=filtered.length.toLocaleString()+' / '+list.length.toLocaleString()+'개';
+  var btn=id('restoreSelectedDeletedBtn');if(btn)btn.disabled=!list.length;
+  var box=id('deletedProductsList');if(!box)return;
+  if(!filtered.length){
+    box.innerHTML='<div class="hidden-products-empty">'+(list.length?'검색 조건에 맞는 삭제 제품이 없습니다.':'삭제 보관된 제품이 없습니다.')+'</div>';
+  }else{
+    box.innerHTML='<table class="hidden-products-table deleted-products-table"><colgroup><col style="width:44px"><col style="width:135px"><col style="width:220px"><col><col style="width:118px"><col style="width:90px"></colgroup><thead><tr><th><input type="checkbox" id="deletedCheckAll"></th><th>품번</th><th>품명</th><th>규격</th><th>삭제일시</th><th>관리</th></tr></thead><tbody>'
+      +filtered.map(function(r){var p=(r&&r.product)||{},rid=esc(r&&r.id);return '<tr><td><input type="checkbox" data-deleted-id="'+rid+'"></td><td><span class="pn">'+esc(p.pn)+'</span></td><td class="strong" title="'+esc(p.item)+'">'+esc(p.item)+'</td><td title="'+esc(p.spec)+'">'+esc(p.spec)+'</td><td class="deleted-date">'+esc(dateText(r.deletedAt))+'</td><td><button type="button" class="restore-hidden-btn restore-deleted-one" data-deleted-id="'+rid+'">복원</button></td></tr>'}).join('')
+      +'</tbody></table>';
+    var all=id('deletedCheckAll');if(all)all.addEventListener('change',function(){document.querySelectorAll('#deletedProductsList input[data-deleted-id]').forEach(function(x){x.checked=all.checked})});
+  }
+  updateButton();
+}
+function saveDeletedRecord(p,overrideValue){
+  var list=deletedList(),pn=clean(p&&p.pn),now=Date.now();
+  list=list.filter(function(r){return clean((r&&r.product&&r.product.pn)||r&&r.pn)!==pn});
+  list.unshift({id:pn+'__'+now,deletedAt:now,pn:pn,product:clone(p),override:clone(overrideValue||null)});
+  saveDeleted(list.slice(0,500));
+}
+window.deleteProductByPn=function(pn){
+  pn=clean(pn);var a=allProducts(),idx=a.findIndex(function(p){return clean(p&&p.pn)===pn});
+  if(idx<0){alert('삭제할 제품을 찾지 못했습니다. 화면을 새로고침한 후 다시 시도해 주세요.');return false}
+  var p=a[idx];if(!confirm('['+clean(p.pn)+'] '+clean(p.item)+' 을(를) 목록에서 삭제할까요?\\n삭제 제품 보기에서 다시 복원할 수 있습니다.'))return false;
+  var ov=ovMap();saveDeletedRecord(p,ov[pn]);
+  a.splice(idx,1);delete ov[pn];setProducts(a);setOv(ov);refresh();renderDeleted();
+  try{if(typeof window.toast==='function')window.toast('삭제 제품 보기에 보관했습니다 · '+deletedList().length.toLocaleString()+'개')}catch(e){}
+  return true;
+};
+window.delProduct=function(idx){var p=memoryProducts()[Number(idx)]||allProducts()[Number(idx)];return p?window.deleteProductByPn(p.pn):false};
+function restoreDeleted(ids){
+  ids=(Array.isArray(ids)?ids:[]).filter(Boolean);if(!ids.length){alert('복원할 제품을 선택해 주세요.');return false}
+  var set={};ids.forEach(function(x){set[x]=1});
+  var list=deletedList(),a=allProducts(),ov=ovMap(),remain=[],restored=0,skipped=0;
+  list.forEach(function(r){
+    if(!set[r.id]){remain.push(r);return}
+    var p=clone(r.product||{}),pn=clean(p.pn||r.pn);
+    if(!pn||a.some(function(x){return clean(x&&x.pn)===pn})){remain.push(r);skipped++;return}
+    a.push(p);if(r.override)ov[pn]=clone(r.override);restored++;
+  });
+  setProducts(a);setOv(ov);saveDeleted(remain);refresh();renderDeleted();
+  try{if(typeof window.toast==='function')window.toast(restored.toLocaleString()+'개 제품을 복원했습니다'+(skipped?' · 중복/오류 '+skipped+'개 제외':''))}catch(e){}
+  return restored>0;
+}
+window.renderDeletedListV1343=renderDeleted;
+window.openDeletedProducts=function(){ensureUi();var ov=id('deletedProductsOverlay');if(!ov)return;ov.classList.remove('hidden');renderDeleted();setTimeout(function(){var q=id('deletedProductSearch');if(q)q.focus()},30)};
+window.closeDeletedProducts=function(){var ov=id('deletedProductsOverlay');if(ov)ov.classList.add('hidden')};
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('#deletedProductListBtn'):null;if(!b)return;
+  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  window.openDeletedProducts();
+},true);
+function install(){ensureUi();renderDeleted();try{var v=id('bomAppVer');if(v)v.textContent='버전 v134.5 · 삭제목록 표시 최종보정'}catch(e){}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();setTimeout(install,500);setTimeout(install,1600)},{once:true});
+window.addEventListener('storage',function(e){if(!e.key||e.key===DELETED_KEY||e.key===PROD_KEY)setTimeout(function(){ensureUi();renderDeleted()},0)});
+window.addEventListener('bomDataChanged',function(){setTimeout(function(){ensureUi();updateButton()},0)});
+})();
+</script>
+<!-- ===== /V134.5 ===== -->
+
+<!-- ===== V134.6: 숨김·삭제 저장순서 및 실패복구 최종수정 ===== -->
+<script id="v1346-hide-delete-atomic-storage-script">
+(function(){
+'use strict';
+if(window.__v1346HideDeleteAtomicStorage)return;window.__v1346HideDeleteAtomicStorage=true;
+var PROD_KEY='dbfastec_cost_products_v2',OV_KEY='dbfastec_cost_overrides_v2',HIDDEN_KEY='dbfastec_cost_hidden_products_v1',DELETED_KEY='dbfastec_cost_deleted_products_v1';
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function readJson(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function writeJson(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));return true}
+  catch(e){
+    try{localStorage.removeItem('dbfastec_bom_edit_log_shadow_v1329');localStorage.removeItem('dbfastec_process_latest_v125')}catch(_){}
+    try{localStorage.setItem(k,JSON.stringify(v));return true}catch(err){console.error('저장 실패',k,err);return false}
+  }
+}
+function memoryProducts(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}try{if(Array.isArray(window.PRODUCTS))return window.PRODUCTS}catch(e){}return []}
+function storedProducts(){var a=readJson(PROD_KEY,[]);return Array.isArray(a)?a:[]}
+function products(){var s=storedProducts(),m=memoryProducts();return s.length>=m.length?s:m}
+function setProducts(a){try{PRODUCTS=a}catch(e){}try{window.PRODUCTS=a}catch(e){}return writeJson(PROD_KEY,a)}
+function ovMap(){try{if(typeof OV!=='undefined'&&OV&&typeof OV==='object')return OV}catch(e){}return readJson(OV_KEY,{})||{}}
+function setOv(o){try{OV=o}catch(e){}try{window.OV=o}catch(e){}return writeJson(OV_KEY,o||{})}
+function hiddenList(){var a=readJson(HIDDEN_KEY,[]);return Array.isArray(a)?a:[]}
+function deletedList(){var a=readJson(DELETED_KEY,[]);return Array.isArray(a)?a:[]}
+function productKey(p){return [p&&p.pn,p&&p.item,p&&p.spec].map(function(v){return clean(v)}).join('\u241f')}
+function dateText(t){var d=new Date(Number(t)||Date.parse(t)||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function searchProduct(p,q){
+  q=clean(q).toLowerCase();if(!q)return true;
+  var text=[p&&p.pn,p&&p.item,p&&p.spec,((p&&p.steps)||[]).map(function(s){return [s.proc,s.gubun,s.part,s.equip].join(' ')}).join(' ')].join(' ').toLowerCase();
+  return q.split(/\s+/).filter(Boolean).every(function(t){return text.indexOf(t)>-1});
+}
+function searchDeleted(r,q){return searchProduct((r&&r.product)||{},q)}
+function refresh(){
+  try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}
+  try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV83==='function')window.invalidatePerformanceCacheV83()}catch(e){}
+  try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}
+  try{if(typeof window.renderCost==='function')window.renderCost(false)}catch(e){}
+  try{if(typeof window.quickFillProducts==='function')window.quickFillProducts()}catch(e){}
+  try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products',atomicStorage:true,v1346:true}}))}catch(e){}
+  try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false);else if(typeof window.bomSyncSave==='function')window.bomSyncSave(true)}catch(e){}
+}
+function ensureHiddenUi(){
+  var filters=document.querySelector('#view-cost .filters'),hidden=id('hiddenProductListBtn');
+  if(filters&&!hidden){
+    hidden=document.createElement('button');hidden.type='button';hidden.id='hiddenProductListBtn';hidden.className='hidden-products-btn';
+    hidden.innerHTML='숨김 제품 보기 <span class="hidden-count">0</span>';
+    filters.insertBefore(hidden,id('fcount')||null);
+  }
+  if(!id('hiddenProductsOverlay')){
+    var ov=document.createElement('div');ov.id='hiddenProductsOverlay';ov.className='hidden-products-overlay hidden';
+    ov.innerHTML='<div class="hidden-products-modal" role="dialog" aria-modal="true" aria-labelledby="hiddenProductsTitle"><div class="hidden-products-head"><div><h3 id="hiddenProductsTitle">숨김 제품 관리</h3><div class="sub">숨긴 제품은 목록에서 제외되며, 여기에서 다시 복원할 수 있습니다.</div></div><button type="button" class="close-hidden-modal" aria-label="닫기">×</button></div><div class="hidden-products-tools"><input id="hiddenProductSearch" placeholder="품번 · 품명 · 규격 · 공정 검색"><span class="hidden-products-summary" id="hiddenProductsSummary"></span><button type="button" class="restore-all-hidden" id="restoreAllHiddenBtn">전체 복원</button></div><div class="hidden-products-body"><div id="hiddenProductsList"></div></div></div>';
+    document.body.appendChild(ov);
+  }
+  var overlay=id('hiddenProductsOverlay');
+  if(overlay&&!overlay.__v1346Bound){
+    overlay.__v1346Bound=true;
+    overlay.addEventListener('click',function(e){
+      if(e.target===overlay||e.target.closest('.close-hidden-modal'))window.closeHiddenProducts();
+      var one=e.target.closest&&e.target.closest('.restore-hidden-btn');if(one){e.preventDefault();restoreHidden(decodeURIComponent(one.getAttribute('data-hidden-key')||''))}
+    },true);
+  }
+  var s=id('hiddenProductSearch');if(s&&!s.__v1346Bound){s.__v1346Bound=true;s.addEventListener('input',renderHidden)}
+  var all=id('restoreAllHiddenBtn');if(all&&!all.__v1346Bound){all.__v1346Bound=true;all.addEventListener('click',restoreAllHidden)}
+}
+function ensureDeletedUi(){
+  var filters=document.querySelector('#view-cost .filters'),deleted=id('deletedProductListBtn'),hidden=id('hiddenProductListBtn');
+  if(filters&&!deleted){
+    deleted=document.createElement('button');deleted.type='button';deleted.id='deletedProductListBtn';deleted.className='deleted-products-btn';
+    deleted.innerHTML='삭제 제품 보기 <span class="deleted-count">0</span>';
+    if(hidden&&hidden.parentNode)hidden.parentNode.insertBefore(deleted,hidden);else filters.insertBefore(deleted,id('fcount')||null);
+  }
+  if(!id('deletedProductsOverlay')){
+    var ov=document.createElement('div');ov.id='deletedProductsOverlay';ov.className='hidden-products-overlay hidden';
+    ov.innerHTML='<div class="hidden-products-modal" role="dialog" aria-modal="true" aria-labelledby="deletedProductsTitle"><div class="hidden-products-head"><div><h3 id="deletedProductsTitle">삭제 제품 관리</h3><div class="sub">삭제한 제품을 선택해서 다시 제품별 원가 목록으로 복원합니다.</div></div><button type="button" class="close-deleted-modal" aria-label="닫기">×</button></div><div class="hidden-products-tools deleted-products-tools"><input id="deletedProductSearch" placeholder="품번 · 품명 · 규격 · 공정 검색"><span class="hidden-products-summary" id="deletedProductsSummary"></span><button type="button" class="restore-selected-deleted" id="restoreSelectedDeletedBtn">선택 복원</button></div><div class="hidden-products-body"><div id="deletedProductsList"></div></div></div>';
+    document.body.appendChild(ov);
+  }
+  var overlay=id('deletedProductsOverlay');
+  if(overlay&&!overlay.__v1346Bound){
+    overlay.__v1346Bound=true;
+    overlay.addEventListener('click',function(e){
+      if(e.target===overlay||e.target.closest('.close-deleted-modal'))window.closeDeletedProducts();
+      var one=e.target.closest&&e.target.closest('.restore-deleted-one');if(one){e.preventDefault();restoreDeleted([one.getAttribute('data-deleted-id')||''])}
+    },true);
+  }
+  var s=id('deletedProductSearch');if(s&&!s.__v1346Bound){s.__v1346Bound=true;s.addEventListener('input',renderDeleted)}
+  var r=id('restoreSelectedDeletedBtn');if(r&&!r.__v1346Bound){r.__v1346Bound=true;r.addEventListener('click',function(){var ids=[].slice.call(document.querySelectorAll('#deletedProductsList input[data-deleted-id]:checked')).map(function(x){return x.getAttribute('data-deleted-id')});restoreDeleted(ids)})}
+}
+function arrangeButtons(){
+  ensureHiddenUi();ensureDeletedUi();
+  var box=id('costSearchAdd'),filters=document.querySelector('#view-cost .filters'),host=box||filters,deleted=id('deletedProductListBtn'),hidden=id('hiddenProductListBtn');
+  if(!host)return;
+  if(deleted&&deleted.parentNode!==host)host.insertBefore(deleted,hidden||null);
+  if(hidden&&hidden.parentNode!==host)host.appendChild(hidden);
+  if(deleted&&hidden&&deleted.nextElementSibling!==hidden)host.insertBefore(deleted,hidden);
+}
+function updateButtons(){
+  var hb=id('hiddenProductListBtn'),hc=hb&&hb.querySelector('.hidden-count'),hn=hiddenList().length;
+  if(hc)hc.textContent=hn.toLocaleString();if(hb)hb.classList.toggle('has-hidden',hn>0);
+  var db=id('deletedProductListBtn'),dc=db&&db.querySelector('.deleted-count'),dn=deletedList().length;
+  if(dc)dc.textContent=dn.toLocaleString();if(db)db.classList.toggle('has-deleted',dn>0);
+}
+function renderHidden(){
+  ensureHiddenUi();
+  var list=hiddenList(),q=id('hiddenProductSearch')?id('hiddenProductSearch').value:'',filtered=list.filter(function(p){return searchProduct(p,q)});
+  var sum=id('hiddenProductsSummary');if(sum)sum.textContent=filtered.length.toLocaleString()+' / '+list.length.toLocaleString()+'개';
+  var all=id('restoreAllHiddenBtn');if(all)all.disabled=!list.length;
+  var box=id('hiddenProductsList');if(!box)return;
+  if(!filtered.length)box.innerHTML='<div class="hidden-products-empty">'+(list.length?'검색 조건에 맞는 숨김 제품이 없습니다.':'숨김 처리한 제품이 없습니다.')+'</div>';
+  else box.innerHTML='<table class="hidden-products-table"><colgroup><col style="width:145px"><col style="width:240px"><col><col style="width:82px"><col style="width:100px"></colgroup><thead><tr><th>품번</th><th>품명</th><th>규격</th><th class="num">공정수</th><th>관리</th></tr></thead><tbody>'+filtered.map(function(p){return '<tr><td><span class="pn">'+esc(p&&p.pn)+'</span></td><td class="strong">'+esc(p&&p.item)+'</td><td>'+esc(p&&p.spec)+'</td><td class="num">'+(((p&&p.steps)||[]).length).toLocaleString()+'</td><td><button type="button" class="restore-hidden-btn" data-hidden-key="'+encodeURIComponent(productKey(p))+'">복원</button></td></tr>'}).join('')+'</tbody></table>';
+  updateButtons();
+}
+function renderDeleted(){
+  ensureDeletedUi();
+  var list=deletedList(),q=id('deletedProductSearch')?id('deletedProductSearch').value:'',filtered=list.filter(function(r){return searchDeleted(r,q)});
+  var sum=id('deletedProductsSummary');if(sum)sum.textContent=filtered.length.toLocaleString()+' / '+list.length.toLocaleString()+'개';
+  var btn=id('restoreSelectedDeletedBtn');if(btn)btn.disabled=!list.length;
+  var box=id('deletedProductsList');if(!box)return;
+  if(!filtered.length)box.innerHTML='<div class="hidden-products-empty">'+(list.length?'검색 조건에 맞는 삭제 제품이 없습니다.':'삭제 보관된 제품이 없습니다.')+'</div>';
+  else{
+    box.innerHTML='<table class="hidden-products-table deleted-products-table"><colgroup><col style="width:44px"><col style="width:135px"><col style="width:220px"><col><col style="width:118px"><col style="width:90px"></colgroup><thead><tr><th><input type="checkbox" id="deletedCheckAll"></th><th>품번</th><th>품명</th><th>규격</th><th>삭제일시</th><th>관리</th></tr></thead><tbody>'+filtered.map(function(r){var p=(r&&r.product)||{},rid=esc(r&&r.id);return '<tr><td><input type="checkbox" data-deleted-id="'+rid+'"></td><td><span class="pn">'+esc(p.pn)+'</span></td><td class="strong">'+esc(p.item)+'</td><td>'+esc(p.spec)+'</td><td class="deleted-date">'+esc(dateText(r.deletedAt))+'</td><td><button type="button" class="restore-hidden-btn restore-deleted-one" data-deleted-id="'+rid+'">복원</button></td></tr>'}).join('')+'</tbody></table>';
+    var all=id('deletedCheckAll');if(all)all.addEventListener('change',function(){document.querySelectorAll('#deletedProductsList input[data-deleted-id]').forEach(function(x){x.checked=all.checked})});
+  }
+  updateButtons();
+}
+function commitMoveToBucket(pn,bucket){
+  pn=clean(pn);var before=products(),idx=before.findIndex(function(p){return clean(p&&p.pn)===pn});
+  if(idx<0){alert((bucket==='hidden'?'숨김':'삭제')+' 처리할 제품을 찾지 못했습니다. 화면을 새로고침한 후 다시 시도해 주세요.');return false}
+  var p=clone(before[idx]),after=before.slice();after.splice(idx,1);
+  if(!setProducts(after)){alert('제품 목록 저장 공간이 부족하여 처리하지 못했습니다.');return false}
+  if(bucket==='hidden'){
+    var hidden=hiddenList(),key=productKey(p);if(!hidden.some(function(x){return productKey(x)===key}))hidden.push(p);
+    if(!writeJson(HIDDEN_KEY,hidden)){after.splice(idx,0,p);setProducts(before);alert('숨김 목록 저장에 실패했습니다. 제품은 숨김 처리하지 않았습니다.');return false}
+    renderHidden();try{if(typeof window.toast==='function')window.toast('제품을 숨겼습니다 · 숨김 제품 '+hidden.length.toLocaleString()+'개')}catch(e){}
+  }else{
+    var ov=ovMap(),deleted=deletedList(),now=Date.now();
+    deleted=deleted.filter(function(r){return clean((r&&r.product&&r.product.pn)||r&&r.pn)!==pn});
+    deleted.unshift({id:pn+'__'+now,deletedAt:now,pn:pn,product:p,override:clone(ov[pn]||null)});
+    if(!writeJson(DELETED_KEY,deleted.slice(0,500))){after.splice(idx,0,p);setProducts(before);alert('삭제 제품 목록 저장에 실패했습니다. 제품은 삭제하지 않았습니다.');return false}
+    delete ov[pn];setOv(ov);renderDeleted();try{if(typeof window.toast==='function')window.toast('삭제 제품 보기에 보관했습니다 · '+deletedList().length.toLocaleString()+'개')}catch(e){}
+  }
+  refresh();updateButtons();return true;
+}
+window.hideProductByPn=function(pn){
+  var p=products().find(function(x){return clean(x&&x.pn)===clean(pn)});
+  if(!p)return commitMoveToBucket(pn,'hidden');
+  if(!confirm('['+clean(p.pn)+'] '+clean(p.item)+' 제품을 숨길까요?\\n숨김 제품 보기에서 다시 복원할 수 있습니다.'))return false;
+  return commitMoveToBucket(pn,'hidden');
+};
+window.deleteProductByPn=function(pn){
+  var p=products().find(function(x){return clean(x&&x.pn)===clean(pn)});
+  if(!p)return commitMoveToBucket(pn,'deleted');
+  if(!confirm('['+clean(p.pn)+'] '+clean(p.item)+' 을(를) 목록에서 삭제할까요?\\n삭제 제품 보기에서 다시 복원할 수 있습니다.'))return false;
+  return commitMoveToBucket(pn,'deleted');
+};
+window.delProduct=function(idx){var p=memoryProducts()[Number(idx)]||products()[Number(idx)];return p?window.deleteProductByPn(p.pn):false};
+function restoreHidden(key){
+  var hidden=hiddenList(),idx=hidden.findIndex(function(p){return productKey(p)===key});if(idx<0)return false;
+  var p=hidden[idx],a=products(),pn=clean(p&&p.pn);if(a.some(function(x){return clean(x&&x.pn)===pn})){alert('같은 품번 ['+pn+'] 제품이 현재 목록에 있어 복원할 수 없습니다.');return false}
+  a.push(clone(p));hidden.splice(idx,1);setProducts(a);writeJson(HIDDEN_KEY,hidden);refresh();renderHidden();return true;
+}
+function restoreAllHidden(){var list=hiddenList();if(!list.length)return false;if(!confirm('숨김 제품 '+list.length.toLocaleString()+'개를 전체 복원할까요?'))return false;var a=products(),existing={};a.forEach(function(p){existing[clean(p&&p.pn)]=1});var remain=[];list.forEach(function(p){var pn=clean(p&&p.pn);if(!pn||existing[pn])remain.push(p);else{a.push(clone(p));existing[pn]=1}});setProducts(a);writeJson(HIDDEN_KEY,remain);refresh();renderHidden();return true}
+function restoreDeleted(ids){
+  ids=(Array.isArray(ids)?ids:[]).filter(Boolean);if(!ids.length){alert('복원할 제품을 선택해 주세요.');return false}
+  var set={};ids.forEach(function(x){set[x]=1});var list=deletedList(),a=products(),ov=ovMap(),remain=[];
+  list.forEach(function(r){if(!set[r.id]){remain.push(r);return}var p=clone(r.product||{}),pn=clean(p.pn||r.pn);if(!pn||a.some(function(x){return clean(x&&x.pn)===pn})){remain.push(r);return}a.push(p);if(r.override)ov[pn]=clone(r.override)});
+  setProducts(a);setOv(ov);writeJson(DELETED_KEY,remain);refresh();renderDeleted();return true;
+}
+window.renderHiddenListV1342=renderHidden;window.renderDeletedListV1343=renderDeleted;
+window.restoreHiddenProduct=function(key){return restoreHidden(key)};window.restoreAllHiddenProducts=restoreAllHidden;
+window.openHiddenProducts=function(){ensureHiddenUi();var ov=id('hiddenProductsOverlay');if(ov){ov.classList.remove('hidden');renderHidden()}};
+window.closeHiddenProducts=function(){var ov=id('hiddenProductsOverlay');if(ov)ov.classList.add('hidden')};
+window.openDeletedProducts=function(){ensureDeletedUi();var ov=id('deletedProductsOverlay');if(ov){ov.classList.remove('hidden');renderDeleted()}};
+window.closeDeletedProducts=function(){var ov=id('deletedProductsOverlay');if(ov)ov.classList.add('hidden')};
+document.addEventListener('click',function(e){
+  var h=e.target&&e.target.closest?e.target.closest('#hiddenProductListBtn'):null,d=e.target&&e.target.closest?e.target.closest('#deletedProductListBtn'):null;
+  if(!h&&!d)return;e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  if(h)window.openHiddenProducts();else window.openDeletedProducts();
+},true);
+function install(){arrangeButtons();renderHidden();renderDeleted();try{var v=id('bomAppVer');if(v)v.textContent='버전 v134.6 · 숨김삭제 저장복구'}catch(e){}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();setTimeout(install,600);setTimeout(install,1800)},{once:true});
+window.addEventListener('storage',function(e){if(!e.key||[PROD_KEY,HIDDEN_KEY,DELETED_KEY].indexOf(e.key)>=0)setTimeout(function(){arrangeButtons();renderHidden();renderDeleted()},0)});
+window.addEventListener('bomDataChanged',function(){setTimeout(updateButtons,0)});
+})();
+</script>
+<!-- ===== /V134.6 ===== -->
+
+<!-- ===== V134.7: 제품별원가 팝업 공정입력 고속화 ===== -->
+<script id="v1347-modal-input-fast-script">
+(function(){
+'use strict';
+if(window.__v1347ModalInputFast)return;window.__v1347ModalInputFast=true;
+var rawRecalc=null,fullTimer=0,quickTimer=0,lastArgs=[],runningFull=false;
+function id(x){return document.getElementById(x)}
+function open(){var ov=id('overlay');return !!(ov&&!ov.classList.contains('hidden'))}
+function num(v){var n=parseFloat(String(v==null?'':v).replace(/,/g,''));return isFinite(n)?n:0}
+function money(v){
+  try{if(typeof window.won==='function')return window.won(v)}catch(e){}
+  try{return Math.round(num(v)).toLocaleString('ko-KR')}catch(e){return String(Math.round(num(v)))}
+}
+function price(proc){
+  try{if(typeof window.priceOf==='function')return window.priceOf(proc)||{}}catch(e){}
+  try{return (window.PRICES&&window.PRICES[proc])||{}}catch(e){}
+  return {};
+}
+function modeOf(tr,proc,pr){
+  var sel=tr&&tr.querySelector('.d-mode-select');
+  if(sel&&sel.value)return sel.value;
+  return pr&&pr.mode==='flat'?'flat':'time';
+}
+function stepFromRow(tr){
+  var q=tr.querySelector('.d-qty'),modeSel=tr.querySelector('.d-mode-select'),proc=(tr.querySelector('.d-proc')&&tr.querySelector('.d-proc').value.trim())||'';
+  return {
+    proc:proc,
+    st:(tr.querySelector('.d-st')&&tr.querySelector('.d-st').value.trim())||'',
+    qty:q?(q.value.trim()===''?'':num(q.value)):'',
+    calcMode:modeSel?modeSel.value:'',
+    gubun:(tr.querySelector('.d-gubun')&&tr.querySelector('.d-gubun').value.trim())||'',
+    part:(tr.querySelector('.d-part')&&tr.querySelector('.d-part').value.trim())||'',
+    equip:(tr.querySelector('.d-equip')&&tr.querySelector('.d-equip').value.trim())||''
+  };
+}
+function rowCost(tr){
+  if(!tr)return {unit:0,applied:0,mode:'time'};
+  var step=stepFromRow(tr),pr=price(step.proc),mode=modeOf(tr,step.proc,pr),unit=0,applied=0,qty=step.qty===''?0:num(step.qty);
+  step.calcMode=mode;
+  try{if(typeof window.unitBaseStepCostV62==='function')unit=num(window.unitBaseStepCostV62(step))}catch(e){}
+  if(!unit)try{if(typeof window.baseStepCost==='function')unit=num(window.baseStepCost(step))}catch(e){}
+  if(!unit){
+    if(mode==='flat')unit=num(pr&&pr.flat);
+    else unit=num(step.st)*num(pr&&pr.rate);
+  }
+  applied=mode==='flat'?unit*(qty||1):unit;
+  return {unit:unit,applied:applied,mode:mode,price:pr};
+}
+function quickRow(tr){
+  if(!tr)return;
+  var c=rowCost(tr),q=tr.querySelector('.d-qty'),base=tr.querySelector('.d-base'),ov=tr.querySelector('.stepov'),mode=tr.querySelector('.d-mode');
+  if(q){
+    q.disabled=c.mode==='time';
+    q.classList.toggle('v65-time-disabled',c.mode==='time');
+  }
+  if(mode)mode.textContent=c.mode==='flat'?'수량단가':'시간기준';
+  if(base){base.textContent=money(c.unit);base.title=c.mode==='flat'?'1단위당 기본단가':'S/T 기준 시간단가'}
+  if(ov){ov.placeholder=money(c.applied);ov.classList.toggle('ov',ov.value.trim()!=='')}
+}
+function quickProcessSum(){
+  if(!open())return;
+  var sum=0;
+  document.querySelectorAll('#stepbody tr').forEach(function(tr){
+    quickRow(tr);
+    var ov=tr.querySelector('.stepov'),v=ov&&ov.value.trim();
+    sum+=v!==''?num(v):rowCost(tr).applied;
+  });
+  var ps=id('m-procsum');if(ps)ps.textContent=money(sum);
+  var p2=id('m-process-total-v61');if(p2)p2.textContent=money(sum)+' 원';
+}
+function scheduleQuick(tr){
+  if(tr)quickRow(tr);
+  if(quickTimer)return;
+  quickTimer=requestAnimationFrame(function(){quickTimer=0;quickProcessSum()});
+}
+function scheduleFull(delay){
+  clearTimeout(fullTimer);
+  fullTimer=setTimeout(function(){
+    if(!open()||runningFull||typeof rawRecalc!=='function'||rawRecalc===window.recalcModal)return;
+    runningFull=true;
+    try{rawRecalc.apply(window,lastArgs||[])}
+    catch(e){console.warn('팝업 전체 계산 갱신 생략',e)}
+    finally{runningFull=false;scheduleQuick()}
+  },delay==null?180:delay);
+}
+function fastRecalc(){
+  if(runningFull)return;
+  lastArgs=arguments;
+  if(!open()){
+    if(typeof rawRecalc==='function'&&rawRecalc!==fastRecalc)return rawRecalc.apply(this,arguments);
+    return;
+  }
+  var a=document.activeElement,tr=a&&a.closest&&a.closest('#stepbody tr');
+  scheduleQuick(tr);
+  scheduleFull(160);
+}
+fastRecalc.__v1347FastRecalc=true;
+function installFastRecalc(){
+  var cur=window.recalcModal;
+  if(cur===fastRecalc)return;
+  if(typeof cur==='function'&&!cur.__v1347FastRecalc)rawRecalc=cur;
+  if(typeof rawRecalc!=='function'&&typeof cur==='function')rawRecalc=cur;
+  window.recalcModal=fastRecalc;
+  try{recalcModal=fastRecalc}catch(e){}
+}
+function eventRow(e){
+  var t=e&&e.target;
+  if(!t||!t.closest||!t.closest('#overlay #stepbody'))return null;
+  if(!t.matches('input,select,textarea'))return null;
+  return t.closest('tr');
+}
+document.addEventListener('input',function(e){
+  var tr=eventRow(e);if(!tr)return;
+  installFastRecalc();scheduleQuick(tr);scheduleFull(180);
+},true);
+document.addEventListener('change',function(e){
+  var tr=eventRow(e);if(!tr)return;
+  installFastRecalc();scheduleQuick(tr);scheduleFull(80);
+},true);
+document.addEventListener('focusin',function(e){if(e.target&&e.target.closest&&e.target.closest('#overlay #stepbody'))installFastRecalc()},true);
+var baseAdd=window.addDetailStep;
+if(typeof baseAdd==='function'&&!baseAdd.__v1347FastAdd){
+  var fastAdd=function(){
+    installFastRecalc();
+    var r=baseAdd.apply(this,arguments),body=id('stepbody');
+    requestAnimationFrame(function(){
+      installFastRecalc();
+      var rows=body&&body.querySelectorAll('tr'),tr=rows&&rows[rows.length-1];
+      if(tr){quickRow(tr);var inp=tr.querySelector('.d-proc');if(inp)try{inp.focus({preventScroll:true})}catch(e){inp.focus()}}
+      scheduleQuick(tr);scheduleFull(80);
+    });
+    return r;
+  };
+  fastAdd.__v1347FastAdd=true;window.addDetailStep=fastAdd;try{addDetailStep=fastAdd}catch(e){}
+}
+function install(){
+  installFastRecalc();
+  var ov=id('overlay'),MO=window.__NativeMutationObserver||window.MutationObserver;
+  if(ov&&!ov.__v1347FastObserved&&typeof MO==='function'){
+    ov.__v1347FastObserved=true;
+    try{new MO(function(){setTimeout(installFastRecalc,0);setTimeout(function(){scheduleQuick();scheduleFull(80)},30)}).observe(ov,{attributes:true,attributeFilter:['class'],childList:true,subtree:false})}catch(e){}
+  }
+  try{var v=id('bomAppVer');if(v)v.textContent='버전 v134.7 · 공정팝업 입력고속화'}catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();[250,900,2200,5200,9000].forEach(function(ms){setTimeout(installFastRecalc,ms)})},{once:true});
+window.__v1347InstallFastRecalc=installFastRecalc;
+})();
+</script>
+<!-- ===== /V134.7 ===== -->
+
 </body>
 </html>
