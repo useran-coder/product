@@ -3,22 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>제품별 제조원가 통합관리 v133.8 | (주)동방파스텍</title>
+<title>제품별 제조원가 통합관리 v134.0 | (주)동방파스텍</title>
 <style>
-  :root{--navy:#16284a;--blue:#2f6fb0;--track:#dfe6ef;--bg:#f7f9fc;--mut:#617089}
+  :root{--navy:#16284a;--blue:#2f6fb0;--track:#dfe6ef;--bg:#f7f9fc;--mut:#617089;--bad:#b42318}
   *{box-sizing:border-box}
   html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg);font-family:'Malgun Gothic','맑은 고딕',system-ui,sans-serif}
   #appFrame{position:fixed;inset:0;width:100%;height:100%;border:0;background:#fff;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease}
   #appFrame.ready{opacity:1;visibility:visible;pointer-events:auto}
   #pageLoader{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--navy);opacity:1;visibility:visible;transition:opacity .22s ease,visibility .22s ease}
   #pageLoader.done{opacity:0;visibility:hidden;pointer-events:none}
-  .loader-inner{display:flex;flex-direction:column;align-items:center;gap:14px;min-width:240px;text-align:center}
+  .loader-inner{display:flex;flex-direction:column;align-items:center;gap:14px;min-width:250px;text-align:center;padding:20px}
   .loader-percent{font-size:56px;line-height:1;font-weight:900;letter-spacing:-2px;font-variant-numeric:tabular-nums}
   .loader-track{width:240px;height:6px;border-radius:999px;background:var(--track);overflow:hidden}
   .loader-bar{display:block;width:0;height:100%;border-radius:inherit;background:var(--blue);transition:width .1s linear}
   .loader-label{font-size:13px;font-weight:800;color:var(--mut)}
+  .loader-detail{font-size:11px;color:#8a97aa;min-height:16px;max-width:420px;word-break:keep-all}
   .loader-retry{display:none;border:1px solid #b9c7d8;border-radius:8px;background:#fff;color:var(--navy);padding:8px 14px;font-weight:800;cursor:pointer}
   .loader-retry.show{display:inline-block}
+  .loader-detail.bad{color:var(--bad);font-weight:700}
   @media(max-width:640px){.loader-percent{font-size:48px}.loader-track{width:200px}.loader-inner{min-width:200px}}
 </style>
 </head>
@@ -28,93 +30,60 @@
     <div class="loader-percent" id="loaderPercent">0%</div>
     <div class="loader-track" aria-hidden="true"><span class="loader-bar" id="loaderBar"></span></div>
     <div class="loader-label" id="loaderLabel">프로그램을 불러오는 중입니다</div>
+    <div class="loader-detail" id="loaderDetail"></div>
     <button class="loader-retry" id="loaderRetry" type="button">다시 불러오기</button>
   </div>
 </div>
-<iframe id="appFrame" title="제품별 제조원가 프로그램" src="./product_app.html?v=1338" loading="eager"></iframe>
+<iframe id="appFrame" title="제품별 제조원가 프로그램" loading="eager"></iframe>
 <script>
 (function(){
-  'use strict';
-  var frame=document.getElementById('appFrame');
-  var loader=document.getElementById('pageLoader');
-  var percent=document.getElementById('loaderPercent');
-  var bar=document.getElementById('loaderBar');
-  var label=document.getElementById('loaderLabel');
-  var retry=document.getElementById('loaderRetry');
-  var value=0,done=false,tick=0,poll=0,timeout=0;
-
-  function setProgress(next,text){
-    next=Math.max(value,Math.min(100,Math.round(Number(next)||0)));
-    value=next;
-    percent.textContent=next+'%';
-    bar.style.width=next+'%';
-    if(text)label.textContent=text;
-  }
-  function showLoader(text){
-    done=false;value=0;
-    loader.classList.remove('done');
-    frame.classList.remove('ready');
-    retry.classList.remove('show');
-    setProgress(0,text||'프로그램을 불러오는 중입니다');
-    startProgress();
-  }
-  function startProgress(){
-    clearInterval(tick);
-    tick=setInterval(function(){
-      if(done)return;
-      var cap=value<70?78:94;
-      var step=value<30?5:(value<65?3:1);
-      setProgress(Math.min(cap,value+step),value<72?'프로그램을 불러오는 중입니다':'메인 화면을 준비하는 중입니다');
-    },80);
-  }
-  function appReady(){
-    try{
-      var doc=frame.contentDocument;
-      var win=frame.contentWindow;
-      if(!doc||!doc.documentElement)return false;
-      return doc.readyState==='complete' &&
-        (doc.documentElement.classList.contains('dbf-main-ready') || win.__dbfFullLoaderReady===true);
-    }catch(e){return false}
-  }
-  function finish(){
-    if(done)return;
-    done=true;clearInterval(tick);clearInterval(poll);clearTimeout(timeout);
-    setProgress(100,'로딩 완료');
-    setTimeout(function(){frame.classList.add('ready');loader.classList.add('done')},160);
-    try{
-      frame.contentWindow.addEventListener('beforeunload',function(){showLoader('프로그램을 다시 불러오는 중입니다')},{once:true});
-    }catch(e){}
-  }
-  function waitForApp(){
-    clearInterval(poll);
-    poll=setInterval(function(){
-      if(appReady())finish();
-      else setProgress(Math.max(value,95),'데이터를 정리하는 중입니다');
-    },80);
-  }
-
-  frame.addEventListener('load',function(){
-    setProgress(Math.max(value,90),'메인 화면을 확인하는 중입니다');
-    waitForApp();
-  });
-  frame.addEventListener('error',function(){
-    clearInterval(tick);clearInterval(poll);
-    label.textContent='프로그램 파일을 불러오지 못했습니다';
-    retry.classList.add('show');
-  });
-  retry.addEventListener('click',function(){
-    showLoader();
-    frame.src='./product_app.html?v=1338&t='+Date.now();
-  });
-
-  startProgress();
-  timeout=setTimeout(function(){
-    if(done)return;
-    if(frame.contentDocument){finish();return}
-    clearInterval(tick);clearInterval(poll);
-    label.textContent='로딩 시간이 길어지고 있습니다';
-    retry.classList.add('show');
-  },30000);
+'use strict';
+var VERSION='1340';
+var frame=document.getElementById('appFrame'),loader=document.getElementById('pageLoader');
+var percent=document.getElementById('loaderPercent'),bar=document.getElementById('loaderBar');
+var label=document.getElementById('loaderLabel'),detail=document.getElementById('loaderDetail'),retry=document.getElementById('loaderRetry');
+/* ZIP의 정식 파일명과 개별 다운로드 파일명을 모두 지원 */
+var candidates=['./product_app.html','./product_app_v1340.html','./product_app_v1339.html'];
+var candidateIndex=-1,value=0,done=false,tick=0,poll=0,candidateTimer=0,hardTimer=0,loadedAt=0,attemptToken=0,cacheToken='';
+function setProgress(next,text,sub){next=Math.max(value,Math.min(100,Math.round(Number(next)||0)));value=next;percent.textContent=next+'%';bar.style.width=next+'%';if(text)label.textContent=text;if(sub!==undefined)detail.textContent=sub||''}
+function clearWork(){clearInterval(tick);clearInterval(poll);clearTimeout(candidateTimer);clearTimeout(hardTimer)}
+function startProgress(){clearInterval(tick);tick=setInterval(function(){if(done)return;var cap=value<70?82:(value<92?94:97),step=value<30?5:(value<65?3:1);setProgress(Math.min(cap,value+step),value<72?'프로그램을 불러오는 중입니다':'메인 화면을 준비하는 중입니다')},80)}
+function recognized(){
+  try{
+    var doc=frame.contentDocument;if(!doc||!doc.documentElement)return {known:false,complete:false};
+    var known=!!(doc.getElementById('view-dashboard')||doc.getElementById('view-cost')||doc.getElementById('dbfFullPageLoader')||doc.querySelector('header .tabs'));
+    var ready=doc.readyState==='complete'&&(doc.documentElement.classList.contains('dbf-main-ready')||frame.contentWindow.__dbfFullLoaderReady===true||frame.contentWindow.__dbfMainBootReady===true||(!doc.getElementById('dbfFullPageLoader')&&known));
+    return {known:known,complete:doc.readyState==='complete',ready:ready,doc:doc,win:frame.contentWindow};
+  }catch(e){return {known:false,complete:false,error:e}}
+}
+function forceRelease(st){
+  if(!st||!st.known||!st.complete)return false;
+  try{st.win.__dbfFullLoaderReady=true;if(typeof st.win.__dbfReleaseMainBoot==='function')st.win.__dbfReleaseMainBoot(true)}catch(e){}
+  try{st.doc.documentElement.classList.remove('dbf-main-boot');st.doc.documentElement.classList.add('dbf-main-ready');var x=st.doc.getElementById('dbfFullPageLoader');if(x)x.remove()}catch(e){}
+  return true;
+}
+function finish(reason){if(done)return;done=true;clearWork();setProgress(100,'로딩 완료','');setTimeout(function(){frame.classList.add('ready');loader.classList.add('done')},100);try{frame.contentWindow.addEventListener('beforeunload',function(){restart('프로그램을 다시 불러오는 중입니다',true)},{once:true})}catch(e){}}
+function nextCandidate(reason){
+  clearInterval(poll);clearTimeout(candidateTimer);candidateIndex++;
+  if(candidateIndex>=candidates.length){showError('프로그램 본체 파일을 찾지 못했습니다.','index.html과 product_app.html을 같은 폴더에 두거나 ZIP을 압축 해제한 뒤 실행해 주세요.');return}
+  var name=candidates[candidateIndex],token=++attemptToken;loadedAt=0;
+  setProgress(Math.max(value,35),'프로그램 파일을 확인하는 중입니다','');
+  frame.src=name+'?v='+VERSION+cacheToken;
+  candidateTimer=setTimeout(function(){if(done||token!==attemptToken)return;var st=recognized();if(!st.known)nextCandidate('timeout')},2400);
+}
+function watch(){
+  clearInterval(poll);poll=setInterval(function(){if(done)return;var st=recognized(),elapsed=loadedAt?Date.now()-loadedAt:0;
+    if(st.ready){finish('ready');return}
+    if(st.known){setProgress(Math.max(value,96),'데이터를 정리하는 중입니다','');if(st.complete&&elapsed>1800&&forceRelease(st)){finish('safe-release');return}}
+    else if(loadedAt&&elapsed>1100){nextCandidate('not-recognized')}
+  },100)
+}
+function showError(msg,sub){done=true;clearWork();label.textContent=msg;detail.textContent=sub||'';detail.classList.add('bad');retry.classList.add('show');setProgress(Math.max(value,95))}
+function restart(text,fresh){done=false;candidateIndex=-1;value=0;attemptToken++;cacheToken=fresh?'&t='+Date.now():'';loader.classList.remove('done');frame.classList.remove('ready');retry.classList.remove('show');detail.classList.remove('bad');setProgress(0,text||'프로그램을 불러오는 중입니다','');startProgress();nextCandidate();hardTimer=setTimeout(function(){if(done)return;var st=recognized();if(st.known&&st.complete){forceRelease(st);finish('hard-safe')}else showError('로딩 시간이 길어지고 있습니다.','두 파일이 같은 폴더에 있는지 확인한 후 다시 불러오기를 눌러 주세요.')},12000)}
+frame.addEventListener('load',function(){if(done)return;loadedAt=Date.now();clearTimeout(candidateTimer);setProgress(Math.max(value,90),'메인 화면을 확인하는 중입니다','');watch()});
+window.addEventListener('message',function(e){if(e.source===frame.contentWindow&&e.data&&e.data.type==='dbf-app-ready')finish('message')});
+retry.addEventListener('click',function(){restart('',true)});
+restart('',false);
 })();
 </script>
 </body>
