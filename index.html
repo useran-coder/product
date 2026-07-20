@@ -26691,5 +26691,130 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 <!-- ===== /V134.8 + V134.9 대용량 공정저장 보정 ===== -->
 
+
+<!-- ===== V135.0: PC간 공정변경 이력 완전 병합 · 대용량 이력 IndexedDB 보관 ===== -->
+<style id="v1350-process-history-consistency-style">
+html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v135.0 · PC간 공정변경 이력 완전병합'!important}
+</style>
+<script id="v1350-process-history-consistency-script">
+(function(){
+'use strict';
+if(window.__v1350ProcessHistoryConsistency)return;window.__v1350ProcessHistoryConsistency=true;
+var HIST_KEY='dbfastec_process_history_v120';
+var PATCH_KEY='dbfastec_process_history_patch_v1330';
+var STATE_KEY='dbfastec_bom_gsync_v1';
+var DB_NAME='dbfastec_process_history_v1350';
+var DB_STORE='history';
+var DB_ID='all';
+var RECON_KEY='dbfastec_process_history_reconciled_v1350';
+var proto=Storage.prototype;
+var previousGet=proto.getItem,previousSet=proto.setItem,previousRemove=proto.removeItem;
+var memoryMap=null,cacheMap=null,cacheJson='',idbSaveTimer=0,refreshTimer=0,reconcileRunning=false;
+function clean(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function rawGet(store,key){try{return previousGet.call(store,key)}catch(e){return null}}
+function parse(raw,d){try{var v=JSON.parse(raw||'null');return v==null?d:v}catch(e){return d}}
+function stamp(r){r=r||{};var n=Number(r.at||r.t||0);if(isFinite(n)&&n>0)return n;var d=Date.parse(String(r.at||r.t||''));return isFinite(d)?d:0}
+function eventId(pn,r){r=r||{};return clean(r._v1350Id||r.id)||['ph',clean(pn),stamp(r),clean(r.by||r.u||r.user),clean(r.item)].join('|')}
+function score(r){r=r||{};var n=Object.keys(r).length*2;if(Array.isArray(r.before))n+=r.before.length*3;if(Array.isArray(r.after))n+=r.after.length*3;if(r.detail||r.d)n+=5;return n}
+function mergeMaps(){
+  var maps=Array.prototype.slice.call(arguments),pns={},out={};
+  maps.forEach(function(m){if(!m||typeof m!=='object'||Array.isArray(m))return;Object.keys(m).forEach(function(pn){pns[clean(pn)]=1})});
+  Object.keys(pns).forEach(function(pn){
+    var records={};
+    maps.forEach(function(m){var a=m&&m[pn];if(!Array.isArray(a))return;a.forEach(function(r){if(!r)return;var x=clone(r)||{},k=eventId(pn,x);x._v1350Id=k;if(!records[k]||score(x)>score(records[k]))records[k]=x})});
+    var arr=Object.keys(records).map(function(k){return records[k]}).sort(function(a,b){return stamp(b)-stamp(a)}).slice(0,30);
+    if(arr.length)out[pn]=arr;
+  });
+  return out;
+}
+function countMap(m){return Object.keys(m||{}).filter(function(pn){return Array.isArray(m[pn])&&m[pn].length>0}).length}
+function invalidate(){cacheMap=null;cacheJson=''}
+function actualBase(){return parse(rawGet(localStorage,HIST_KEY),{})||{}}
+function localPatch(){return parse(rawGet(localStorage,PATCH_KEY),{})||{}}
+function sessionPatch(){return parse(rawGet(sessionStorage,PATCH_KEY),{})||{}}
+function merged(){
+  if(cacheMap)return cacheMap;
+  cacheMap=mergeMaps(actualBase(),localPatch(),sessionPatch(),memoryMap||{});
+  return cacheMap;
+}
+function mergedJson(){if(!cacheJson)cacheJson=JSON.stringify(merged());return cacheJson}
+function compactRecord(pn,r){r=r||{};return {_v1350Id:eventId(pn,r),at:stamp(r),by:clean(r.by||r.u||r.user)||'이름없음',pn:clean(pn),item:clean(r.item),source:clean(r.source)||'공정변경 이력',beforeCount:Array.isArray(r.before)?r.before.length:Number(r.beforeCount)||0,afterCount:Array.isArray(r.after)?r.after.length:Number(r.afterCount)||0,_compact:true}}
+function compactMap(m){var o={};Object.keys(m||{}).forEach(function(pn){var a=m[pn];if(Array.isArray(a)&&a.length)o[pn]=[compactRecord(pn,a[0])]});return o}
+function openDb(){return new Promise(function(resolve,reject){if(!window.indexedDB){reject(new Error('IndexedDB 미지원'));return}var q=indexedDB.open(DB_NAME,1);q.onupgradeneeded=function(){var db=q.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE,{keyPath:'id'})};q.onsuccess=function(){resolve(q.result)};q.onerror=function(){reject(q.error||new Error('공정이력 저장소 열기 실패'))}})}
+async function idbRead(){var db=await openDb();return new Promise(function(resolve,reject){var tx=db.transaction(DB_STORE,'readonly'),q=tx.objectStore(DB_STORE).get(DB_ID);q.onsuccess=function(){var v=q.result&&q.result.value;db.close();resolve(v&&typeof v==='object'?v:{})};q.onerror=function(){var e=q.error;db.close();reject(e)}})}
+async function idbWrite(value){var db=await openDb();return new Promise(function(resolve,reject){var tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put({id:DB_ID,value:clone(value),savedAt:Date.now()});tx.oncomplete=function(){db.close();resolve(true)};tx.onerror=function(){var e=tx.error;db.close();reject(e)}})}
+async function idbClear(){try{var db=await openDb();return new Promise(function(resolve){var tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).delete(DB_ID);tx.oncomplete=function(){db.close();resolve(true)};tx.onerror=function(){db.close();resolve(false)}})}catch(e){return false}}
+function scheduleIdbSave(value){clearTimeout(idbSaveTimer);var snap=clone(value);idbSaveTimer=setTimeout(function(){idbWrite(snap).catch(function(e){console.warn('v135.0 공정이력 IndexedDB 저장 지연',e)})},80)}
+function sourceCounts(){return {base:countMap(actualBase()),patch:countMap(mergeMaps(localPatch(),sessionPatch())),idb:countMap(memoryMap||{}),all:countMap(merged())}}
+function refreshUi(){
+  clearTimeout(refreshTimer);refreshTimer=setTimeout(function(){var c=sourceCounts(),b=document.getElementById('processChangedFilterBtn');if(b){b.innerHTML='↺ 공정변경(<span class="process-changed-count">'+c.all.toLocaleString('ko-KR')+'</span>)';b.title='PC 통합 공정변경 '+c.all.toLocaleString('ko-KR')+'개 · 기본저장 '+c.base.toLocaleString('ko-KR')+'개 · 보조저장 '+c.patch.toLocaleString('ko-KR')+'개 · 대용량저장 '+c.idb.toLocaleString('ko-KR')+'개'}document.querySelectorAll('.process-changed-count').forEach(function(e){e.textContent=c.all.toLocaleString('ko-KR')})},30)
+}
+proto.getItem=function(key){
+  if(this===localStorage&&String(key)===HIST_KEY)return mergedJson();
+  return previousGet.apply(this,arguments);
+};
+proto.setItem=function(key,value){
+  key=String(key);
+  if(this===localStorage&&key===HIST_KEY){
+    var incoming=parse(value,{}),full=mergeMaps(merged(),incoming),fullText=JSON.stringify(full),savedFull=false;
+    try{previousSet.call(this,key,fullText);savedFull=true}catch(e){
+      var compactText=JSON.stringify(compactMap(full));
+      try{previousSet.call(this,key,compactText)}catch(e2){console.warn('v135.0 localStorage 공정이력은 IndexedDB로 보관합니다.',e2&&e2.name||e2)}
+    }
+    memoryMap=full;cacheMap=full;cacheJson=fullText;scheduleIdbSave(full);
+    if(savedFull){try{previousRemove.call(localStorage,PATCH_KEY);previousRemove.call(sessionStorage,PATCH_KEY)}catch(e){}}
+    refreshUi();return;
+  }
+  var r=previousSet.apply(this,arguments);
+  if(key===PATCH_KEY){invalidate();refreshUi()}
+  return r;
+};
+proto.removeItem=function(key){
+  key=String(key);
+  if(this===localStorage&&key===HIST_KEY){
+    try{previousRemove.call(localStorage,HIST_KEY);previousRemove.call(localStorage,PATCH_KEY);previousRemove.call(sessionStorage,PATCH_KEY)}catch(e){}
+    memoryMap={};cacheMap={};cacheJson='{}';idbClear();refreshUi();return;
+  }
+  var r=previousRemove.apply(this,arguments);if(key===PATCH_KEY){invalidate();refreshUi()}return r;
+};
+window.addEventListener('storage',function(e){if(e&&[HIST_KEY,PATCH_KEY].indexOf(String(e.key||''))>=0){invalidate();refreshUi()}});
+function configured(){var s=parse(rawGet(localStorage,STATE_KEY),{})||{};return !!(clean(s.url)&&clean(s.key))}
+function toast(msg){try{if(typeof window.toast==='function')window.toast(msg)}catch(e){}}
+function notifySharedChange(before,after){if(after<=before)return;try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'processHistory',v1350:true,before:before,after:after}}))}catch(e){}refreshUi()}
+async function loadIdb(){
+  var before=countMap(merged());
+  try{var saved=await idbRead();memoryMap=mergeMaps(memoryMap||{},saved||{});invalidate();var after=countMap(merged());refreshUi();notifySharedChange(before,after);if(after>before)toast('다른 저장영역의 공정변경 이력 '+(after-before).toLocaleString('ko-KR')+'개를 복원했습니다.')}catch(e){refreshUi()}
+}
+async function reconcileOnce(){
+  if(reconcileRunning||!configured())return;var done=rawGet(localStorage,RECON_KEY);if(done)return;
+  reconcileRunning=true;var before=countMap(merged());
+  try{
+    if(typeof window.bomSyncSave!=='function')return;
+    var ok=await Promise.resolve(window.bomSyncSave(true));
+    if(ok===false)return;
+    try{previousSet.call(localStorage,RECON_KEY,String(Date.now()))}catch(e){}
+    invalidate();var after=countMap(merged());refreshUi();
+    if(after>before)toast('PC간 공정변경 이력을 병합했습니다. '+before.toLocaleString('ko-KR')+'개 → '+after.toLocaleString('ko-KR')+'개');
+  }catch(e){console.warn('v135.0 공정이력 최초 병합 지연',e)}finally{reconcileRunning=false}
+}
+function install(){
+  invalidate();refreshUi();
+  var c=sourceCounts();if(c.all>c.base)notifySharedChange(c.base,c.all);
+  loadIdb();
+  setTimeout(reconcileOnce,2600);
+  [300,900,1800,4200,8500].forEach(function(ms){setTimeout(refreshUi,ms)});
+}
+window.__v1350MergedProcessHistory=function(){return clone(merged())};
+window.__v1350ProcessHistoryCounts=sourceCounts;
+window.__v1350ReconcileProcessHistory=function(){try{previousRemove.call(localStorage,RECON_KEY)}catch(e){}return reconcileOnce()};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',install,{once:true});
+window.addEventListener('bomSyncApplied',function(){invalidate();refreshUi();setTimeout(refreshUi,180)});
+window.addEventListener('bomDataChanged',function(e){if(/processHistory/i.test(String(e&&e.detail&&e.detail.section||''))){invalidate();refreshUi()}});
+})();
+</script>
+<!-- ===== /V135.0 ===== -->
+
 </body>
 </html>
