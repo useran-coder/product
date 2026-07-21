@@ -1735,7 +1735,7 @@ html.dbf-main-ready #dbfFullPageLoader{
   text-align:left!important;
 }
 html body header #bomUserVersionWrap #bomAppVer::before{
-  content:'버전 v135.5 · 로딩화면 실제 표시 보장·원자재 상세 정렬'!important;
+  content:'버전 v135.6 · 메인페이지 완료 후 100% 전환·원자재 상세 정렬'!important;
 }
 </style>
 <script id="v1353-loading-screen-bootstrap-script">
@@ -1768,20 +1768,23 @@ html body header #bomUserVersionWrap #bomAppVer::before{
   var percentEl=document.getElementById('dbfLoadingPercent');
   var barEl=document.getElementById('dbfLoadingBar');
   var labelEl=document.getElementById('dbfLoadingLabel');
-  var value=0,domReady=false,loadReady=false,finished=false,settling=false,pollTimer=0,finishWaitTimer=0;
+  var value=0,domReady=false,loadReady=false,finished=false,finishRequested=false;
+  var pollTimer=0,finishWaitTimer=0,stableSince=0,lastSignature='',loadAt=0,dashboardObserver=null;
   var started=(window.performance&&performance.now)?performance.now():Date.now();
-  /* 브라우저가 로딩 화면을 실제로 한 번 그린 뒤 최소 0.9초 동안 유지 */
+
+  /* 로딩 화면이 실제로 보인 뒤, 메인 대시보드가 완전히 만들어질 때까지 유지 */
   window.__dbfLoaderFirstPaintReady=false;
   window.__dbfLoaderNotBefore=Number.POSITIVE_INFINITY;
   (function markLoaderFirstPaint(){
     function confirmed(){
       window.__dbfLoaderFirstPaintReady=true;
-      window.__dbfLoaderNotBefore=Date.now()+900;
+      window.__dbfLoaderNotBefore=Date.now()+650;
     }
     if(typeof window.requestAnimationFrame==='function'){
       window.requestAnimationFrame(function(){window.requestAnimationFrame(confirmed)});
     }else setTimeout(confirmed,40);
   })();
+
   function clamp(n){return Math.max(0,Math.min(100,Math.round(Number(n)||0)))}
   function setProgress(n,label){
     n=clamp(n);if(n<value)return;value=n;
@@ -1790,57 +1793,124 @@ html body header #bomUserVersionWrap #bomAppVer::before{
     if(label&&labelEl)labelEl.textContent=label;
     try{loader&&loader.setAttribute('aria-valuenow',String(n))}catch(e){}
   }
-  function keyContentReady(){
-    var core=document.getElementById('view-dashboard')||document.getElementById('view-cost')||document.querySelector('header');
-    return document.readyState==='complete'&&!!core;
+  function textReady(el){
+    if(!el)return false;
+    var t=String(el.textContent||'').replace(/\s+/g,'').trim();
+    return t.length>0||el.children.length>0;
+  }
+  function dashboardStatus(){
+    var view=document.getElementById('view-dashboard');
+    var shell=view&&view.querySelector('.dashboard-shell');
+    var ids=['dashboardKpis','dashGroups','dashUsage','dashEquip','dashProcess','dashDrawing','dashMaterial','dashHistory','dashNotices'];
+    var nodes=ids.map(function(id){return document.getElementById(id)});
+    var complete=!!(view&&shell&&nodes.every(textReady));
+    if(complete){
+      complete=view.classList&&!view.classList.contains('hidden')&&
+        document.querySelectorAll('#dashboardKpis .dashboard-kpi').length>=7&&
+        document.querySelectorAll('#view-dashboard .dashboard-card').length>=8&&
+        textReady(document.getElementById('dashboardFooterTime'))&&
+        !view.querySelector('[aria-busy="true"],.dashboard-loading,.loading,.skeleton,[data-loading="1"]');
+    }
+    var signature='';
+    if(view){
+      signature=ids.map(function(id){
+        var e=document.getElementById(id);return e?(e.childElementCount+':'+String(e.innerHTML||'').length):'x';
+      }).join('|')+'|'+view.querySelectorAll('*').length;
+    }
+    return {ready:complete,signature:signature,view:view};
+  }
+  function watchDashboard(view){
+    if(!view||dashboardObserver||typeof MutationObserver!=='function')return;
+    var Native=window.__NativeMutationObserver||window.MutationObserver;
+    try{
+      dashboardObserver=new Native(function(){stableSince=0;lastSignature=''});
+      dashboardObserver.observe(view,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class','style']});
+    }catch(e){dashboardObserver=null}
+  }
+  function mainPageFullyReady(){
+    if(document.readyState!=='complete'||!loadReady)return false;
+    var st=dashboardStatus();watchDashboard(st.view);
+    if(!st.ready){stableSince=0;lastSignature=st.signature;return false}
+    var now=Date.now();
+    if(st.signature!==lastSignature){lastSignature=st.signature;stableSince=now;return false}
+    if(!stableSince)stableSince=now;
+    /* load 이후 초기 보정 스크립트와 대시보드 DOM 변경이 모두 멈춘 뒤 완료 */
+    return now-loadAt>=1100&&now-stableSince>=420;
   }
   function finish(){
     if(finished)return;
+    if(!mainPageFullyReady()){schedulePoll(90);return}
     var now=Date.now(),notBefore=Number(window.__dbfLoaderNotBefore);
     if(!window.__dbfLoaderFirstPaintReady||!isFinite(notBefore)||now<notBefore){
       clearTimeout(finishWaitTimer);
       finishWaitTimer=setTimeout(finish,Math.max(50,isFinite(notBefore)?Math.min(160,notBefore-now):80));
       return;
     }
-    finished=true;settling=false;
+    finished=true;
     clearInterval(window.__v1337LoaderTick);clearTimeout(pollTimer);clearTimeout(finishWaitTimer);
-    setProgress(100,'로딩 완료');
+    if(dashboardObserver){try{dashboardObserver.disconnect()}catch(e){}dashboardObserver=null}
+    setProgress(100,'메인페이지 로딩 완료');
     window.__dbfFullLoaderReady=true;
     window.__dbfFullLoaderDuration=Math.max(0,((window.performance&&performance.now)?performance.now():Date.now())-started);
+    /* 100%가 화면에 표시된 다음 메인페이지로 전환 */
     setTimeout(function(){
       try{window.__dbfReleaseMainBoot(true)}catch(e){}
       if(loader){loader.classList.add('dbf-loader-done');setTimeout(function(){try{loader.remove()}catch(e){}},360)}
-    },170);
+    },260);
   }
-  function settleAndFinish(){
-    if(finished||settling)return;settling=true;setProgress(Math.max(value,97),'화면을 준비하는 중입니다');
-    requestAnimationFrame(function(){requestAnimationFrame(function(){
-      var done=function(){setTimeout(finish,80)};
-      if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(done,{timeout:650});
-      else setTimeout(done,220);
-    })});
+  function schedulePoll(ms){
+    if(finished)return;clearTimeout(pollTimer);pollTimer=setTimeout(pollReady,ms||90);
   }
-  window.__dbfRequestLoaderFinish=function(){settleAndFinish();return true};
   function pollReady(){
     if(finished)return;
-    if(keyContentReady()){settleAndFinish();return}
-    if(domReady)setProgress(Math.max(value,82),'메인 화면을 구성하는 중입니다');
-    if(loadReady)setProgress(Math.max(value,92),'데이터를 정리하는 중입니다');
-    pollTimer=setTimeout(pollReady,90);
+    var st=dashboardStatus();watchDashboard(st.view);
+    if(!domReady)setProgress(Math.max(value,35),'프로그램을 불러오는 중입니다');
+    else if(!loadReady)setProgress(Math.max(value,82),'메인 화면을 구성하는 중입니다');
+    else if(!st.ready)setProgress(Math.max(value,94),'메인페이지 데이터를 불러오는 중입니다');
+    else setProgress(Math.max(value,98),'메인페이지 최종 화면을 확인하는 중입니다');
+    if(mainPageFullyReady()){finish();return}
+    schedulePoll(90);
   }
+  /* 구버전 완료 요청은 즉시 종료하지 않고 실제 메인페이지 완료 확인만 시작 */
+  window.__dbfRequestLoaderFinish=function(){finishRequested=true;pollReady();return true};
+
   window.__v1337LoaderTick=setInterval(function(){
     if(finished)return;
-    var cap=!domReady?72:(!loadReady?88:96);
+    var st=dashboardStatus();
+    var cap=!domReady?70:(!loadReady?88:(!st.ready?96:98));
     var step=value<28?4:(value<62?3:(value<84?2:1));
     setProgress(Math.min(cap,value+step));
   },70);
   setProgress(1);
-  if(document.readyState!=='loading'){domReady=true;setProgress(78,'메인 화면을 구성하는 중입니다')}
-  else document.addEventListener('DOMContentLoaded',function(){domReady=true;setProgress(Math.max(value,78),'메인 화면을 구성하는 중입니다');pollReady()},{once:true});
-  if(document.readyState==='complete'){loadReady=true;setProgress(92,'데이터를 정리하는 중입니다');pollReady()}
-  else window.addEventListener('load',function(){loadReady=true;setProgress(Math.max(value,92),'데이터를 정리하는 중입니다');pollReady()},{once:true});
+  if(document.readyState!=='loading'){
+    domReady=true;setProgress(78,'메인 화면을 구성하는 중입니다');
+  }else document.addEventListener('DOMContentLoaded',function(){
+    domReady=true;setProgress(Math.max(value,78),'메인 화면을 구성하는 중입니다');pollReady();
+  },{once:true});
+  if(document.readyState==='complete'){
+    loadReady=true;loadAt=Date.now();setProgress(92,'메인페이지 데이터를 불러오는 중입니다');pollReady();
+  }else window.addEventListener('load',function(){
+    loadReady=true;loadAt=Date.now();setProgress(Math.max(value,92),'메인페이지 데이터를 불러오는 중입니다');pollReady();
+  },{once:true});
   pollReady();
-  setTimeout(function(){if(!finished)settleAndFinish()},3500);
+
+  /* 심각한 스크립트 오류가 있을 때만 영구 정지를 막는 최종 복구 장치 */
+  setTimeout(function emergencyRelease(){
+    if(finished)return;
+    var basic=document.readyState==='complete'&&document.querySelector('header')&&document.querySelector('.wrap')&&
+      (document.getElementById('view-dashboard')||document.getElementById('view-cost'));
+    if(!basic){setTimeout(emergencyRelease,1000);return}
+    setProgress(99,'초기 화면을 최종 점검하는 중입니다');
+    setTimeout(function(){
+      if(finished)return;
+      finished=true;clearInterval(window.__v1337LoaderTick);clearTimeout(pollTimer);
+      setProgress(100,'메인페이지 로딩 완료');window.__dbfFullLoaderReady=true;
+      setTimeout(function(){
+        try{window.__dbfReleaseMainBoot(true)}catch(e){}
+        if(loader){loader.classList.add('dbf-loader-done');setTimeout(function(){try{loader.remove()}catch(e){}},360)}
+      },260);
+    },500);
+  },20000);
 })();
 </script>
 <header>
@@ -27085,45 +27155,20 @@ html body #view-raw .raw-use-table tbody tr > td:nth-child(2),
 html body #view-raw .raw-use-table tbody tr > td:nth-child(3),
 html body #view-raw .raw-use-table tbody tr > td:nth-child(4),
 html body #view-raw .raw-use-table tbody tr > td:nth-child(5){text-align:left!important}
-html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v135.5 · 로딩화면 실제 표시 보장·원자재 상세 정렬'!important}
+html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v135.6 · 메인페이지 완료 후 100% 전환·원자재 상세 정렬'!important}
 </style>
-<!-- ===== V135.5: 로딩 화면 실제 표시 보장 · 빠른 초기화 유지 ===== -->
+<!-- ===== V135.6: 메인페이지 전체 로딩 완료 후 100% 전환 ===== -->
 <script id="v1355-loading-safety-script">
 (function(){
 'use strict';
-if(window.__v1355LoadingSafety)return;window.__v1355LoadingSafety=true;
-/* 누적 스크립트 오류가 발생하더라도 로딩 화면에 영구 정지하지 않도록 최종 안전 해제 */
-setTimeout(function loadingSafety(){
-  if(document.documentElement.classList.contains('dbf-main-ready'))return;
-  try{
-    /* 문서 파싱이 오래 걸려도 로더가 한 번 그려지기 전에는 제거하지 않는다. */
-    var nb=Number(window.__dbfLoaderNotBefore);
-    if(!window.__dbfLoaderFirstPaintReady||!isFinite(nb)||Date.now()<nb){
-      setTimeout(loadingSafety,120);
-      return;
-    }
-    if(typeof window.__dbfRequestLoaderFinish==='function'){
-      window.__dbfRequestLoaderFinish('final-safety');
-      setTimeout(function(){
-        if(document.documentElement.classList.contains('dbf-main-ready'))return;
-        try{
-          var p=document.getElementById('dbfLoadingPercent');if(p)p.textContent='100%';
-          var b=document.getElementById('dbfLoadingBar');if(b)b.style.width='100%';
-          var t=document.getElementById('dbfLoadingLabel');if(t)t.textContent='로딩 완료';
-          window.__dbfFullLoaderReady=true;
-          if(typeof window.__dbfReleaseMainBoot==='function')window.__dbfReleaseMainBoot(true);
-          var r=document.documentElement;r.classList.remove('dbf-main-boot');r.classList.add('dbf-main-ready');
-          var l=document.getElementById('dbfFullPageLoader');
-          if(l){l.classList.add('dbf-loader-done');setTimeout(function(){try{l.remove()}catch(e){}},360)}
-        }catch(e){}
-      },1800);
-      return;
-    }
-  }catch(e){}
-},4200);
+if(window.__v1356LoadingSafety)return;window.__v1356LoadingSafety=true;
+/* 완료 판단은 v1337 로더가 메인 대시보드 전체 렌더링을 확인한 뒤 수행한다. */
+window.addEventListener('load',function(){
+  try{if(typeof window.__dbfRequestLoaderFinish==='function')window.__dbfRequestLoaderFinish('v1356-window-load')}catch(e){}
+},{once:true});
 })();
 </script>
-<!-- ===== /V135.5 ===== -->
+<!-- ===== /V135.6 ===== -->
 
 </body>
 </html>
