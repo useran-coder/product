@@ -1672,6 +1672,58 @@ header .tabs #tab-dashboard.on{
 }
 </style>
 
+
+<style id="v1352-fast-open-raw-left-align-style">
+/* V135.2: 로딩 화면이 실제 메뉴를 가리지 않도록 첫 화면을 즉시 표시 */
+html.dbf-main-boot body,
+html.dbf-main-ready body{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  overflow:auto!important;
+}
+html.dbf-main-boot body > *:not(script):not(style),
+html.dbf-main-ready body > *:not(script):not(style){
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+#dbfFullPageLoader{
+  display:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+/* 원자재 선택 후 사용 제품 상세: 요청한 5개 열을 제목/내용 모두 왼쪽 정렬 */
+#view-raw .raw-use-table th:nth-child(1),
+#view-raw .raw-use-table th:nth-child(2),
+#view-raw .raw-use-table th:nth-child(3),
+#view-raw .raw-use-table th:nth-child(4),
+#view-raw .raw-use-table th:nth-child(5),
+#view-raw .raw-use-table td:nth-child(1),
+#view-raw .raw-use-table td:nth-child(2),
+#view-raw .raw-use-table td:nth-child(3),
+#view-raw .raw-use-table td:nth-child(4),
+#view-raw .raw-use-table td:nth-child(5){
+  text-align:left!important;
+}
+html body header #bomUserVersionWrap #bomAppVer::before{
+  content:'버전 v135.2 · 빠른 로딩·원자재 상세 정렬'!important;
+}
+</style>
+<script id="v1352-fast-open-bootstrap-script">
+(function(){
+  'use strict';
+  /* 기존 숫자 로더의 70ms 반복 타이머 자체가 시작되지 않도록 차단 */
+  window.__v1337FullPageLoaderInstalled=true;
+  window.__dbfFullLoaderEnabled=false;
+  window.__dbfFullLoaderReady=true;
+  var root=document.documentElement;
+  if(root){root.classList.remove('dbf-main-boot');root.classList.add('dbf-main-ready')}
+  try{if(typeof window.__dbfReleaseMainBoot==='function')window.__dbfReleaseMainBoot(true)}catch(e){}
+})();
+</script>
+
 </head>
 <body>
 <div id="dbfFullPageLoader" role="status" aria-live="polite" aria-label="프로그램 불러오는 중">
@@ -3382,7 +3434,10 @@ function initApp(){
     if(fc)fc.textContent='제품 목록 불러오는 중…';
     load();
     syncStick();
-    if(typeof renderCost==='function')renderCost(false);
+    /* 첫 화면이 대시보드일 때 숨겨진 제품 전체표를 미리 그리지 않는다.
+       제품별원가 메뉴를 열면 switchTab에서 즉시 렌더링된다. */
+    var costView=document.getElementById('view-cost');
+    if(costView&&!costView.classList.contains('hidden')&&typeof renderCost==='function')renderCost(false);
     var finish=function(){
       try{
         if(typeof buildFilters==='function')buildFilters();
@@ -20458,7 +20513,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(!id('view-dashboard'))init();
 },{once:true});
 /* 늦게 실행되는 기존 패치와의 호환을 위한 최소 재확인만 유지 */
-[300,1400].forEach(function(ms){setTimeout(function(){
+[1400].forEach(function(ms){setTimeout(function(){
   setupDom();installSwitchWrapper();installBackFix();lockDashboardVersion();
   if(!userNavigated){activeView='dashboard';applyDashboardVisibility();renderDashboard()}
 },ms)});
@@ -25369,7 +25424,7 @@ window.addEventListener('load',function(){install();setTimeout(install,160)},{on
 (function(){
 'use strict';
 if(window.__v1339FilterSyncPerformance)return;window.__v1339FilterSyncPerformance=true;
-var VERSION='v134.0',searchTimer=0,filterFrame=0,fullPullBusy=false,lastFullPull=0,installTimer=0;
+var VERSION='v135.2',searchTimer=0,filterFrame=0,fullPullBusy=false,lastFullPull=0,installTimer=0,autoSyncReadyAt=Date.now()+12000;
 function id(x){return document.getElementById(x)}
 function state(){try{return JSON.parse(localStorage.getItem('dbfastec_bom_gsync_v1')||'{}')||{}}catch(e){return {}}}
 function configured(){var s=state();return s.auto!==false&&String(s.url||'').trim()&&String(s.key||'').trim()}
@@ -25391,7 +25446,10 @@ function patchFilterAttrs(){
 }
 function requestFullPull(force){
   if(fullPullBusy||!configured()||document.hidden)return false;
-  var now=Date.now();if(!force&&now-lastFullPull<25000)return false;
+  var now=Date.now();
+  /* 수동 동기화는 즉시, 자동 동기화는 화면이 열린 뒤에만 실행 */
+  if(!force&&now<autoSyncReadyAt)return false;
+  if(!force&&now-lastFullPull<90000)return false;
   var fn=window.bomSyncLoad;if(typeof fn!=='function')return false;
   fullPullBusy=true;lastFullPull=now;
   try{
@@ -25412,10 +25470,10 @@ function install(){
 window.__v1339ForceFullSync=function(){return requestFullPull(true)};
 install();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
-window.addEventListener('load',function(){install();setTimeout(function(){install();requestFullPull(true)},900)},{once:true});
-window.addEventListener('focus',function(){install();requestFullPull(true)});
-document.addEventListener('visibilitychange',function(){if(!document.hidden){install();requestFullPull(true)}});
-setInterval(function(){install();requestFullPull(false)},30000);
+window.addEventListener('load',function(){install();setTimeout(function(){install();requestFullPull(false)},12000)},{once:true});
+window.addEventListener('focus',function(){install();requestFullPull(false)});
+document.addEventListener('visibilitychange',function(){if(!document.hidden){install();requestFullPull(false)}});
+setInterval(function(){install();requestFullPull(false)},120000);
 })();
 </script>
 <!-- ===== /V133.9 ===== -->
@@ -26815,6 +26873,200 @@ window.addEventListener('bomDataChanged',function(e){if(/processHistory/i.test(S
 })();
 </script>
 <!-- ===== /V135.0 ===== -->
+
+<!-- ===== V135.1: 숨김 제품 일반목록 중복 제거 · 숨김목록 개별 삭제 ===== -->
+<style id="v1351-hidden-active-consistency-style">
+html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v135.1 · 숨김제품 목록분리'!important}
+#hiddenProductsList .delete-hidden-permanent-btn{
+  border:1px solid #efb9b9!important;background:#fff5f5!important;color:#a52222!important;
+  border-radius:7px!important;padding:5px 9px!important;font-size:11px!important;font-weight:900!important;margin-left:5px!important
+}
+#hiddenProductsList .delete-hidden-permanent-btn:hover{background:#ffe7e7!important;border-color:#dc8b8b!important}
+#hiddenProductsList .hidden-manage-cell{white-space:nowrap!important;overflow:visible!important}
+</style>
+<script id="v1351-hidden-active-consistency-script">
+(function(){
+'use strict';
+if(window.__v1351HiddenActiveConsistency)return;window.__v1351HiddenActiveConsistency=true;
+var PROD_KEY='dbfastec_cost_products_v2';
+var HIDDEN_KEY='dbfastec_cost_hidden_products_v1';
+var DELETED_KEY='dbfastec_cost_deleted_products_v1';
+var OV_KEY='dbfastec_cost_overrides_v2';
+var PROD_PATCH_KEY='dbfastec_product_patch_v1330';
+var IDB_NAME='dbfastec_cost_fallback_v1349';
+var IDB_STORE='products';
+var running=false,queued=false,lastRemoved=0,observer=null;
+function id(x){return document.getElementById(x)}
+function clean(v){return String(v==null?'':v).trim()}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function readJson(storage,k,d){try{var raw=storage.getItem(k),x=raw?JSON.parse(raw):null;return x==null?d:x}catch(e){return d}}
+function writeJson(storage,k,v){try{storage.setItem(k,JSON.stringify(v));return true}catch(e){console.warn('v135.1 저장 실패',k,e&&e.name||e);return false}}
+function hiddenList(){var a=readJson(localStorage,HIDDEN_KEY,[]);return Array.isArray(a)?a:[]}
+function deletedList(){var a=readJson(localStorage,DELETED_KEY,[]);return Array.isArray(a)?a:[]}
+function storedProducts(){var a=readJson(localStorage,PROD_KEY,[]);return Array.isArray(a)?a:[]}
+function memoryProducts(){try{if(typeof PRODUCTS!=='undefined'&&Array.isArray(PRODUCTS))return PRODUCTS}catch(e){}try{if(Array.isArray(window.PRODUCTS))return window.PRODUCTS}catch(e){}return []}
+function productKey(p){return [p&&p.pn,p&&p.item,p&&p.spec].map(clean).join('\u241f')}
+function recordPn(r){return clean((r&&r.product&&r.product.pn)||(r&&r.pn))}
+function sameList(a,b){if(a===b)return true;if(!Array.isArray(a)||!Array.isArray(b)||a.length!==b.length)return false;for(var i=0;i<a.length;i++){if(productKey(a[i])!==productKey(b[i]))return false}return true}
+function normalizeHidden(a){
+  var seen={},out=[];
+  (Array.isArray(a)?a:[]).forEach(function(p){
+    if(!p)return;var pn=clean(p.pn),k=pn?'pn:'+pn:'key:'+productKey(p);if(seen[k])return;seen[k]=1;out.push(p)
+  });
+  return out;
+}
+function blockedSets(hidden,deleted){
+  var pns={},keys={};
+  hidden.forEach(function(p){var pn=clean(p&&p.pn);if(pn)pns[pn]=1;else keys[productKey(p)]=1});
+  deleted.forEach(function(r){var p=(r&&r.product)||r||{},pn=recordPn(r);if(pn)pns[pn]=1;else keys[productKey(p)]=1});
+  return {pns:pns,keys:keys};
+}
+function filterActive(a,blocked){return (Array.isArray(a)?a:[]).filter(function(p){var pn=clean(p&&p.pn);return pn?!blocked.pns[pn]:!blocked.keys[productKey(p)]})}
+function setMemory(a){try{PRODUCTS=a}catch(e){}try{window.PRODUCTS=a}catch(e){}}
+function purgePatch(storage,blocked){
+  var p=readJson(storage,PROD_PATCH_KEY,{});if(!p||typeof p!=='object'||Array.isArray(p))return 0;
+  var n=0;Object.keys(p).forEach(function(pn){if(blocked.pns[clean(pn)]){delete p[pn];n++}});
+  if(n)writeJson(storage,PROD_PATCH_KEY,p);return n
+}
+function purgeIdb(blocked){
+  var pns=Object.keys(blocked.pns);if(!pns.length||!window.indexedDB)return Promise.resolve(0);
+  return new Promise(function(resolve){
+    var q=indexedDB.open(IDB_NAME,1);
+    q.onupgradeneeded=function(){var db=q.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE,{keyPath:'pn'})};
+    q.onerror=function(){resolve(0)};
+    q.onsuccess=function(){var db=q.result,n=0,tx;try{tx=db.transaction(IDB_STORE,'readwrite');var os=tx.objectStore(IDB_STORE);pns.forEach(function(pn){try{os.delete(pn);n++}catch(e){}});tx.oncomplete=function(){db.close();resolve(n)};tx.onerror=function(){db.close();resolve(0)};tx.onabort=tx.onerror}catch(e){try{db.close()}catch(_){}resolve(0)}};
+  })
+}
+function invalidate(){
+  try{if(typeof window.resetBomProductLinkIndex==='function')window.resetBomProductLinkIndex()}catch(e){}
+  try{if(typeof window.invalidateCostCacheV75==='function')window.invalidateCostCacheV75()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV76==='function')window.invalidatePerformanceCacheV76()}catch(e){}
+  try{if(typeof window.invalidatePerformanceCacheV83==='function')window.invalidatePerformanceCacheV83()}catch(e){}
+  try{if(typeof window.buildFilters==='function')window.buildFilters()}catch(e){}
+}
+function reconcile(reason,notify){
+  if(running)return 0;running=true;
+  try{
+    var rawHidden=hiddenList(),hidden=normalizeHidden(rawHidden),deleted=deletedList(),blocked=blockedSets(hidden,deleted);
+    if(hidden.length!==rawHidden.length)writeJson(localStorage,HIDDEN_KEY,hidden);
+    var mem=memoryProducts(),stored=storedProducts(),source=mem.length?mem:stored;
+    var filtered=filterActive(source,blocked),removed=Math.max(0,source.length-filtered.length);
+    if(mem.length&&!sameList(mem,filtered))setMemory(filtered);
+    if(!sameList(stored,filtered)){
+      if(writeJson(localStorage,PROD_KEY,filtered))removed=Math.max(removed,Math.max(0,stored.length-filtered.length));
+    }
+    purgePatch(localStorage,blocked);try{purgePatch(sessionStorage,blocked)}catch(e){}
+    purgeIdb(blocked);
+    if(removed){
+      lastRemoved=removed;invalidate();
+      try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'products,hiddenProducts',v1351:true,removed:hidden.length,reason:reason||''}}))}catch(e){}
+      if(notify!==false){try{if(typeof window.toast==='function')window.toast('숨김 제품 '+removed.toLocaleString()+'개를 일반 목록에서 제거했습니다.')}catch(e){}}
+      try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false)}catch(e){}
+    }
+    return removed
+  }finally{running=false}
+}
+function schedule(reason,notify){
+  if(queued)return;queued=true;
+  var run=function(){queued=false;var n=reconcile(reason,notify);if(n&&typeof window.renderCost==='function')try{window.renderCost(false)}catch(e){};enhanceHiddenRows()};
+  if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(run,{timeout:700});
+  else setTimeout(run,140);
+}
+function updateButtons(){
+  var hb=id('hiddenProductListBtn'),hc=hb&&hb.querySelector('.hidden-count'),hn=hiddenList().length;if(hc)hc.textContent=hn.toLocaleString();if(hb)hb.classList.toggle('has-hidden',hn>0);
+  var db=id('deletedProductListBtn'),dc=db&&db.querySelector('.deleted-count'),dn=deletedList().length;if(dc)dc.textContent=dn.toLocaleString();if(db)db.classList.toggle('has-deleted',dn>0)
+}
+function refreshBucketViews(){
+  try{if(typeof window.renderHiddenListV1342==='function')window.renderHiddenListV1342()}catch(e){}
+  try{if(typeof window.renderDeletedListV1343==='function')window.renderDeletedListV1343()}catch(e){}
+  updateButtons();enhanceHiddenRows()
+}
+function deleteHiddenByKey(key){
+  var hidden=hiddenList(),idx=hidden.findIndex(function(p){return productKey(p)===key});if(idx<0)return false;
+  var p=clone(hidden[idx]),pn=clean(p&&p.pn);
+  if(!confirm('['+pn+'] '+clean(p&&p.item)+' 숨김 제품을 삭제할까요?\n삭제 제품 보기에서 다시 복원할 수 있습니다.'))return false;
+  var deleted=deletedList(),now=Date.now(),ov=readJson(localStorage,OV_KEY,{})||{};
+  deleted=deleted.filter(function(r){return recordPn(r)!==pn});
+  deleted.unshift({id:(pn||'hidden')+'__'+now,deletedAt:now,pn:pn,product:p,override:clone(ov[pn]||null),source:'hidden-v1351'});
+  if(!writeJson(localStorage,DELETED_KEY,deleted.slice(0,500))){alert('삭제 제품 목록 저장에 실패했습니다.');return false}
+  hidden.splice(idx,1);if(!writeJson(localStorage,HIDDEN_KEY,hidden)){alert('숨김 제품 목록 저장에 실패했습니다.');return false}
+  refreshBucketViews();invalidate();
+  try{window.dispatchEvent(new CustomEvent('bomDataChanged',{detail:{section:'hiddenProducts,products',pn:pn,v1351DeleteHidden:true}}))}catch(e){}
+  try{if(typeof window.__v123QueueSync==='function')window.__v123QueueSync(false)}catch(e){}
+  try{if(typeof window.toast==='function')window.toast('숨김 제품을 삭제 제품 보기로 이동했습니다.')}catch(e){}
+  return true
+}
+window.deleteHiddenProductV1351=deleteHiddenByKey;
+function enhanceHiddenRows(){
+  var box=id('hiddenProductsList');if(!box)return;
+  box.querySelectorAll('.restore-hidden-btn[data-hidden-key]').forEach(function(restore){
+    var cell=restore.parentElement;if(!cell)return;cell.classList.add('hidden-manage-cell');
+    var key=restore.getAttribute('data-hidden-key')||'';
+    if(cell.querySelector('.delete-hidden-permanent-btn'))return;
+    var b=document.createElement('button');b.type='button';b.className='delete-hidden-permanent-btn';b.textContent='삭제';b.setAttribute('data-hidden-key',key);cell.appendChild(b)
+  })
+}
+function installObserver(){
+  var box=id('hiddenProductsList');if(!box||box.__v1351Observed)return;box.__v1351Observed=true;
+  var MO=window.__NativeMutationObserver||window.MutationObserver;if(typeof MO!=='function')return;
+  try{observer=new MO(function(){enhanceHiddenRows()});observer.observe(box,{childList:true,subtree:true})}catch(e){}
+}
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('.delete-hidden-permanent-btn[data-hidden-key]'):null;if(!b)return;
+  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  deleteHiddenByKey(b.getAttribute('data-hidden-key')||'')
+},true);
+function installRenderGuard(){
+  var cur=window.renderCost;if(typeof cur!=='function'||cur.__v1351HiddenGuard)return;
+  /* 제품표 렌더마다 localStorage 전체를 다시 읽지 않고, 실제 데이터 변경 시에만 정합성 검사를 수행 */
+  var fn=function(){return cur.apply(this,arguments)};
+  Object.keys(cur).forEach(function(k){try{fn[k]=cur[k]}catch(e){}});fn.__v1351HiddenGuard=true;fn.__v1351Raw=cur;window.renderCost=fn;try{renderCost=fn}catch(e){}
+}
+function install(){
+  installRenderGuard();installObserver();enhanceHiddenRows();updateButtons();schedule('install',false);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.addEventListener('load',function(){install();[1800,6000].forEach(function(ms){setTimeout(function(){installRenderGuard();schedule('load-'+ms,false);installObserver()},ms)})},{once:true});
+window.addEventListener('bomDataChanged',function(e){if(e&&e.detail&&e.detail.v1351)return;schedule('data-change',false)});
+window.addEventListener('storage',function(e){if(!e.key||[PROD_KEY,HIDDEN_KEY,DELETED_KEY,PROD_PATCH_KEY].indexOf(e.key)>=0)schedule('storage',false)});
+setInterval(function(){schedule('periodic',false)},120000);
+})();
+</script>
+<!-- ===== /V135.1 ===== -->
+
+
+<style id="v1352-final-raw-left-align-style">
+/* 파일의 모든 누적 스타일 뒤에서 최종 적용 */
+html body #view-raw .raw-use-table thead tr > th:nth-child(1),
+html body #view-raw .raw-use-table thead tr > th:nth-child(2),
+html body #view-raw .raw-use-table thead tr > th:nth-child(3),
+html body #view-raw .raw-use-table thead tr > th:nth-child(4),
+html body #view-raw .raw-use-table thead tr > th:nth-child(5),
+html body #view-raw .raw-use-table tbody tr > td:nth-child(1),
+html body #view-raw .raw-use-table tbody tr > td:nth-child(2),
+html body #view-raw .raw-use-table tbody tr > td:nth-child(3),
+html body #view-raw .raw-use-table tbody tr > td:nth-child(4),
+html body #view-raw .raw-use-table tbody tr > td:nth-child(5){text-align:left!important}
+html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v135.2 · 빠른 로딩·원자재 상세 정렬'!important}
+</style>
+<!-- ===== V135.2: 빠른 초기화 · 원자재 사용제품 정렬 ===== -->
+<script id="v1352-final-startup-cleanup-script">
+(function(){
+'use strict';
+if(window.__v1352FinalStartupCleanup)return;window.__v1352FinalStartupCleanup=true;
+function release(){
+  try{window.__dbfFullLoaderEnabled=false;window.__dbfFullLoaderReady=true}catch(e){}
+  try{if(typeof window.__dbfReleaseMainBoot==='function')window.__dbfReleaseMainBoot(true)}catch(e){}
+  try{var r=document.documentElement;r.classList.remove('dbf-main-boot');r.classList.add('dbf-main-ready')}catch(e){}
+  try{var l=document.getElementById('dbfFullPageLoader');if(l)l.remove()}catch(e){}
+}
+release();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',release,{once:true});
+window.addEventListener('load',release,{once:true});
+})();
+</script>
+<!-- ===== /V135.2 ===== -->
 
 </body>
 </html>
