@@ -58,24 +58,12 @@ html.dbf-main-ready #dbfFullPageLoader{opacity:0!important;visibility:hidden!imp
     window.__dbfMainBootReleasedAt=(window.performance&&performance.now)?performance.now():Date.now();
     return true;
   };
-  /* 최후 안전장치도 첫 화면이 실제 표시된 뒤에만 해제 */
-  setTimeout(function firstPaintSafety(){
+  /* 최후 안전장치: 어떤 예외가 있어도 15초 뒤 100% 처리 후 화면을 복구 */
+  setTimeout(function(){
     if(window.__dbfFullLoaderReady)return;
-    try{
-      if(typeof window.__dbfRequestLoaderFinish==='function'){
-        window.__dbfRequestLoaderFinish('head-safety');
-        return;
-      }
-      var nb=Number(window.__dbfLoaderNotBefore);
-      if(!window.__dbfLoaderFirstPaintReady||!isFinite(nb)||Date.now()<nb){
-        setTimeout(firstPaintSafety,120);
-        return;
-      }
-      window.__dbfFullLoaderReady=true;
-      var p=document.getElementById('dbfLoadingPercent');if(p)p.textContent='100%';
-      var b=document.getElementById('dbfLoadingBar');if(b)b.style.width='100%';
-      window.__dbfReleaseMainBoot(true);
-    }catch(e){}
+    window.__dbfFullLoaderReady=true;
+    try{var p=document.getElementById('dbfLoadingPercent');if(p)p.textContent='100%';var b=document.getElementById('dbfLoadingBar');if(b)b.style.width='100%'}catch(e){}
+    try{window.__dbfReleaseMainBoot(true)}catch(e){}
   },15000);
 })();
 </script>
@@ -1684,72 +1672,6 @@ header .tabs #tab-dashboard.on{
 }
 </style>
 
-
-<style id="v1353-loading-screen-raw-left-align-style">
-/* V135.3: 빠른 초기화는 유지하고, 첫 실행 로딩 화면은 다시 표시 */
-html.dbf-main-boot body{
-  opacity:1!important;
-  visibility:visible!important;
-  pointer-events:none!important;
-  overflow:hidden!important;
-}
-html.dbf-main-boot body > *:not(#dbfFullPageLoader):not(script):not(style){
-  opacity:0!important;
-  visibility:hidden!important;
-  pointer-events:none!important;
-}
-html.dbf-main-ready body{
-  opacity:1!important;
-  visibility:visible!important;
-  pointer-events:auto!important;
-  overflow:auto!important;
-}
-html.dbf-main-ready body > *:not(script):not(style){
-  opacity:1!important;
-  visibility:visible!important;
-  pointer-events:auto!important;
-}
-#dbfFullPageLoader{
-  display:flex!important;
-  opacity:1!important;
-  visibility:visible!important;
-  pointer-events:auto!important;
-}
-#dbfFullPageLoader.dbf-loader-done,
-html.dbf-main-ready #dbfFullPageLoader{
-  opacity:0!important;
-  visibility:hidden!important;
-  pointer-events:none!important;
-}
-/* 원자재 선택 후 사용 제품 상세: 요청한 5개 열을 제목/내용 모두 왼쪽 정렬 */
-#view-raw .raw-use-table th:nth-child(1),
-#view-raw .raw-use-table th:nth-child(2),
-#view-raw .raw-use-table th:nth-child(3),
-#view-raw .raw-use-table th:nth-child(4),
-#view-raw .raw-use-table th:nth-child(5),
-#view-raw .raw-use-table td:nth-child(1),
-#view-raw .raw-use-table td:nth-child(2),
-#view-raw .raw-use-table td:nth-child(3),
-#view-raw .raw-use-table td:nth-child(4),
-#view-raw .raw-use-table td:nth-child(5){
-  text-align:left!important;
-}
-html body header #bomUserVersionWrap #bomAppVer::before{
-  content:'버전 v135.6 · 메인페이지 완료 후 100% 전환·원자재 상세 정렬'!important;
-}
-</style>
-<script id="v1353-loading-screen-bootstrap-script">
-(function(){
-  'use strict';
-  /* 숫자 로딩 화면을 정상 실행하고, 실제 화면은 준비 완료 후 공개 */
-  window.__dbfFullLoaderEnabled=true;
-  window.__dbfFullLoaderReady=false;
-  window.__v1337FullPageLoaderInstalled=false;
-  var root=document.documentElement;
-  if(root){root.classList.remove('dbf-main-ready');root.classList.add('dbf-main-boot')}
-})();
-</script>
-
 </head>
 <body>
 <div id="dbfFullPageLoader" role="status" aria-live="polite" aria-label="프로그램 불러오는 중">
@@ -1768,23 +1690,8 @@ html body header #bomUserVersionWrap #bomAppVer::before{
   var percentEl=document.getElementById('dbfLoadingPercent');
   var barEl=document.getElementById('dbfLoadingBar');
   var labelEl=document.getElementById('dbfLoadingLabel');
-  var value=0,domReady=false,loadReady=false,finished=false,finishRequested=false;
-  var pollTimer=0,finishWaitTimer=0,stableSince=0,lastSignature='',loadAt=0,dashboardObserver=null;
+  var value=0,domReady=false,loadReady=false,finished=false,settling=false,pollTimer=0;
   var started=(window.performance&&performance.now)?performance.now():Date.now();
-
-  /* 로딩 화면이 실제로 보인 뒤, 메인 대시보드가 완전히 만들어질 때까지 유지 */
-  window.__dbfLoaderFirstPaintReady=false;
-  window.__dbfLoaderNotBefore=Number.POSITIVE_INFINITY;
-  (function markLoaderFirstPaint(){
-    function confirmed(){
-      window.__dbfLoaderFirstPaintReady=true;
-      window.__dbfLoaderNotBefore=Date.now()+650;
-    }
-    if(typeof window.requestAnimationFrame==='function'){
-      window.requestAnimationFrame(function(){window.requestAnimationFrame(confirmed)});
-    }else setTimeout(confirmed,40);
-  })();
-
   function clamp(n){return Math.max(0,Math.min(100,Math.round(Number(n)||0)))}
   function setProgress(n,label){
     n=clamp(n);if(n<value)return;value=n;
@@ -1793,124 +1700,52 @@ html body header #bomUserVersionWrap #bomAppVer::before{
     if(label&&labelEl)labelEl.textContent=label;
     try{loader&&loader.setAttribute('aria-valuenow',String(n))}catch(e){}
   }
-  function textReady(el){
-    if(!el)return false;
-    var t=String(el.textContent||'').replace(/\s+/g,'').trim();
-    return t.length>0||el.children.length>0;
-  }
-  function dashboardStatus(){
-    var view=document.getElementById('view-dashboard');
-    var shell=view&&view.querySelector('.dashboard-shell');
-    var ids=['dashboardKpis','dashGroups','dashUsage','dashEquip','dashProcess','dashDrawing','dashMaterial','dashHistory','dashNotices'];
-    var nodes=ids.map(function(id){return document.getElementById(id)});
-    var complete=!!(view&&shell&&nodes.every(textReady));
-    if(complete){
-      complete=view.classList&&!view.classList.contains('hidden')&&
-        document.querySelectorAll('#dashboardKpis .dashboard-kpi').length>=7&&
-        document.querySelectorAll('#view-dashboard .dashboard-card').length>=8&&
-        textReady(document.getElementById('dashboardFooterTime'))&&
-        !view.querySelector('[aria-busy="true"],.dashboard-loading,.loading,.skeleton,[data-loading="1"]');
-    }
-    var signature='';
-    if(view){
-      signature=ids.map(function(id){
-        var e=document.getElementById(id);return e?(e.childElementCount+':'+String(e.innerHTML||'').length):'x';
-      }).join('|')+'|'+view.querySelectorAll('*').length;
-    }
-    return {ready:complete,signature:signature,view:view};
-  }
-  function watchDashboard(view){
-    if(!view||dashboardObserver||typeof MutationObserver!=='function')return;
-    var Native=window.__NativeMutationObserver||window.MutationObserver;
-    try{
-      dashboardObserver=new Native(function(){stableSince=0;lastSignature=''});
-      dashboardObserver.observe(view,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class','style']});
-    }catch(e){dashboardObserver=null}
-  }
-  function mainPageFullyReady(){
-    if(document.readyState!=='complete'||!loadReady)return false;
-    var st=dashboardStatus();watchDashboard(st.view);
-    if(!st.ready){stableSince=0;lastSignature=st.signature;return false}
-    var now=Date.now();
-    if(st.signature!==lastSignature){lastSignature=st.signature;stableSince=now;return false}
-    if(!stableSince)stableSince=now;
-    /* load 이후 초기 보정 스크립트와 대시보드 DOM 변경이 모두 멈춘 뒤 완료 */
-    return now-loadAt>=1100&&now-stableSince>=420;
+  function keyContentReady(){
+    var dash=document.getElementById('view-dashboard');
+    var kpis=document.getElementById('dashboardKpis');
+    var cards=dash?dash.querySelectorAll('.dashboard-card').length:0;
+    var hasKpis=!!(kpis&&kpis.children&&kpis.children.length);
+    return document.readyState==='complete'&&!!dash&&cards>=6&&hasKpis;
   }
   function finish(){
-    if(finished)return;
-    if(!mainPageFullyReady()){schedulePoll(90);return}
-    var now=Date.now(),notBefore=Number(window.__dbfLoaderNotBefore);
-    if(!window.__dbfLoaderFirstPaintReady||!isFinite(notBefore)||now<notBefore){
-      clearTimeout(finishWaitTimer);
-      finishWaitTimer=setTimeout(finish,Math.max(50,isFinite(notBefore)?Math.min(160,notBefore-now):80));
-      return;
-    }
-    finished=true;
-    clearInterval(window.__v1337LoaderTick);clearTimeout(pollTimer);clearTimeout(finishWaitTimer);
-    if(dashboardObserver){try{dashboardObserver.disconnect()}catch(e){}dashboardObserver=null}
-    setProgress(100,'메인페이지 로딩 완료');
+    if(finished)return;finished=true;settling=false;
+    clearInterval(window.__v1337LoaderTick);clearTimeout(pollTimer);
+    setProgress(100,'로딩 완료');
     window.__dbfFullLoaderReady=true;
     window.__dbfFullLoaderDuration=Math.max(0,((window.performance&&performance.now)?performance.now():Date.now())-started);
-    /* 100%가 화면에 표시된 다음 메인페이지로 전환 */
     setTimeout(function(){
       try{window.__dbfReleaseMainBoot(true)}catch(e){}
       if(loader){loader.classList.add('dbf-loader-done');setTimeout(function(){try{loader.remove()}catch(e){}},360)}
-    },260);
+    },170);
   }
-  function schedulePoll(ms){
-    if(finished)return;clearTimeout(pollTimer);pollTimer=setTimeout(pollReady,ms||90);
+  function settleAndFinish(){
+    if(finished||settling)return;settling=true;setProgress(Math.max(value,97),'화면을 준비하는 중입니다');
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      var done=function(){setTimeout(finish,80)};
+      if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(done,{timeout:650});
+      else setTimeout(done,220);
+    })});
   }
   function pollReady(){
     if(finished)return;
-    var st=dashboardStatus();watchDashboard(st.view);
-    if(!domReady)setProgress(Math.max(value,35),'프로그램을 불러오는 중입니다');
-    else if(!loadReady)setProgress(Math.max(value,82),'메인 화면을 구성하는 중입니다');
-    else if(!st.ready)setProgress(Math.max(value,94),'메인페이지 데이터를 불러오는 중입니다');
-    else setProgress(Math.max(value,98),'메인페이지 최종 화면을 확인하는 중입니다');
-    if(mainPageFullyReady()){finish();return}
-    schedulePoll(90);
+    if(keyContentReady()){settleAndFinish();return}
+    if(domReady)setProgress(Math.max(value,82),'메인 화면을 구성하는 중입니다');
+    if(loadReady)setProgress(Math.max(value,92),'데이터를 정리하는 중입니다');
+    pollTimer=setTimeout(pollReady,90);
   }
-  /* 구버전 완료 요청은 즉시 종료하지 않고 실제 메인페이지 완료 확인만 시작 */
-  window.__dbfRequestLoaderFinish=function(){finishRequested=true;pollReady();return true};
-
   window.__v1337LoaderTick=setInterval(function(){
     if(finished)return;
-    var st=dashboardStatus();
-    var cap=!domReady?70:(!loadReady?88:(!st.ready?96:98));
+    var cap=!domReady?72:(!loadReady?88:96);
     var step=value<28?4:(value<62?3:(value<84?2:1));
     setProgress(Math.min(cap,value+step));
   },70);
   setProgress(1);
-  if(document.readyState!=='loading'){
-    domReady=true;setProgress(78,'메인 화면을 구성하는 중입니다');
-  }else document.addEventListener('DOMContentLoaded',function(){
-    domReady=true;setProgress(Math.max(value,78),'메인 화면을 구성하는 중입니다');pollReady();
-  },{once:true});
-  if(document.readyState==='complete'){
-    loadReady=true;loadAt=Date.now();setProgress(92,'메인페이지 데이터를 불러오는 중입니다');pollReady();
-  }else window.addEventListener('load',function(){
-    loadReady=true;loadAt=Date.now();setProgress(Math.max(value,92),'메인페이지 데이터를 불러오는 중입니다');pollReady();
-  },{once:true});
+  if(document.readyState!=='loading'){domReady=true;setProgress(78,'메인 화면을 구성하는 중입니다')}
+  else document.addEventListener('DOMContentLoaded',function(){domReady=true;setProgress(Math.max(value,78),'메인 화면을 구성하는 중입니다');pollReady()},{once:true});
+  if(document.readyState==='complete'){loadReady=true;setProgress(92,'데이터를 정리하는 중입니다');pollReady()}
+  else window.addEventListener('load',function(){loadReady=true;setProgress(Math.max(value,92),'데이터를 정리하는 중입니다');pollReady()},{once:true});
   pollReady();
-
-  /* 심각한 스크립트 오류가 있을 때만 영구 정지를 막는 최종 복구 장치 */
-  setTimeout(function emergencyRelease(){
-    if(finished)return;
-    var basic=document.readyState==='complete'&&document.querySelector('header')&&document.querySelector('.wrap')&&
-      (document.getElementById('view-dashboard')||document.getElementById('view-cost'));
-    if(!basic){setTimeout(emergencyRelease,1000);return}
-    setProgress(99,'초기 화면을 최종 점검하는 중입니다');
-    setTimeout(function(){
-      if(finished)return;
-      finished=true;clearInterval(window.__v1337LoaderTick);clearTimeout(pollTimer);
-      setProgress(100,'메인페이지 로딩 완료');window.__dbfFullLoaderReady=true;
-      setTimeout(function(){
-        try{window.__dbfReleaseMainBoot(true)}catch(e){}
-        if(loader){loader.classList.add('dbf-loader-done');setTimeout(function(){try{loader.remove()}catch(e){}},360)}
-      },260);
-    },500);
-  },20000);
+  setTimeout(function(){if(!finished)settleAndFinish()},12000);
 })();
 </script>
 <header>
@@ -3547,10 +3382,7 @@ function initApp(){
     if(fc)fc.textContent='제품 목록 불러오는 중…';
     load();
     syncStick();
-    /* 첫 화면이 대시보드일 때 숨겨진 제품 전체표를 미리 그리지 않는다.
-       제품별원가 메뉴를 열면 switchTab에서 즉시 렌더링된다. */
-    var costView=document.getElementById('view-cost');
-    if(costView&&!costView.classList.contains('hidden')&&typeof renderCost==='function')renderCost(false);
+    if(typeof renderCost==='function')renderCost(false);
     var finish=function(){
       try{
         if(typeof buildFilters==='function')buildFilters();
@@ -6972,6 +6804,9 @@ input[type="reset"]:disabled,
 #view-raw .raw-use-table th:nth-child(5){min-width:360px!important;width:auto!important}
 #view-raw .raw-use-table th:nth-child(6){min-width:78px!important}
 #view-raw .raw-use-table th:nth-child(7){min-width:66px!important}
+/* 원자재 선택 시 사용 제품표의 제품 품번·품명·제품 규격·BOM상위·BOM 경로를 왼쪽 정렬 */
+#view-raw .raw-use-table th:nth-child(-n+5),
+#view-raw .raw-use-table td:nth-child(-n+5){text-align:left!important}
 #view-raw .raw-use-table td:nth-child(2),
 #view-raw .raw-use-table td:nth-child(3),
 #view-raw .raw-use-table td:nth-child(4),
@@ -20626,7 +20461,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(!id('view-dashboard'))init();
 },{once:true});
 /* 늦게 실행되는 기존 패치와의 호환을 위한 최소 재확인만 유지 */
-[1400].forEach(function(ms){setTimeout(function(){
+[300,1400].forEach(function(ms){setTimeout(function(){
   setupDom();installSwitchWrapper();installBackFix();lockDashboardVersion();
   if(!userNavigated){activeView='dashboard';applyDashboardVisibility();renderDashboard()}
 },ms)});
@@ -25537,7 +25372,7 @@ window.addEventListener('load',function(){install();setTimeout(install,160)},{on
 (function(){
 'use strict';
 if(window.__v1339FilterSyncPerformance)return;window.__v1339FilterSyncPerformance=true;
-var VERSION='v135.2',searchTimer=0,filterFrame=0,fullPullBusy=false,lastFullPull=0,installTimer=0,autoSyncReadyAt=Date.now()+12000;
+var VERSION='v134.0',searchTimer=0,filterFrame=0,fullPullBusy=false,lastFullPull=0,installTimer=0;
 function id(x){return document.getElementById(x)}
 function state(){try{return JSON.parse(localStorage.getItem('dbfastec_bom_gsync_v1')||'{}')||{}}catch(e){return {}}}
 function configured(){var s=state();return s.auto!==false&&String(s.url||'').trim()&&String(s.key||'').trim()}
@@ -25559,10 +25394,7 @@ function patchFilterAttrs(){
 }
 function requestFullPull(force){
   if(fullPullBusy||!configured()||document.hidden)return false;
-  var now=Date.now();
-  /* 수동 동기화는 즉시, 자동 동기화는 화면이 열린 뒤에만 실행 */
-  if(!force&&now<autoSyncReadyAt)return false;
-  if(!force&&now-lastFullPull<90000)return false;
+  var now=Date.now();if(!force&&now-lastFullPull<25000)return false;
   var fn=window.bomSyncLoad;if(typeof fn!=='function')return false;
   fullPullBusy=true;lastFullPull=now;
   try{
@@ -25583,10 +25415,10 @@ function install(){
 window.__v1339ForceFullSync=function(){return requestFullPull(true)};
 install();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
-window.addEventListener('load',function(){install();setTimeout(function(){install();requestFullPull(false)},12000)},{once:true});
-window.addEventListener('focus',function(){install();requestFullPull(false)});
-document.addEventListener('visibilitychange',function(){if(!document.hidden){install();requestFullPull(false)}});
-setInterval(function(){install();requestFullPull(false)},120000);
+window.addEventListener('load',function(){install();setTimeout(function(){install();requestFullPull(true)},900)},{once:true});
+window.addEventListener('focus',function(){install();requestFullPull(true)});
+document.addEventListener('visibilitychange',function(){if(!document.hidden){install();requestFullPull(true)}});
+setInterval(function(){install();requestFullPull(false)},30000);
 })();
 </script>
 <!-- ===== /V133.9 ===== -->
@@ -25609,8 +25441,14 @@ function notify(reason){
 }
 function release(reason){
   if(!coreReady())return false;
-  /* 로더를 직접 제거하지 않고 전용 로더가 첫 화면 표시와 최소 유지시간을 관리 */
-  try{if(typeof window.__dbfRequestLoaderFinish==='function')window.__dbfRequestLoaderFinish(reason||'ready')}catch(e){}
+  try{window.__dbfFullLoaderReady=true}catch(e){}
+  try{if(typeof window.__dbfReleaseMainBoot==='function')window.__dbfReleaseMainBoot(true)}catch(e){}
+  try{
+    var root=document.documentElement;
+    root.classList.remove('dbf-main-boot');root.classList.add('dbf-main-ready');
+    var loader=document.getElementById('dbfFullPageLoader');
+    if(loader){loader.classList.add('dbf-loader-done');setTimeout(function(){try{loader.remove()}catch(e){}},260)}
+  }catch(e){}
   notify(reason);return true;
 }
 window.__dbfNotifyParentReady=function(reason){return release(reason||'manual')};
@@ -27074,12 +26912,7 @@ function reconcile(reason,notify){
     return removed
   }finally{running=false}
 }
-function schedule(reason,notify){
-  if(queued)return;queued=true;
-  var run=function(){queued=false;var n=reconcile(reason,notify);if(n&&typeof window.renderCost==='function')try{window.renderCost(false)}catch(e){};enhanceHiddenRows()};
-  if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(run,{timeout:700});
-  else setTimeout(run,140);
-}
+function schedule(reason,notify){if(queued)return;queued=true;setTimeout(function(){queued=false;var n=reconcile(reason,notify);if(n&&typeof window.renderCost==='function')try{window.renderCost(false)}catch(e){};enhanceHiddenRows()},20)}
 function updateButtons(){
   var hb=id('hiddenProductListBtn'),hc=hb&&hb.querySelector('.hidden-count'),hn=hiddenList().length;if(hc)hc.textContent=hn.toLocaleString();if(hb)hb.classList.toggle('has-hidden',hn>0);
   var db=id('deletedProductListBtn'),dc=db&&db.querySelector('.deleted-count'),dn=deletedList().length;if(dc)dc.textContent=dn.toLocaleString();if(db)db.classList.toggle('has-deleted',dn>0)
@@ -27126,49 +26959,21 @@ document.addEventListener('click',function(e){
 },true);
 function installRenderGuard(){
   var cur=window.renderCost;if(typeof cur!=='function'||cur.__v1351HiddenGuard)return;
-  /* 제품표 렌더마다 localStorage 전체를 다시 읽지 않고, 실제 데이터 변경 시에만 정합성 검사를 수행 */
-  var fn=function(){return cur.apply(this,arguments)};
+  var fn=function(){reconcile('render',false);return cur.apply(this,arguments)};
   Object.keys(cur).forEach(function(k){try{fn[k]=cur[k]}catch(e){}});fn.__v1351HiddenGuard=true;fn.__v1351Raw=cur;window.renderCost=fn;try{renderCost=fn}catch(e){}
 }
 function install(){
-  installRenderGuard();installObserver();enhanceHiddenRows();updateButtons();schedule('install',false);
+  installRenderGuard();var n=reconcile('install',false);installObserver();enhanceHiddenRows();updateButtons();
+  if(n&&typeof window.renderCost==='function')try{window.renderCost(false)}catch(e){}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
-window.addEventListener('load',function(){install();[1800,6000].forEach(function(ms){setTimeout(function(){installRenderGuard();schedule('load-'+ms,false);installObserver()},ms)})},{once:true});
+window.addEventListener('load',function(){install();[300,1200,3500,8000].forEach(function(ms){setTimeout(function(){installRenderGuard();schedule('load-'+ms,false);installObserver()},ms)})},{once:true});
 window.addEventListener('bomDataChanged',function(e){if(e&&e.detail&&e.detail.v1351)return;schedule('data-change',false)});
 window.addEventListener('storage',function(e){if(!e.key||[PROD_KEY,HIDDEN_KEY,DELETED_KEY,PROD_PATCH_KEY].indexOf(e.key)>=0)schedule('storage',false)});
-setInterval(function(){schedule('periodic',false)},120000);
+setInterval(function(){schedule('periodic',false)},30000);
 })();
 </script>
 <!-- ===== /V135.1 ===== -->
-
-
-<style id="v1353-final-raw-left-align-style">
-/* 파일의 모든 누적 스타일 뒤에서 최종 적용 */
-html body #view-raw .raw-use-table thead tr > th:nth-child(1),
-html body #view-raw .raw-use-table thead tr > th:nth-child(2),
-html body #view-raw .raw-use-table thead tr > th:nth-child(3),
-html body #view-raw .raw-use-table thead tr > th:nth-child(4),
-html body #view-raw .raw-use-table thead tr > th:nth-child(5),
-html body #view-raw .raw-use-table tbody tr > td:nth-child(1),
-html body #view-raw .raw-use-table tbody tr > td:nth-child(2),
-html body #view-raw .raw-use-table tbody tr > td:nth-child(3),
-html body #view-raw .raw-use-table tbody tr > td:nth-child(4),
-html body #view-raw .raw-use-table tbody tr > td:nth-child(5){text-align:left!important}
-html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v135.6 · 메인페이지 완료 후 100% 전환·원자재 상세 정렬'!important}
-</style>
-<!-- ===== V135.6: 메인페이지 전체 로딩 완료 후 100% 전환 ===== -->
-<script id="v1355-loading-safety-script">
-(function(){
-'use strict';
-if(window.__v1356LoadingSafety)return;window.__v1356LoadingSafety=true;
-/* 완료 판단은 v1337 로더가 메인 대시보드 전체 렌더링을 확인한 뒤 수행한다. */
-window.addEventListener('load',function(){
-  try{if(typeof window.__dbfRequestLoaderFinish==='function')window.__dbfRequestLoaderFinish('v1356-window-load')}catch(e){}
-},{once:true});
-})();
-</script>
-<!-- ===== /V135.6 ===== -->
 
 </body>
 </html>
