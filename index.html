@@ -1673,38 +1673,23 @@ header .tabs #tab-dashboard.on{
 </style>
 
 
-<style id="v1353-loading-screen-raw-left-align-style">
-/* V135.3: 빠른 초기화는 유지하고, 첫 실행 로딩 화면은 다시 표시 */
-html.dbf-main-boot body{
-  opacity:1!important;
-  visibility:visible!important;
-  pointer-events:none!important;
-  overflow:hidden!important;
-}
-html.dbf-main-boot body > *:not(#dbfFullPageLoader):not(script):not(style){
-  opacity:0!important;
-  visibility:hidden!important;
-  pointer-events:none!important;
-}
+<style id="v1352-fast-open-raw-left-align-style">
+/* V135.2: 로딩 화면이 실제 메뉴를 가리지 않도록 첫 화면을 즉시 표시 */
+html.dbf-main-boot body,
 html.dbf-main-ready body{
   opacity:1!important;
   visibility:visible!important;
   pointer-events:auto!important;
   overflow:auto!important;
 }
+html.dbf-main-boot body > *:not(script):not(style),
 html.dbf-main-ready body > *:not(script):not(style){
   opacity:1!important;
   visibility:visible!important;
   pointer-events:auto!important;
 }
 #dbfFullPageLoader{
-  display:flex!important;
-  opacity:1!important;
-  visibility:visible!important;
-  pointer-events:auto!important;
-}
-#dbfFullPageLoader.dbf-loader-done,
-html.dbf-main-ready #dbfFullPageLoader{
+  display:none!important;
   opacity:0!important;
   visibility:hidden!important;
   pointer-events:none!important;
@@ -1723,18 +1708,19 @@ html.dbf-main-ready #dbfFullPageLoader{
   text-align:left!important;
 }
 html body header #bomUserVersionWrap #bomAppVer::before{
-  content:'버전 v135.3 · 빠른 로딩·로딩화면 복원·원자재 상세 정렬'!important;
+  content:'버전 v135.2 · 빠른 로딩·원자재 상세 정렬'!important;
 }
 </style>
-<script id="v1353-loading-screen-bootstrap-script">
+<script id="v1352-fast-open-bootstrap-script">
 (function(){
   'use strict';
-  /* 숫자 로딩 화면을 정상 실행하고, 실제 화면은 준비 완료 후 공개 */
-  window.__dbfFullLoaderEnabled=true;
-  window.__dbfFullLoaderReady=false;
-  window.__v1337FullPageLoaderInstalled=false;
+  /* 기존 숫자 로더의 70ms 반복 타이머 자체가 시작되지 않도록 차단 */
+  window.__v1337FullPageLoaderInstalled=true;
+  window.__dbfFullLoaderEnabled=false;
+  window.__dbfFullLoaderReady=true;
   var root=document.documentElement;
-  if(root){root.classList.remove('dbf-main-ready');root.classList.add('dbf-main-boot')}
+  if(root){root.classList.remove('dbf-main-boot');root.classList.add('dbf-main-ready')}
+  try{if(typeof window.__dbfReleaseMainBoot==='function')window.__dbfReleaseMainBoot(true)}catch(e){}
 })();
 </script>
 
@@ -1767,8 +1753,11 @@ html body header #bomUserVersionWrap #bomAppVer::before{
     try{loader&&loader.setAttribute('aria-valuenow',String(n))}catch(e){}
   }
   function keyContentReady(){
-    var core=document.getElementById('view-dashboard')||document.getElementById('view-cost')||document.querySelector('header');
-    return document.readyState==='complete'&&!!core;
+    var dash=document.getElementById('view-dashboard');
+    var kpis=document.getElementById('dashboardKpis');
+    var cards=dash?dash.querySelectorAll('.dashboard-card').length:0;
+    var hasKpis=!!(kpis&&kpis.children&&kpis.children.length);
+    return document.readyState==='complete'&&!!dash&&cards>=6&&hasKpis;
   }
   function finish(){
     if(finished)return;finished=true;settling=false;
@@ -1808,7 +1797,7 @@ html body header #bomUserVersionWrap #bomAppVer::before{
   if(document.readyState==='complete'){loadReady=true;setProgress(92,'데이터를 정리하는 중입니다');pollReady()}
   else window.addEventListener('load',function(){loadReady=true;setProgress(Math.max(value,92),'데이터를 정리하는 중입니다');pollReady()},{once:true});
   pollReady();
-  setTimeout(function(){if(!finished)settleAndFinish()},3500);
+  setTimeout(function(){if(!finished)settleAndFinish()},12000);
 })();
 </script>
 <header>
@@ -27047,7 +27036,7 @@ setInterval(function(){schedule('periodic',false)},120000);
 <!-- ===== /V135.1 ===== -->
 
 
-<style id="v1353-final-raw-left-align-style">
+<style id="v1352-final-raw-left-align-style">
 /* 파일의 모든 누적 스타일 뒤에서 최종 적용 */
 html body #view-raw .raw-use-table thead tr > th:nth-child(1),
 html body #view-raw .raw-use-table thead tr > th:nth-child(2),
@@ -27059,30 +27048,25 @@ html body #view-raw .raw-use-table tbody tr > td:nth-child(2),
 html body #view-raw .raw-use-table tbody tr > td:nth-child(3),
 html body #view-raw .raw-use-table tbody tr > td:nth-child(4),
 html body #view-raw .raw-use-table tbody tr > td:nth-child(5){text-align:left!important}
-html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v135.3 · 빠른 로딩·로딩화면 복원·원자재 상세 정렬'!important}
+html body header #bomUserVersionWrap #bomAppVer::before{content:'버전 v135.2 · 빠른 로딩·원자재 상세 정렬'!important}
 </style>
-<!-- ===== V135.3: 로딩 화면 복원 · 빠른 초기화 유지 ===== -->
-<script id="v1353-loading-safety-script">
+<!-- ===== V135.2: 빠른 초기화 · 원자재 사용제품 정렬 ===== -->
+<script id="v1352-final-startup-cleanup-script">
 (function(){
 'use strict';
-if(window.__v1353LoadingSafety)return;window.__v1353LoadingSafety=true;
-/* 누적 스크립트 오류가 발생하더라도 로딩 화면에 영구 정지하지 않도록 최종 안전 해제 */
-setTimeout(function(){
-  if(document.documentElement.classList.contains('dbf-main-ready'))return;
-  try{
-    var p=document.getElementById('dbfLoadingPercent');if(p)p.textContent='100%';
-    var b=document.getElementById('dbfLoadingBar');if(b)b.style.width='100%';
-    var t=document.getElementById('dbfLoadingLabel');if(t)t.textContent='로딩 완료';
-    window.__dbfFullLoaderReady=true;
-    if(typeof window.__dbfReleaseMainBoot==='function')window.__dbfReleaseMainBoot(true);
-    var r=document.documentElement;r.classList.remove('dbf-main-boot');r.classList.add('dbf-main-ready');
-    var l=document.getElementById('dbfFullPageLoader');
-    if(l){l.classList.add('dbf-loader-done');setTimeout(function(){try{l.remove()}catch(e){}},360)}
-  }catch(e){}
-},4200);
+if(window.__v1352FinalStartupCleanup)return;window.__v1352FinalStartupCleanup=true;
+function release(){
+  try{window.__dbfFullLoaderEnabled=false;window.__dbfFullLoaderReady=true}catch(e){}
+  try{if(typeof window.__dbfReleaseMainBoot==='function')window.__dbfReleaseMainBoot(true)}catch(e){}
+  try{var r=document.documentElement;r.classList.remove('dbf-main-boot');r.classList.add('dbf-main-ready')}catch(e){}
+  try{var l=document.getElementById('dbfFullPageLoader');if(l)l.remove()}catch(e){}
+}
+release();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',release,{once:true});
+window.addEventListener('load',release,{once:true});
 })();
 </script>
-<!-- ===== /V135.3 ===== -->
+<!-- ===== /V135.2 ===== -->
 
 </body>
 </html>
