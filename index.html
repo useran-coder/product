@@ -2145,17 +2145,17 @@ header .tabs #tab-dashboard.on{
 <div class="material-editor-head"><div><b>재료비 속성</b><span>강종·두께·재료폭·길이 입력 시 중량과 재료비 자동산정</span></div><div class="material-mode-switch"><button id="m-mode-dim" onclick="setModalMaterialMode('dimension')" type="button">치수 자동계산</button><button id="m-mode-direct" onclick="setModalMaterialMode('direct')" type="button">중량 직접입력</button></div></div>
 <div class="material-grid">
 <div class="mfld"><label>강종</label><select id="m-grade" onchange="modalGradeChange();recalcModal()"></select></div>
-<div class="mfld"><label>비중</label><input id="m-density" oninput="recalcModal()" step="0.01" type="number"/><div class="ph">강종 선택 시 자동입력</div></div>
-<div class="mfld"><label>재료단가 (원/kg)</label><input id="m-matkg" oninput="recalcModal()" type="number"/><div class="ph" id="ph-matkg"></div></div>
-<div class="mfld"><label>스크랩 회수중량 (kg/개)</label><input id="m-recoverw" oninput="recalcModal()" step="0.0001" type="number"/><div class="ph">회수단가 기준으로 재료비 차감</div></div>
-<div class="mfld m-dimension"><label>두께 (mm)</label><input id="m-thickness" oninput="recalcModal()" step="0.01" type="number"/></div>
-<div class="mfld m-dimension"><label>재료폭 (mm)</label><input id="m-width" oninput="recalcModal()" step="0.1" type="number"/></div>
-<div class="mfld m-dimension"><label>길이 (mm)</label><input id="m-length" oninput="recalcModal()" step="0.1" type="number"/></div>
-<div class="mfld m-dimension"><label>제품 1개당 소재수량</label><input id="m-useqty" oninput="recalcModal()" step="0.01" type="number" value="1"/><div class="ph">예: 좌·우 2개 사용 시 2</div></div>
+<div class="mfld"><label>비중</label><input id="m-density" oninput="recalcModalDebounced()" step="0.01" type="number"/><div class="ph">강종 선택 시 자동입력</div></div>
+<div class="mfld"><label>재료단가 (원/kg)</label><input id="m-matkg" oninput="recalcModalDebounced()" type="number"/><div class="ph" id="ph-matkg"></div></div>
+<div class="mfld"><label>스크랩 회수중량 (kg/개)</label><input id="m-recoverw" oninput="recalcModalDebounced()" step="0.0001" type="number"/><div class="ph">회수단가 기준으로 재료비 차감</div></div>
+<div class="mfld m-dimension"><label>두께 (mm)</label><input id="m-thickness" oninput="recalcModalDebounced()" step="0.01" type="number"/></div>
+<div class="mfld m-dimension"><label>재료폭 (mm)</label><input id="m-width" oninput="recalcModalDebounced()" step="0.1" type="number"/></div>
+<div class="mfld m-dimension"><label>길이 (mm)</label><input id="m-length" oninput="recalcModalDebounced()" step="0.1" type="number"/></div>
+<div class="mfld m-dimension"><label>제품 1개당 소재수량</label><input id="m-useqty" oninput="recalcModalDebounced()" step="0.01" type="number" value="1"/><div class="ph">예: 좌·우 2개 사용 시 2</div></div>
 <div class="mfld m-dimension"><label>재료 여유 기준</label><select id="m-allow" onchange="modalAllowanceChange();recalcModal()"><option value="auto">공정 자동판단</option><option value="press">프레스 기준</option><option value="laser">레이저 기준</option><option value="none">여유 없음</option><option value="custom">직접 입력</option></select></div>
-<div class="mfld m-dimension"><label>폭 여유 (mm)</label><input id="m-scrapw" oninput="recalcModal()" step="0.1" type="number"/></div>
-<div class="mfld m-dimension"><label>길이 여유 (mm)</label><input id="m-scrapl" oninput="recalcModal()" step="0.1" type="number"/></div>
-<div class="mfld m-direct hidden"><label>소재중량 (kg/개)</label><input id="m-matw" oninput="recalcModal()" placeholder="0" step="0.0001" type="number"/><div class="ph">도면 또는 실측 중량 직접입력</div></div>
+<div class="mfld m-dimension"><label>폭 여유 (mm)</label><input id="m-scrapw" oninput="recalcModalDebounced()" step="0.1" type="number"/></div>
+<div class="mfld m-dimension"><label>길이 여유 (mm)</label><input id="m-scrapl" oninput="recalcModalDebounced()" step="0.1" type="number"/></div>
+<div class="mfld m-direct hidden"><label>소재중량 (kg/개)</label><input id="m-matw" oninput="recalcModalDebounced()" placeholder="0" step="0.0001" type="number"/><div class="ph">도면 또는 실측 중량 직접입력</div></div>
 </div>
 <div class="material-result" id="m-material-result"></div>
 </div>
@@ -2163,8 +2163,8 @@ header .tabs #tab-dashboard.on{
 <aside class="product-attr-right">
 <div class="product-cost-panel-title"><b>제조원가</b><span>개당 원가 및 적용 기준</span></div>
 <div class="mgrid cost-option-grid">
-<div class="mfld"><label>제조경비율 (%)</label><input id="m-ovh" oninput="recalcModal()" type="number"/><div class="ph" id="ph-ovh"></div></div>
-<div class="mfld"><label>이윤율 (%)</label><input id="m-profit" oninput="recalcModal()" type="number"/><div class="ph" id="ph-profit"></div></div>
+<div class="mfld"><label>제조경비율 (%)</label><input id="m-ovh" oninput="recalcModalDebounced()" type="number"/><div class="ph" id="ph-ovh"></div></div>
+<div class="mfld"><label>이윤율 (%)</label><input id="m-profit" oninput="recalcModalDebounced()" type="number"/><div class="ph" id="ph-profit"></div></div>
 </div>
 <div class="modal-cost-headline" id="m-cost-headline">
 <div class="modal-cost-kpi primary"><span>제조원가 개당단가</span><b id="m-unit-cost-v61">0 원</b></div>
@@ -26008,9 +26008,9 @@ function arrangeButtons(){
   ensureHiddenUi();
   var box=id('costSearchAdd'),filters=document.querySelector('#view-cost .filters'),hidden=id('hiddenProductListBtn'),deleted=id('deletedProductListBtn'),addBtn=document.querySelector('#costSearchAdd>.cost-add-product-btn,#costSearchAdd>button[onclick*="openAdd("]');
   var host=box||filters;if(!host)return;
-  if(deleted&&deleted.parentNode!==host)host.insertBefore(deleted,hidden||addBtn||null);
-  if(hidden&&hidden.parentNode!==host)host.insertBefore(hidden,addBtn||null);
-  if(deleted&&hidden&&deleted.nextElementSibling!==hidden)host.insertBefore(deleted,hidden);
+  if(deleted&&deleted.parentNode!==host)host.insertBefore(deleted,(hidden&&hidden.parentNode===host)?hidden:((addBtn&&addBtn.parentNode===host)?addBtn:null));
+  if(hidden&&hidden.parentNode!==host)host.insertBefore(hidden,(addBtn&&addBtn.parentNode===host)?addBtn:null);
+  if(deleted&&hidden&&hidden.parentNode===host&&deleted.nextElementSibling!==hidden)host.insertBefore(deleted,hidden);
   updateHiddenButton();
 }
 document.addEventListener('click',function(e){
@@ -26096,9 +26096,9 @@ function ensureUi(){
 function arrangeButtons(){
   var box=id('costSearchAdd'),filters=document.querySelector('#view-cost .filters'),deleted=id('deletedProductListBtn'),hidden=id('hiddenProductListBtn'),host=box||filters;
   if(!host)return;
-  if(deleted&&deleted.parentNode!==host)host.insertBefore(deleted,hidden||null);
+  if(deleted&&deleted.parentNode!==host)host.insertBefore(deleted,(hidden&&hidden.parentNode===host)?hidden:null);
   if(hidden&&hidden.parentNode!==host)host.appendChild(hidden);
-  if(deleted&&hidden&&deleted.nextElementSibling!==hidden)host.insertBefore(deleted,hidden);
+  if(deleted&&hidden&&hidden.parentNode===host&&deleted.nextElementSibling!==hidden)host.insertBefore(deleted,hidden);
 }
 function updateButton(){
   var b=id('deletedProductListBtn'),n=deletedList().length;if(!b)return;
@@ -26265,9 +26265,9 @@ function arrangeButtons(){
   ensureHiddenUi();ensureDeletedUi();
   var box=id('costSearchAdd'),filters=document.querySelector('#view-cost .filters'),host=box||filters,deleted=id('deletedProductListBtn'),hidden=id('hiddenProductListBtn');
   if(!host)return;
-  if(deleted&&deleted.parentNode!==host)host.insertBefore(deleted,hidden||null);
+  if(deleted&&deleted.parentNode!==host)host.insertBefore(deleted,(hidden&&hidden.parentNode===host)?hidden:null);
   if(hidden&&hidden.parentNode!==host)host.appendChild(hidden);
-  if(deleted&&hidden&&deleted.nextElementSibling!==hidden)host.insertBefore(deleted,hidden);
+  if(deleted&&hidden&&hidden.parentNode===host&&deleted.nextElementSibling!==hidden)host.insertBefore(deleted,hidden);
 }
 function updateButtons(){
   var hb=id('hiddenProductListBtn'),hc=hb&&hb.querySelector('.hidden-count'),hn=hiddenList().length;
@@ -27117,5 +27117,127 @@ window.addEventListener('storage',function(e){if(!e.key||[PROD_KEY,PATCH_KEY,LAT
 })();
 </script>
 <!-- ===== /V135.2 ===== -->
+<script id="v137-smooth-stepdrag">
+/* ===== V137 성능개선: 공정단계 순서변경 드래그 부드럽게 =====
+   기존: 네이티브 HTML5 드래그(detailDragStartV8/OverV8/DropV8) — 브라우저 기본 드래그
+         고스트 때문에 실제 PC에서 느리고 끊김, 매 이동마다 getBoundingClientRect 리플로우.
+   개선: 네이티브 드래그를 무력화하고 pointer 이벤트 기반으로 교체.
+         - 이동 중에는 rAF로 1프레임당 1회만 순서 재배치 + 번호 갱신(가벼움)
+         - 무거운 전체 재계산(recalcModal)은 "놓는 순간" 1회만 실행
+   기능/저장 데이터는 동일: <tr> 실제 DOM 순서를 바꾸므로 저장(readModalSteps)이 그대로 반영됨. */
+(function(){
+  'use strict';
+  if(window.__v137StepDragLoaded)return; window.__v137StepDragLoaded=true;
+
+  var HANDLE_SEL='.detail-drag,.qk-drag,td.drag,.drag';
+  function bodyOf(el){ return el&&el.closest?el.closest('#stepbody'):null; }
+
+  /* 1) 네이티브 드래그 무력화: #stepbody 안에서 시작되는 dragstart를 캡처 단계에서 차단 */
+  document.addEventListener('dragstart',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('#stepbody')){
+      e.preventDefault();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    }
+  },true);
+
+  var dragRow=null, body=null, pointerY=0, rafPending=false, handleEl=null, pid=null;
+
+  function renumberLight(){
+    var rows=body.children, i, n=rows.length;
+    for(i=0;i<n;i++){
+      var no=rows[i].querySelector('.stno,.detail-step-no,.qk-step-no');
+      if(no)no.textContent=i+1;
+    }
+  }
+
+  function applyMove(){
+    rafPending=false;
+    if(!dragRow||!body)return;
+    var rows=body.children, before=null, i, n=rows.length;
+    for(i=0;i<n;i++){
+      var r=rows[i]; if(r===dragRow)continue;
+      var rect=r.getBoundingClientRect();
+      if(pointerY < rect.top+rect.height/2){ before=r; break; }
+    }
+    if(before){ if(dragRow.nextSibling!==before) body.insertBefore(dragRow,before); }
+    else { if(body.lastChild!==dragRow) body.appendChild(dragRow); }
+    renumberLight();
+  }
+
+  function onMove(e){
+    if(!dragRow)return;
+    pointerY=e.clientY;
+    if(!rafPending){ rafPending=true; requestAnimationFrame(applyMove); }
+  }
+
+  function cleanup(){
+    if(handleEl&&pid!=null){ try{ handleEl.releasePointerCapture(pid); }catch(_){} }
+    window.removeEventListener('pointermove',onMove,true);
+    window.removeEventListener('pointerup',onUp,true);
+    window.removeEventListener('pointercancel',onUp,true);
+    if(dragRow)dragRow.classList.remove('v137-dragging');
+    document.body.classList.remove('v137-dragging-active');
+  }
+
+  function onUp(){
+    var had=!!dragRow;
+    cleanup();
+    dragRow=null; handleEl=null; pid=null; body=null;
+    if(had){
+      try{ if(typeof window.renumSteps==='function')window.renumSteps(); }catch(_){}
+      try{ if(typeof window.recalcModal==='function')window.recalcModal(); }catch(_){}
+    }
+  }
+
+  document.addEventListener('pointerdown',function(e){
+    if(e.button!=null&&e.button!==0)return;               /* 왼쪽 버튼만 */
+    var t=e.target; if(!t||!t.closest)return;
+    var handle=t.closest(HANDLE_SEL); if(!handle)return;
+    var b=bodyOf(handle); if(!b)return;                    /* #stepbody 안에서만 */
+    var row=handle.closest('tr'); if(!row)return;
+    e.preventDefault();
+    if(e.stopPropagation)e.stopPropagation();
+    body=b; dragRow=row; handleEl=handle; pid=e.pointerId;
+    dragRow.classList.add('v137-dragging');
+    document.body.classList.add('v137-dragging-active');
+    try{ handle.setPointerCapture(e.pointerId); }catch(_){}
+    window.addEventListener('pointermove',onMove,true);
+    window.addEventListener('pointerup',onUp,true);
+    window.addEventListener('pointercancel',onUp,true);
+  },true);
+
+  /* 시각 피드백(페인트 전용 속성만 사용 → 리플로우 최소화) */
+  var st=document.createElement('style');
+  st.textContent=
+    '#stepbody tr.v137-dragging{opacity:.92;box-shadow:0 6px 18px rgba(20,40,90,.22);'+
+    'background:#eef4ff !important;position:relative;z-index:5;cursor:grabbing}'+
+    'body.v137-dragging-active{cursor:grabbing;user-select:none}'+
+    'body.v137-dragging-active #stepbody input{pointer-events:none}'+
+    HANDLE_SEL.split(',').map(function(s){return '#stepbody '+s;}).join(',')+'{cursor:grab;touch-action:none}';
+  document.head.appendChild(st);
+})();
+</script>
+
+<script id="v138-material-input-debounce">
+/* ===== V138 성능개선: 재료비 치수/단가 입력 지연·먹통 해결 =====
+   원인: 재료비 입력칸(두께 m-thickness, 재료폭 m-width, 길이 m-length, 단가 등 12개)이
+         각 타건마다 oninput="recalcModal()"로 전체 재계산을 "디바운스 없이 동기" 실행 →
+         행이 많거나 느린 PC에서 한 박자 늦고 숫자 입력이 잘 안 됨.
+         (v1347 고속 재계산은 #stepbody 전용이라 재료비 칸은 미적용이었음.)
+   해결: 타건은 즉시 반영하고, 무거운 재계산은 입력을 멈춘 뒤 160ms 후 1회만 실행.
+   계산 로직/값은 그대로 — 호출 시점만 디바운스. */
+(function(){
+  'use strict';
+  if(window.__v138MatDebounce)return; window.__v138MatDebounce=true;
+  var t=null;
+  window.recalcModalDebounced=function(){
+    if(t)clearTimeout(t);
+    t=setTimeout(function(){
+      t=null;
+      try{ if(typeof window.recalcModal==='function') window.recalcModal(); }catch(e){}
+    },160);
+  };
+})();
+</script>
 </body>
 </html>
