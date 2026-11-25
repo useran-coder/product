@@ -29813,5 +29813,145 @@ html body #view-matprice table.mp-ro-table tbody td.mp-month-min{
   window.__refreshMaterialTrend14px = schedule;
 })();
 </script>
+<!-- ===== V136: 제품별 원가 · 엑셀 내보내기 (전체 제품 원시데이터) ===== -->
+<style id="v136-excel-export-style">
+#costExcelExportBtnV136{order:1001;flex:0 0 auto;height:36px;margin-left:8px;padding:8px 13px;border-radius:8px;border:1px solid #9fd3b4;background:linear-gradient(#ffffff,#eefaf2);color:#146c3a;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:inherit}
+#costExcelExportBtnV136:hover{background:linear-gradient(#f4fff8,#dff5e8);border-color:#5fb884}
+#costExcelExportBtnV136[disabled]{opacity:.6;cursor:wait}
+</style>
+<script id="v136-excel-export-script">
+(function(){
+'use strict';
+var BTN_ID='costExcelExportBtnV136';
+var CATS=['공용품','전용품','레이저','내부보강'];
+function n(v){var x=parseFloat(String(v==null?'':v).replace(/,/g,''));return isFinite(x)?x:0}
+function r4(v){return Math.round(n(v)*10000)/10000}
+function r0(v){return Math.round(n(v))}
+function clean(v){return String(v==null?'':v).trim()}
+function products(){try{return Array.isArray(PRODUCTS)?PRODUCTS:(window.PRODUCTS||[])}catch(e){return window.PRODUCTS||[]}}
+function ovOf(pn){try{return (OV&&OV[pn])||{}}catch(e){return {}}}
+function priceOfProc(proc){try{return (typeof priceOf==='function'?priceOf(proc):PRICES[proc])||{}}catch(e){return {}}}
+function base(){try{return BASE||{}}catch(e){return {}}}
+function drawMap(){try{return JSON.parse(localStorage.getItem('dbfastec_cost_drawings_v1')||'{}')||{}}catch(e){return {}}}
+function categoryOf(p,dm){var r=dm[clean(p&&p.pn)]||{},u=clean(r.usage),item=clean(p&&p.item);if(r.usageManual===true&&CATS.indexOf(u)>-1)return u;if(/\(L\)/i.test(item))return '레이저';if(/상하보강|이너프레임/i.test(item))return '내부보강';return u==='전용품'?'전용품':'공용품'}
+function bomCount(p){try{return typeof bomCountForProduct==='function'?Number(bomCountForProduct(p)||0):0}catch(e){return 0}}
+function costOf(p){try{var f=window.calc||calc;return f(p)||{}}catch(e){return {}}}
+var MAT_MODE={dimension:'치수 자동계산',direct:'중량 직접입력'};
+var ALLOW={auto:'공정 자동판단',press:'프레스 기준',laser:'레이저 기준',none:'여유 없음',manual:'직접 입력',direct:'직접 입력'};
+function isPlate(proc){return /도금/.test(clean(proc))}
+
+function stepInfo(s,i,ov,weight){
+  var P=priceOfProc(s.proc),cm=clean(s.calcMode);
+  var mode=(cm==='time'||cm==='flat')?cm:(P.mode==='flat'?'flat':'time');
+  var qty=(s.qty!=null&&s.qty!=='')?n(s.qty):(mode==='flat'?((P.factor!=null&&P.factor!=='')?n(P.factor):1):1);
+  var unit=mode==='flat'?n(P.flat):n(s.st)*n(P.rate);
+  var label=mode==='flat'?'수량단가':'시간기준',qUnit=mode==='flat'?clean(P.factorUnit||'개'):'-';
+  if(isPlate(s.proc)&&mode==='flat'){qty=weight;label='중량×단가';qUnit='kg/개'}
+  var auto=mode==='flat'?unit*qty:unit;
+  var o=ov.steps&&ov.steps[i],over=(o!=null&&o!=='');
+  return {mode:label,qty:mode==='time'?'':r4(qty),qUnit:qUnit,qLabel:clean(P.factorLabel),rate:r4(P.rate),unit:r4(unit),auto:r4(auto),applied:r4(over?n(o):auto),over:over?'개별수정':''};
+}
+
+function productCols(p,dm){
+  var d=dm[clean(p.pn)]||{};
+  return [['품번',clean(p.pn)],['품명',clean(p.item)],['규격',clean(p.spec)],['제품 구분',categoryOf(p,dm)],['고객사',clean(d.customer)],['도면',d.has?'있음':'없음'],['도면 담당자',clean(d.owner)],['BOM 하위품목수',bomCount(p)],['비고',clean(p.note)]];
+}
+function materialCols(c,ov){
+  var m=c.material||{},raw=ov.material||{},B=base();
+  return [
+    ['재료비 입력방식',MAT_MODE[m.mode||raw.mode]||clean(m.mode||raw.mode)],
+    ['강종',clean(m.grade||raw.grade)],
+    ['비중',r4(m.density!=null?m.density:raw.density)],
+    ['재료단가(원/kg)',r4(m.unit!=null?m.unit:(raw.unitPrice||c.matkg))],
+    ['두께(mm)',r4(m.t!=null?m.t:raw.thickness)],
+    ['재료폭(mm)',r4(m.w!=null?m.w:raw.width)],
+    ['길이(mm)',r4(m.l!=null?m.l:raw.length)],
+    ['제품1개당 소재수량',r4(m.useQty!=null?m.useQty:(raw.qty||1))],
+    ['재료 여유기준',ALLOW[m.allow||raw.allow]||clean(m.allow||raw.allow)],
+    ['적용 여유기준',ALLOW[m.resolved]||clean(m.resolved)],
+    ['폭 여유(mm)',r4(m.sw!=null?m.sw:raw.scrapW)],
+    ['길이 여유(mm)',r4(m.sl!=null?m.sl:raw.scrapL)],
+    ['적용 폭(mm)',r4(m.calcW)],
+    ['적용 길이(mm)',r4(m.calcL)],
+    ['소재1매 중량(kg)',r4(m.one)],
+    ['제품당 총중량(kg)',r4(m.weight!=null?m.weight:c.matw)],
+    ['스크랩 회수중량(kg/개)',r4(m.recoverW!=null?m.recoverW:raw.recoverWeight)],
+    ['스크랩 회수단가(원/kg)',r4(m.recoverPrice!=null?m.recoverPrice:B.scrapPrice)],
+    ['스크랩 차감액',r4(c.scrapCredit!=null?c.scrapCredit:m.scrapCredit)],
+    ['재료비(차감 전)',r4(c.grossMat!=null?c.grossMat:m.gross)]
+  ];
+}
+function costCols(c){
+  var B=base();
+  var bm=c.bom||{},hasOwn=c.ownProc!=null;
+  return [['본제품 재료비',r0(hasOwn?c.ownMat:c.mat)],['본제품 가공비',r0(hasOwn?c.ownProc:c.proc)],['본제품 제조경비',r0(hasOwn?c.ownOvh:c.ovh)],
+    ['BOM 재료비',r0(bm.mat)],['BOM 가공비',r0(bm.proc)],['BOM 제조경비',r0(bm.ovh)],
+    ['재료비 합계',r0(c.mat)],['가공비 합계',r0(c.proc)],['제조경비율(%)',r4(c.ovhR)],['제조경비 합계',r0(c.ovh)],['소계',r0(c.base)],['불량률(%)',r4(B.defect)],['제조원가',r0(c.withDef)],['이윤율(%)',r4(c.profR)],['판매가(참고)',r0(c.sale)],['개별수정 제품',c.custom?'예':'']];
+}
+function toSheet(head,rows,widths){
+  var ws=XLSX.utils.aoa_to_sheet([head].concat(rows));
+  ws['!cols']=head.map(function(h,i){return {wch:(widths&&widths[i])||Math.max(8,Math.min(30,String(h).length*2+2))}});
+  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length,c:head.length-1}})};
+  ws['!freeze']={xSplit:2,ySplit:1};ws['!views']=[{state:'frozen',xSplit:2,ySplit:1}];
+  return ws;
+}
+function buildWorkbook(){
+  var list=products(),dm=drawMap(),rawHead=null,raw=[],sumHead=null,sum=[];
+  list.forEach(function(p){
+    if(!p)return;
+    var ov=ovOf(p.pn),c=costOf(p),steps=Array.isArray(p.steps)?p.steps:[];
+    var pc=productCols(p,dm),mc=materialCols(c,ov),cc=costCols(c);
+    var weight=n((c.material&&c.material.weight!=null)?c.material.weight:c.matw);
+    var flow=steps.map(function(s){return clean(s.proc)}).filter(Boolean).join(' > ');
+    var sc=[['공정수',steps.length],['전체 공정 흐름',flow]];
+    if(!sumHead)sumHead=pc.concat(sc,mc,cc).map(function(x){return x[0]});
+    sum.push(pc.concat(sc,mc,cc).map(function(x){return x[1]}));
+    var rowsFor=steps.length?steps:[null];
+    rowsFor.forEach(function(s,i){
+      var si=s?stepInfo(s,i,ov,weight):{};
+      var st=[['공정순번',s?i+1:''],['공정수',steps.length],['공정명',s?clean(s.proc):''],['구분',s?clean(s.gubun):''],['파트',s?clean(s.part):''],['설비',s?clean(s.equip):''],['S/T(초)',s?r4(s.st):''],['산정수량',s?si.qty:''],['수량단위',s?si.qUnit:''],['산정변수',s?si.qLabel:''],['구분방식',s?si.mode:''],['임률(원/초)',s?si.rate:''],['기본단가(1단위)',s?si.unit:''],['자동단가(개당)',s?si.auto:''],['적용단가(개당)',s?si.applied:''],['적용단가 수정',s?si.over:'']];
+      var all=pc.concat(st,mc,cc);
+      if(!rawHead)rawHead=all.map(function(x){return x[0]});
+      raw.push(all.map(function(x){return x[1]}));
+    });
+  });
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,toSheet(rawHead||['품번'],raw),'원시데이터(공정별)');
+  XLSX.utils.book_append_sheet(wb,toSheet(sumHead||['품번'],sum),'제품별 요약');
+  var pr=[];try{Object.keys(PRICES||{}).sort(function(a,b){return a.localeCompare(b,'ko')}).forEach(function(k){var x=PRICES[k]||{};pr.push([k,x.mode==='flat'?'수량단가':'시간기준',r4(x.rate),r4(x.rate)*3600,r4(x.flat),r4(x.factor),clean(x.factorUnit),clean(x.factorLabel)])})}catch(e){}
+  XLSX.utils.book_append_sheet(wb,toSheet(['공정명','구분방식','임률(원/초)','임율(원/시간)','정액단가(원/단위)','기본 산정수량','수량단위','산정변수'],pr),'공정 단가표');
+  var B=base(),bs=[];Object.keys(B).forEach(function(k){var v=B[k];bs.push([k,(v!==null&&typeof v==='object')?JSON.stringify(v):v])});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['항목','값']].concat(bs)),'기준값');
+  return {wb:wb,products:sum.length,rows:raw.length};
+}
+function loadXlsx(){
+  if(window.XLSX)return Promise.resolve();
+  var urls=['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js','https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'];
+  return urls.reduce(function(chain,u){return chain.catch(function(){return new Promise(function(res,rej){var s=document.createElement('script');s.src=u;s.onload=function(){window.XLSX?res():rej()};s.onerror=rej;document.head.appendChild(s)})})},Promise.reject());
+}
+function stamp(){var d=new Date(),z=function(x){return String(x).padStart(2,'0')};return d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes())}
+window.exportCostExcelV136=function(){
+  var b=document.getElementById(BTN_ID),txt=b&&b.textContent;
+  if(b){b.disabled=true;b.textContent='⏳ 엑셀 생성 중...'}
+  return loadXlsx().then(function(){
+    var r=buildWorkbook();
+    XLSX.writeFile(r.wb,'제품별원가_원시데이터_'+stamp()+'.xlsx');
+    return r;
+  }).catch(function(e){alert('엑셀 내보내기 실패: '+((e&&e.message)||'엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하세요.'))})
+  .then(function(r){if(b){b.disabled=false;b.textContent=txt}return r});
+};
+function ensureBtn(){
+  var wrap=document.getElementById('costSearchAdd')||(document.getElementById('q')&&document.getElementById('q').parentElement);
+  if(!wrap)return;
+  var b=document.getElementById(BTN_ID);
+  if(b&&b.parentElement===wrap)return;
+  if(!b){b=document.createElement('button');b.type='button';b.id=BTN_ID;b.textContent='📥 엑셀 내보내기';b.title='전체 제품의 공정·재료비·원가 원시데이터를 엑셀로 내보냅니다';b.addEventListener('click',function(){window.exportCostExcelV136()})}
+  wrap.appendChild(b);
+}
+function start(){ensureBtn();var t=0,iv=setInterval(function(){ensureBtn();if(++t>40)clearInterval(iv)},500)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+window.addEventListener('load',ensureBtn,{once:true});
+})();
+</script>
 </body>
 </html>
